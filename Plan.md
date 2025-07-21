@@ -32,7 +32,8 @@ The system will maintain complete Proxmox server state in a database and provide
 - [x] Initialize git repository
 - [x] Create project structure
 - [x] Set up development environment
-- [ ] Choose technology stack
+- [x] Choose technology stack (Node.js/TypeScript, Express.js, SQLite, Prisma, Jest)
+- [x] Set up basic testing framework and project structure
 - [ ] Set up CI/CD pipeline
 
 ### 1.2 Basic Proxmox Connection
