@@ -52,10 +52,14 @@ The system will maintain complete Proxmox server state in a database and provide
 ## Phase 2: Database & State Management
 
 ### 2.1 Database Design
-- [ ] Design database schema for Proxmox resources
-- [ ] Set up database (SQLite for development, PostgreSQL for production)
-- [ ] Create migration system
-- [ ] Implement basic CRUD operations
+- [ ] Design database schema for Proxmox resources (nodes, VMs, containers, storage, tasks)
+- [ ] Set up Prisma ORM with SQLite for development
+- [ ] Create migration system with rollback support
+- [ ] Implement repository pattern with CRUD operations
+- [ ] Add state snapshots for historical tracking
+- [ ] Create comprehensive test suite for database operations
+
+**Detailed Implementation**: See [Phase 2.1 Implementation Plan](docs/phase-2.1-implementation.md)
 
 ### 2.2 State Synchronization
 - [ ] Implement Proxmox resource discovery
