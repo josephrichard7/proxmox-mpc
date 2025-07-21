@@ -23,19 +23,33 @@ The system maintains the full state of the Proxmox server in a database and work
 - 🏠 Designed for home lab environments
 - 📈 Resource monitoring and management
 
+## Current Status
+
+**🚧 Active Development** - Phase 2.1 (Database Design) in progress
+
+### ✅ Working Features
+- **Proxmox API Connection**: Test connectivity to your Proxmox server
+- **Node Management**: List cluster nodes with resource usage
+- **CLI Interface**: Command-line tools with verbose output options
+
+### 🧪 Tested Configuration
+- **Proxmox VE**: 8.4.1 (successfully tested)
+- **Authentication**: API token authentication
+- **SSL**: Self-signed certificate handling for homelab environments
+
 ## Getting Started
 
 ### Prerequisites
 
-- Proxmox VE server access
-- Node.js (for development)
-- Database (SQLite/PostgreSQL)
+- Proxmox VE server with API token access
+- Node.js 18+ (for development)
+- Git for cloning the repository
 
 ### Installation
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/$(gh api user --jq .login)/proxmox-mpc.git
+   git clone https://github.com/josephrichard7/proxmox-mpc.git
    cd proxmox-mpc
    ```
 
@@ -47,12 +61,54 @@ The system maintains the full state of the Proxmox server in a database and work
 3. Configure Proxmox connection:
    ```bash
    cp .env.example .env
-   # Edit .env with your Proxmox server details
+   # Edit .env with your Proxmox server details:
+   # - PROXMOX_HOST (your server IP/domain)
+   # - PROXMOX_USERNAME (e.g., root@pam)
+   # - PROXMOX_TOKEN_ID (create in Proxmox UI)
+   # - PROXMOX_TOKEN_SECRET (from Proxmox token creation)
+   # - PROXMOX_NODE (your node name)
    ```
 
 ### Usage
 
-See [Plan.md](Plan.md) for detailed implementation roadmap and usage instructions.
+#### Available CLI Commands
+
+```bash
+# Test connection to your Proxmox server
+npm run cli test-connection
+
+# Test connection with detailed output
+npm run cli test-connection -v
+
+# List cluster nodes with resource usage
+npm run cli list-nodes
+
+# List nodes with detailed information
+npm run cli list-nodes -v
+
+# Run all tests
+npm test
+
+# Check TypeScript compilation
+npm run typecheck
+```
+
+### API Token Setup
+
+1. Login to your Proxmox web interface
+2. Navigate to: **Datacenter → Permissions → API Tokens**
+3. Click **Add** to create a new token:
+   - **User**: `root@pam` (or your preferred user)
+   - **Token ID**: `proxmox-mpc` (or any name)
+   - **Privilege Separation**: Uncheck for testing
+4. Copy the generated secret and update your `.env` file
+
+### Documentation
+
+- **[Project Plan](Plan.md)**: Complete 8-phase development roadmap
+- **[Progress Tracking](docs/PROGRESS.md)**: Current status and achievements
+- **[API Research](docs/proxmox-api-research.md)**: Comprehensive Proxmox API documentation
+- **[Implementation Plans](docs/)**: Detailed plans for each development phase
 
 ## Contributing
 
