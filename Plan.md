@@ -37,12 +37,16 @@ The system will maintain complete Proxmox server state in a database and provide
 - [ ] Set up CI/CD pipeline
 
 ### 1.2 Basic Proxmox Connection
-- [ ] Research Proxmox VE API endpoints
-- [ ] Implement basic API client
-- [ ] Test connection to Proxmox server
-- [ ] Handle authentication (API tokens)
-- [ ] Implement basic error handling
+- [x] Research Proxmox VE API endpoints
+- [x] Implement basic API client (ProxmoxClient class)
+- [x] Test connection to Proxmox server (connect() method)
+- [x] Handle authentication (API tokens with headers)
+- [x] Implement basic error handling (network, SSL, HTTP errors)
+- [x] Create CLI commands (test-connection, list-nodes)
+- [x] Add comprehensive unit tests (24 tests, 81% coverage)
 
+**Detailed Implementation**: See [Phase 1.2 Implementation Plan](docs/phase-1.2-implementation.md)
+**API Research**: See [Proxmox API Research](docs/proxmox-api-research.md)
 **Deliverable**: Basic Proxmox API connectivity test
 
 ## Phase 2: Database & State Management

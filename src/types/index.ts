@@ -10,6 +10,7 @@ export interface ProxmoxConfig {
   tokenId?: string;
   tokenSecret?: string;
   node: string;
+  rejectUnauthorized?: boolean; // false for homelab self-signed certs
 }
 
 export interface ProxmoxNode {
@@ -43,4 +44,34 @@ export interface ProxmoxContainer {
   maxcpu: number;
   mem: number;
   maxmem: number;
+}
+
+// API Response Types
+export interface ProxmoxResponse<T = any> {
+  data: T;
+  errors?: Record<string, string>;
+}
+
+export interface ConnectionResult {
+  success: boolean;
+  version?: string;
+  node?: string;
+  error?: string;
+  details?: any;
+}
+
+export interface VersionInfo {
+  version: string;
+  release: string;
+  repoid: string;
+}
+
+export interface NodeInfo {
+  node: string;
+  status: string;
+  cpu: number;
+  maxcpu: number;
+  mem: number;
+  maxmem: number;
+  uptime: number;
 }
