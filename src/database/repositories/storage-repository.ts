@@ -99,11 +99,8 @@ export class StorageRepository implements BaseRepository<Storage, CreateStorageI
   }
 
   async findById(id: string, options?: QueryOptions): Promise<Storage | null> {
-    const include = options?.include || {};
-    
     return await dbClient.client.storage.findUnique({
-      where: { id },
-      include
+      where: { id }
     });
   }
 
@@ -112,7 +109,6 @@ export class StorageRepository implements BaseRepository<Storage, CreateStorageI
       page = 1,
       limit = 50,
       offset,
-      include = {},
       orderBy = { createdAt: 'desc' },
       where = {}
     } = options;
@@ -122,7 +118,6 @@ export class StorageRepository implements BaseRepository<Storage, CreateStorageI
     const [data, total] = await Promise.all([
       dbClient.client.storage.findMany({
         where,
-        include,
         orderBy,
         skip,
         take: limit
@@ -247,7 +242,6 @@ export class StorageRepository implements BaseRepository<Storage, CreateStorageI
   async findByType(type: string, options?: QueryOptions): Promise<Storage[]> {
     return await dbClient.client.storage.findMany({
       where: { type },
-      include: options?.include || {},
       orderBy: options?.orderBy || { id: 'asc' }
     });
   }
@@ -255,7 +249,6 @@ export class StorageRepository implements BaseRepository<Storage, CreateStorageI
   async findEnabled(options?: QueryOptions): Promise<Storage[]> {
     return await dbClient.client.storage.findMany({
       where: { enabled: true },
-      include: options?.include || {},
       orderBy: options?.orderBy || { id: 'asc' }
     });
   }
@@ -263,7 +256,6 @@ export class StorageRepository implements BaseRepository<Storage, CreateStorageI
   async findShared(options?: QueryOptions): Promise<Storage[]> {
     return await dbClient.client.storage.findMany({
       where: { shared: true },
-      include: options?.include || {},
       orderBy: options?.orderBy || { id: 'asc' }
     });
   }
@@ -275,31 +267,29 @@ export class StorageRepository implements BaseRepository<Storage, CreateStorageI
           contains: contentType
         }
       },
-      include: options?.include || {},
       orderBy: options?.orderBy || { id: 'asc' }
     });
   }
 
   async findLowSpace(threshold: number = 0.9, options?: QueryOptions): Promise<Storage[]> {
-    return await dbClient.client.storage.findMany({
+    // For now, we'll do a simpler implementation without raw SQL
+    const allStorage = await dbClient.client.storage.findMany({
       where: {
         AND: [
           { totalBytes: { not: null } },
-          { usedBytes: { not: null } },
-          {
-            OR: [
-              {
-                // Raw SQL calculation for usage percentage
-                usedBytes: {
-                  gte: dbClient.client.$queryRaw`(totalBytes * ${threshold})`
-                }
-              }
-            ]
-          }
+          { usedBytes: { not: null } }
         ]
       },
-      include: options?.include || {},
       orderBy: { usedBytes: 'desc' }
+    });
+
+    // Filter in JavaScript for now
+    return allStorage.filter(storage => {
+      if (storage.totalBytes && storage.usedBytes) {
+        const usage = Number(storage.usedBytes) / Number(storage.totalBytes);
+        return usage >= threshold;
+      }
+      return false;
     });
   }
 

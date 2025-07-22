@@ -13,6 +13,14 @@ export { StorageRepository } from './storage-repository';
 export { TaskRepository } from './task-repository';
 export { StateSnapshotRepository } from './state-snapshot-repository';
 
+// Import repository classes for factory
+import { NodeRepository } from './node-repository';
+import { VMRepository } from './vm-repository';
+import { ContainerRepository } from './container-repository';
+import { StorageRepository } from './storage-repository';
+import { TaskRepository } from './task-repository';
+import { StateSnapshotRepository } from './state-snapshot-repository';
+
 // Export input types for convenience
 export type { CreateNodeInput, UpdateNodeInput, NodeWithRelations } from './node-repository';
 export type { CreateVMInput, UpdateVMInput, VMWithRelations } from './vm-repository';

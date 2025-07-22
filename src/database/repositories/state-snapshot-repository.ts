@@ -98,11 +98,8 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
   }
 
   async findById(id: number, options?: QueryOptions): Promise<StateSnapshot | null> {
-    const include = options?.include || {};
-    
     return await dbClient.client.stateSnapshot.findUnique({
-      where: { id },
-      include
+      where: { id }
     });
   }
 
@@ -111,7 +108,6 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
       page = 1,
       limit = 50,
       offset,
-      include = {},
       orderBy = { snapshotTime: 'desc' },
       where = {}
     } = options;
@@ -121,7 +117,6 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
     const [data, total] = await Promise.all([
       dbClient.client.stateSnapshot.findMany({
         where,
-        include,
         orderBy,
         skip,
         take: limit
@@ -243,7 +238,6 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
         resourceType,
         resourceId 
       },
-      include: options?.include || {},
       orderBy: options?.orderBy || { snapshotTime: 'desc' }
     });
   }
@@ -251,7 +245,6 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
   async findByResourceType(resourceType: string, options?: QueryOptions): Promise<StateSnapshot[]> {
     return await dbClient.client.stateSnapshot.findMany({
       where: { resourceType },
-      include: options?.include || {},
       orderBy: options?.orderBy || { snapshotTime: 'desc' }
     });
   }
@@ -259,7 +252,6 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
   async findByChangeType(changeType: string, options?: QueryOptions): Promise<StateSnapshot[]> {
     return await dbClient.client.stateSnapshot.findMany({
       where: { changeType },
-      include: options?.include || {},
       orderBy: options?.orderBy || { snapshotTime: 'desc' }
     });
   }
@@ -272,7 +264,6 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
           lte: endTime
         }
       },
-      include: options?.include || {},
       orderBy: options?.orderBy || { snapshotTime: 'desc' }
     });
   }
@@ -334,7 +325,9 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
   private detectChanges(oldData: any, newData: any): Array<{ field: string; oldValue: any; newValue: any }> {
     const changes: Array<{ field: string; oldValue: any; newValue: any }> = [];
 
-    const allKeys = new Set([...Object.keys(oldData), ...Object.keys(newData)]);
+    const oldKeys = Object.keys(oldData);
+    const newKeys = Object.keys(newData);
+    const allKeys = [...oldKeys, ...newKeys].filter((key, index, arr) => arr.indexOf(key) === index);
 
     for (const key of allKeys) {
       const oldValue = oldData[key];
