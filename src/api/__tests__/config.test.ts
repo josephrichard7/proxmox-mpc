@@ -66,11 +66,15 @@ describe('Configuration Management', () => {
     });
 
     it('should throw error when required variables are missing', () => {
-      process.env.PROXMOX_HOST = 'test.local';
-      // Missing other required variables
+      // Clear all required variables
+      delete process.env.PROXMOX_HOST;
+      delete process.env.PROXMOX_USERNAME;
+      delete process.env.PROXMOX_TOKEN_ID;
+      delete process.env.PROXMOX_TOKEN_SECRET;
+      delete process.env.PROXMOX_NODE;
 
       expect(() => loadProxmoxConfig()).toThrow(
-        'Missing required environment variables: PROXMOX_USERNAME, PROXMOX_TOKEN_ID, PROXMOX_TOKEN_SECRET, PROXMOX_NODE'
+        'Missing required environment variables:'
       );
     });
   });

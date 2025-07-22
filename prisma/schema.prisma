@@ -1,0 +1,155 @@
+// Proxmox-MPC Database Schema
+// This schema stores Proxmox resource state for declarative management
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Proxmox cluster nodes
+model Node {
+  id            String   @id // node name (e.g., 'proxmox')
+  status        String   // online, offline
+  type          String?  // node type
+  cpuUsage      Float?   @map("cpu_usage") // current CPU usage (0-1)
+  cpuMax        Int?     @map("cpu_max") // max CPU cores
+  memoryUsage   BigInt?  @map("memory_usage") // current memory bytes
+  memoryMax     BigInt?  @map("memory_max") // max memory bytes
+  uptime        Int?     // uptime in seconds
+  pveVersion    String?  @map("pve_version") // Proxmox VE version
+  lastSeen      DateTime? @map("last_seen") // last successful API call
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  vms           VM[]
+  containers    Container[]
+  tasks         Task[]
+
+  @@map("nodes")
+}
+
+// QEMU Virtual Machines
+model VM {
+  id              Int      @id // vmid
+  nodeId          String   @map("node_id") // foreign key to nodes
+  name            String?
+  status          String   // running, stopped, suspended
+  template        Boolean  @default(false)
+  cpuCores        Int?     @map("cpu_cores") // allocated cores
+  cpuUsage        Float?   @map("cpu_usage") // current CPU usage
+  memoryBytes     BigInt?  @map("memory_bytes") // allocated memory
+  memoryUsage     BigInt?  @map("memory_usage") // current memory usage
+  diskSize        BigInt?  @map("disk_size") // allocated disk space
+  diskUsage       BigInt?  @map("disk_usage") // current disk usage
+  networkIn       BigInt?  @map("network_in") // network bytes in
+  networkOut      BigInt?  @map("network_out") // network bytes out
+  uptime          Int?     // uptime in seconds
+  pid             Int?     // process ID when running
+  haManaged       Boolean  @default(false) @map("ha_managed")
+  lockStatus      String?  @map("lock_status") // lock state
+  configDigest    String?  @map("config_digest") // config hash for change detection
+  lastSeen        DateTime? @map("last_seen") // last API sync
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  node            Node     @relation(fields: [nodeId], references: [id])
+
+  @@map("vms")
+}
+
+// LXC Containers
+model Container {
+  id              Int      @id // vmid (container ID)
+  nodeId          String   @map("node_id") // foreign key to nodes
+  name            String?
+  hostname        String?
+  status          String   // running, stopped, suspended
+  template        Boolean  @default(false)
+  cpuCores        Int?     @map("cpu_cores") // allocated cores
+  cpuUsage        Float?   @map("cpu_usage") // current CPU usage
+  memoryBytes     BigInt?  @map("memory_bytes") // allocated memory
+  memoryUsage     BigInt?  @map("memory_usage") // current memory usage
+  swapBytes       BigInt?  @map("swap_bytes") // allocated swap
+  swapUsage       BigInt?  @map("swap_usage") // current swap usage
+  diskSize        BigInt?  @map("disk_size") // allocated disk space
+  diskUsage       BigInt?  @map("disk_usage") // current disk usage
+  networkIn       BigInt?  @map("network_in") // network bytes in
+  networkOut      BigInt?  @map("network_out") // network bytes out
+  uptime          Int?     // uptime in seconds
+  haManaged       Boolean  @default(false) @map("ha_managed")
+  lockStatus      String?  @map("lock_status") // lock state
+  osTemplate      String?  @map("os_template") // container template used
+  configDigest    String?  @map("config_digest") // config hash for change detection
+  lastSeen        DateTime? @map("last_seen") // last API sync
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  node            Node     @relation(fields: [nodeId], references: [id])
+
+  @@map("containers")
+}
+
+// Storage configurations
+model Storage {
+  id              String   @id // storage ID
+  type            String   // dir, lvm, zfs, etc.
+  contentTypes    String?  @map("content_types") // JSON array of supported content types
+  enabled         Boolean  @default(true)
+  shared          Boolean  @default(false)
+  totalBytes      BigInt?  @map("total_bytes") // total storage space
+  usedBytes       BigInt?  @map("used_bytes") // used storage space
+  availableBytes  BigInt?  @map("available_bytes") // available storage space
+  path            String?
+  nodes           String?  // JSON array of accessible nodes
+  configDigest    String?  @map("config_digest") // config hash
+  lastSeen        DateTime? @map("last_seen")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("storage")
+}
+
+// Async operations tracking
+model Task {
+  upid            String   @id // Unique Process ID
+  nodeId          String   @map("node_id") // node where task runs
+  type            String   // task type (create, start, stop, etc.)
+  status          String   // running, stopped, OK, ERROR
+  resourceType    String?  @map("resource_type") // vm, container, node, storage
+  resourceId      String?  @map("resource_id") // ID of resource being modified
+  user            String?  // user who initiated task
+  startTime       DateTime? @map("start_time") // task start time
+  endTime         DateTime? @map("end_time") // task completion time
+  exitStatus      String?  @map("exit_status") // OK, ERROR, or error message
+  logEntries      String?  @map("log_entries") // JSON array of log entries
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relationships
+  node            Node     @relation(fields: [nodeId], references: [id])
+
+  @@map("tasks")
+}
+
+// Historical state tracking
+model StateSnapshot {
+  id              Int      @id @default(autoincrement())
+  snapshotTime    DateTime @map("snapshot_time")
+  resourceType    String   @map("resource_type") // node, vm, container, storage
+  resourceId      String   @map("resource_id") // resource identifier
+  resourceData    String   @map("resource_data") // JSON snapshot of resource state
+  changeType      String   @map("change_type") // created, updated, deleted, discovered
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Note: Relationships to resources handled via resourceType + resourceId strings
+  // since we have polymorphic references to different resource types
+
+  @@map("state_snapshots")
+}
