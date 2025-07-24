@@ -1,201 +1,275 @@
 # Proxmox-MPC Project Plan
 
-## Project Overview
+## Project Vision
 
-Build a comprehensive Proxmox management system with three main components:
-1. **Console Tool (CLI)** - Command-line interface for direct management
-2. **Web Application** - Browser-based visual interface
-3. **Model Context Protocol (MCP) Server** - AI integration for natural language interactions
+Build a **Kubernetes/Helm-style declarative management system for Proxmox** that enables:
+- **Infrastructure as Code** using YAML configurations
+- **Declarative resource management** with automatic reconciliation  
+- **Template-based deployments** similar to Helm charts
+- **GitOps workflows** for infrastructure management
+- **Continuous state synchronization** and drift detection
 
-The system will maintain complete Proxmox server state in a database and provide Kubernetes/Helm-style declarative configuration management.
+## System Components
+
+1. **CLI Tool** - Kubernetes-style command interface (`kubectl` equivalent)
+2. **Configuration Engine** - YAML parsing and validation system  
+3. **Reconciliation Engine** - Continuous state synchronization (Kubernetes controller equivalent)
+4. **Template System** - Helm-style chart-based deployments
+5. **Web Dashboard** - Visual interface for declarative management
+6. **MCP Integration** - AI-powered natural language operations
+
+The system maintains complete Proxmox server state in a database and provides continuous reconciliation between desired state (YAML configs) and actual infrastructure state.
 
 ## Architecture Components
 
 ### Core Components
-- **State Engine**: Maintains desired vs actual state reconciliation
-- **Proxmox API Client**: Interfaces with Proxmox VE API
-- **Database Layer**: Stores configuration, state, and history
-- **Configuration Parser**: Handles YAML/JSON declarative configs
-- **Natural Language Processor**: Translates human commands to API calls
+- **✅ Proxmox API Client**: Complete interface with Proxmox VE API (25% coverage)
+- **✅ Database Layer**: Stores configuration, state, and history with change tracking
+- **✅ State Discovery**: Real-time cluster resource monitoring and discovery
+- **🚧 Resource Management**: VM/Container lifecycle operations (CRUD)
+- **⏳ Configuration Engine**: YAML/JSON declarative config parsing and validation
+- **⏳ Reconciliation Engine**: Continuous desired vs actual state synchronization
+- **⏳ Template System**: Helm-style chart-based deployments with values
 
-### Interfaces
-- **CLI Tool**: Command-line interface for power users
-- **Web UI**: React-based dashboard and management interface
-- **MCP Server**: Protocol server for AI model integration
-- **REST API**: Backend API for all interfaces
+### Target Interface (Kubernetes/Helm Style)
+```bash
+# Resource management (kubectl-style)
+proxmox-cli get vms                    # List all VMs
+proxmox-cli apply -f infrastructure.yaml  # Apply declarative config
+proxmox-cli diff -f infrastructure.yaml   # Show configuration diff
+proxmox-cli delete vm web-server          # Delete specific resource
+
+# Template management (helm-style)  
+proxmox-cli install my-app ./charts/web-app  # Deploy chart
+proxmox-cli upgrade my-app ./charts/web-app  # Update deployment
+proxmox-cli rollback my-app 1                # Rollback to previous version
+```
 
 ## Implementation Phases
+
+**Target**: Full Kubernetes/Helm parity for declarative Proxmox management
+**Timeline**: 5-7 months for complete implementation
+**Analysis**: See [Declarative Management Analysis](docs/declarative-management-analysis.md)
 
 ## Phase 1: Foundation & Core Infrastructure ✅ COMPLETED
 
 ### 1.1 Project Setup ✅ COMPLETED
-- [x] Initialize git repository
-- [x] Create project structure
-- [x] Set up development environment
-- [x] Choose technology stack (Node.js/TypeScript, Express.js, SQLite, Prisma, Jest)
-- [x] Set up basic testing framework and project structure
-- [ ] Set up CI/CD pipeline
+- [x] Initialize git repository with comprehensive structure
+- [x] TypeScript/Node.js development environment
+- [x] Technology stack: Prisma, Jest, Commander.js
+- [x] Basic testing framework and CI/CD foundation
 
 ### 1.2 Basic Proxmox Connection ✅ COMPLETED
-- [x] Research Proxmox VE API endpoints
-- [x] Implement basic API client (ProxmoxClient class)
-- [x] Test connection to Proxmox server (connect() method)
-- [x] Handle authentication (API tokens with headers)
-- [x] Implement basic error handling (network, SSL, HTTP errors)
-- [x] Create CLI commands (test-connection, list-nodes)
-- [x] Add comprehensive unit tests (24 tests, 81% coverage)
-- [x] Manual testing with real Proxmox server (192.168.0.19, Proxmox VE 8.4.1)
+- [x] Complete Proxmox VE API client implementation
+- [x] Token-based authentication with SSL handling
+- [x] Connection testing and error handling
+- [x] CLI foundation with test-connection and list-nodes
+- [x] Comprehensive testing (24 tests, 81% coverage)
 
-**Detailed Implementation**: See [Phase 1.2 Implementation Plan](docs/phase-1.2-implementation.md)
-**API Research**: See [Proxmox API Research](docs/proxmox-api-research.md)
-**Deliverable**: ✅ Basic Proxmox API connectivity test - COMPLETED
+**🎉 Achievement**: Solid foundation with live Proxmox server validation
 
-**🎉 Phase 1 Achievement Summary:**
-- Working CLI commands: `test-connection`, `list-nodes` 
-- 24 unit tests with 81% code coverage
-- Successfully tested with real Proxmox server
-- Comprehensive error handling for homelab environments
-- Complete TypeScript implementation with proper types
-
-## Phase 2: Database & State Management 🚧 IN PROGRESS
+## Phase 2: State Management Infrastructure ✅ COMPLETED
 
 ### 2.1 Database Design ✅ COMPLETED
-- [x] Research database schema requirements for Proxmox resources
-- [x] Design database schema for Proxmox resources (nodes, VMs, containers, storage, tasks)
-- [x] Plan state snapshots table for historical tracking
-- [x] Design repository pattern architecture
-- [x] Set up Prisma ORM with SQLite for development (Phase 2.1.1 ✅ COMPLETED)
-- [x] Create migration system with rollback support (Phase 2.1.1 ✅ COMPLETED)
-- [x] Create comprehensive test suite for database operations (Phase 2.1.1 ✅ COMPLETED)
-- [x] Implement repository pattern with CRUD operations (Phase 2.1.2 ✅ COMPLETED)
-- [x] Add state snapshots for historical tracking (Phase 2.1.2 ✅ COMPLETED)
-- [x] Add data validation and error handling (Phase 2.1.2 ✅ COMPLETED)
+- [x] Complete database schema for all Proxmox resources
+- [x] Repository pattern with type-safe CRUD operations  
+- [x] State tracking with historical change detection
+- [x] Factory pattern with dependency injection
+- [x] Comprehensive validation and error handling
 
-**Detailed Implementation**: See [Phase 2.1 Implementation Plan](docs/phase-2.1-implementation.md)
-**Status**: Phase 2.1 (Database Design) ✅ COMPLETED - Complete database layer with repository pattern
+### 2.2 Resource Discovery ✅ COMPLETED
+- [x] 12 new Proxmox API discovery endpoints
+- [x] VM, Container, Storage, and Task monitoring
+- [x] 5 professional CLI discovery commands
+- [x] Real-time cluster resource visibility
+- [x] 25% API coverage achieved
 
-**🎉 Phase 2.1 Achievement Summary:**
-- **Database Schema**: 6 models with complete Proxmox resource representation
-- **Repository Pattern**: Type-safe CRUD operations for all resource types
-- **Data Validation**: Comprehensive input validation with custom error types
-- **State Tracking**: StateSnapshot repository for change detection and history
-- **Relationship Management**: Proper foreign key constraints and relationship queries
-- **Testing**: 9+ basic repository tests passing with real database operations
-- **Error Handling**: Custom error types (NotFoundError, ValidationError, ConflictError)
-- **Factory Pattern**: Singleton repository instances with health checks
+**🎉 Achievement**: Complete visibility into Proxmox infrastructure (kubectl get equivalent)
 
-### 2.2 State Synchronization ✅ COMPLETED
-- [x] Implement Proxmox resource discovery (12 new API endpoints)
-- [x] Create state comparison logic (StateSnapshot integration)
-- [x] Build basic sync mechanism (SyncService architecture)
-- [x] Add logging and monitoring (comprehensive CLI output)
+## Phase 2.3: Resource Management 🚧 NEXT PRIORITY (4-6 weeks)
 
-**Deliverable**: ✅ Basic state synchronization between Proxmox and database - COMPLETED
-**Achievement**: 25% API coverage, 5 new CLI commands, 16 new tests, live server validation
+**Goal**: Enable programmatic VM/Container lifecycle management
+**Target**: 45% API coverage, kubectl create/delete equivalent functionality
 
-## Phase 3: CLI Tool Development
+### 2.3.1 VM Lifecycle Operations (2-3 weeks)
+- [ ] VM Creation API (`POST /nodes/{node}/qemu`)
+- [ ] VM Start/Stop/Restart (`POST /nodes/{node}/qemu/{vmid}/status/*`)
+- [ ] VM Configuration Updates (`PUT /nodes/{node}/qemu/{vmid}/config`)
+- [ ] VM Deletion with safety checks (`DELETE /nodes/{node}/qemu/{vmid}`)
+- [ ] Enhanced CLI commands: `vm create`, `vm start`, `vm stop`, `vm delete`
 
-### 3.1 Core CLI Framework
-- [ ] Set up CLI framework (Commander.js or similar)
-- [ ] Implement basic commands structure
-- [ ] Add configuration file handling
-- [ ] Create help system and documentation
+### 2.3.2 Container Lifecycle Operations (2-3 weeks)  
+- [ ] Container Creation API (`POST /nodes/{node}/lxc`)
+- [ ] Container Start/Stop/Restart (`POST /nodes/{node}/lxc/{vmid}/status/*`)
+- [ ] Container Configuration Updates (`PUT /nodes/{node}/lxc/{vmid}/config`)
+- [ ] Container Deletion with safety checks (`DELETE /nodes/{node}/lxc/{vmid}`)
+- [ ] Enhanced CLI commands: `container create`, `container start`, `container stop`
 
-### 3.2 Resource Management Commands
-- [ ] VM management commands (create, start, stop, delete)
-- [ ] Container management commands
-- [ ] Storage management commands
-- [ ] Network management commands
-- [ ] Node management commands
+### 2.3.3 Management Infrastructure (1-2 weeks)
+- [ ] Task monitoring for all management operations
+- [ ] Confirmation prompts for destructive operations
+- [ ] Comprehensive error handling and recovery
+- [ ] Integration testing for all lifecycle operations
 
-### 3.3 State Management Commands
-- [ ] Apply configuration files
-- [ ] Show current state vs desired state
-- [ ] Sync/reconcile commands
-- [ ] Backup and restore functionality
+**Deliverable**: Can create, start, stop, and delete VMs/containers programmatically
 
-**Deliverable**: Functional CLI tool for basic Proxmox management
+## Phase 3: CLI Enhancement 🚧 PARTIALLY COMPLETE (2-3 weeks)
 
-## Phase 4: Configuration System
+**Goal**: Professional kubectl-style interface with comprehensive resource management
 
-### 4.1 Declarative Configuration
-- [ ] Design YAML/JSON schema for resources
-- [ ] Implement configuration parser
-- [ ] Add validation and schema checking
-- [ ] Create template system
+### 3.1 Enhanced Command Structure ✅ PARTIALLY COMPLETE
+- [x] Discovery commands (discover-all, discover-vms, etc.)
+- [ ] Management commands (create, start, stop, delete)
+- [ ] Configuration file handling (`-f config.yaml`)
+- [ ] Resource filtering and selection (`--selector`, `--field-selector`)
 
-### 4.2 State Reconciliation Engine
-- [ ] Implement desired state calculations
-- [ ] Build reconciliation loop
-- [ ] Add conflict resolution
-- [ ] Implement rollback mechanism
+### 3.2 Advanced CLI Features
+- [ ] Output formatting (JSON, YAML, table formats)
+- [ ] Interactive prompts and confirmations
+- [ ] Batch operations and bulk management
+- [ ] Progress indicators for long-running operations
 
-**Deliverable**: Declarative configuration system with state reconciliation
+**Deliverable**: Production-ready CLI matching kubectl usability
 
-## Phase 5: Web Application
+## Phase 4: Declarative Configuration System ⏳ CRITICAL (6-8 weeks)
 
-### 5.1 Backend API
-- [ ] Design REST API endpoints
-- [ ] Implement authentication and authorization
-- [ ] Add real-time updates (WebSockets/SSE)
-- [ ] Create API documentation
+**Goal**: YAML-based infrastructure as code with validation
+**Target**: Core declarative management functionality
 
-### 5.2 Frontend Development
-- [ ] Set up React application
-- [ ] Create dashboard components
-- [ ] Implement resource management views
-- [ ] Add configuration editor
-- [ ] Build monitoring and logging views
+### 4.1 Configuration Engine (3-4 weeks)
+```yaml
+# Target configuration format
+apiVersion: proxmox.io/v1
+kind: VirtualMachine
+metadata:
+  name: web-server
+  namespace: production
+spec:
+  node: pve-node1
+  cpu: { cores: 4, sockets: 1 }
+  memory: 8192
+  disks: [{ storage: local-lvm, size: 50G }]
+  template: debian-12-template
+```
 
-**Deliverable**: Web-based management interface
+- [ ] YAML/JSON configuration parser and validator
+- [ ] Resource specification schemas (VM, Container, Storage)
+- [ ] Configuration file validation and error reporting
+- [ ] Multi-resource file support
 
-## Phase 6: MCP Server Integration
+### 4.2 Apply/Delete Operations (2-3 weeks)
+- [ ] `proxmox-cli apply -f infrastructure.yaml` - Create/update resources
+- [ ] `proxmox-cli delete -f infrastructure.yaml` - Remove resources  
+- [ ] `proxmox-cli get -f infrastructure.yaml` - Show current state
+- [ ] Dry-run mode for testing configurations
 
-### 6.1 MCP Protocol Implementation
-- [ ] Study MCP specification
-- [ ] Implement MCP server protocol
-- [ ] Create resource tools/functions
-- [ ] Add natural language command parsing
+### 4.3 State Diffing (1-2 weeks)
+- [ ] `proxmox-cli diff -f infrastructure.yaml` - Show configuration changes
+- [ ] `proxmox-cli validate -f infrastructure.yaml` - Validate without applying
+- [ ] `proxmox-cli plan -f infrastructure.yaml` - Show execution plan
 
-### 6.2 AI Integration Features
-- [ ] Natural language to API translation
-- [ ] Context-aware suggestions
-- [ ] Automated troubleshooting
-- [ ] Resource optimization recommendations
+**Deliverable**: Can manage infrastructure using YAML configurations
 
-**Deliverable**: MCP server for AI-powered Proxmox management
+## Phase 4.2: State Reconciliation Engine ⏳ CRITICAL (4-6 weeks)
 
-## Phase 7: Advanced Features
+**Goal**: Continuous state synchronization and drift detection
+**Target**: Kubernetes controller equivalent functionality
 
-### 7.1 Monitoring & Observability
-- [ ] Resource usage monitoring
-- [ ] Performance metrics collection
-- [ ] Alert system
-- [ ] Logging and audit trails
+### 4.2.1 Reconciliation Core (2-3 weeks)
+```typescript
+class ReconciliationEngine {
+  async reconcile(configPath: string): Promise<ReconciliationResult>
+  async startReconciliationLoop(): Promise<void>
+  async detectDrift(): Promise<DriftReport>
+}
+```
 
-### 7.2 Automation & Workflows
-- [ ] Scheduled operations
-- [ ] Backup automation
-- [ ] Auto-scaling rules
-- [ ] Workflow engine
+- [ ] State comparison and diff calculation engine
+- [ ] Change execution planning with dependency resolution
+- [ ] Reconciliation result reporting and logging
+- [ ] Error recovery and rollback mechanisms
 
-**Deliverable**: Production-ready system with monitoring and automation
+### 4.2.2 Continuous Sync (2-3 weeks)
+- [ ] Background reconciliation daemon
+- [ ] Drift detection and alerting system
+- [ ] Automatic correction capabilities  
+- [ ] Conflict resolution strategies
+- [ ] Health checking and validation
 
-## Phase 8: Testing & Documentation
+**Deliverable**: Infrastructure automatically maintained in desired state
 
-### 8.1 Testing Suite
-- [ ] Unit tests for all components
-- [ ] Integration tests
-- [ ] End-to-end testing
-- [ ] Performance testing
+## Phase 5: Template System (Helm Parity) ⏳ ADVANCED (6-8 weeks)
 
-### 8.2 Documentation
-- [ ] API documentation
-- [ ] User guides
-- [ ] Configuration examples
-- [ ] Troubleshooting guides
+**Goal**: Chart-based deployments with templating and values
+**Target**: Full Helm equivalent functionality
 
-**Deliverable**: Fully tested and documented system
+### 5.1 Template Engine (3-4 weeks)
+```yaml
+# templates/vm.yaml
+apiVersion: proxmox.io/v1
+kind: VirtualMachine
+metadata:
+  name: {{ .Values.name }}
+spec:
+  cpu: { cores: {{ .Values.resources.cpu }} }
+  memory: {{ .Values.resources.memory }}
+```
+
+- [ ] Helm-compatible template syntax and functions
+- [ ] Values file processing and override support
+- [ ] Conditional logic, loops, and template functions
+- [ ] Template validation and debugging tools
+
+### 5.2 Chart Management (2-3 weeks)
+```bash
+proxmox-cli create my-chart
+proxmox-cli install my-app ./charts/web-app
+proxmox-cli upgrade my-app ./charts/web-app
+proxmox-cli rollback my-app 1
+```
+
+- [ ] Chart creation and scaffolding
+- [ ] Chart packaging and versioning
+- [ ] Release management with history
+- [ ] Rollback and recovery capabilities
+
+### 5.3 Repository System (1-2 weeks)
+- [ ] Chart repository management
+- [ ] Dependency resolution between charts
+- [ ] Chart testing and validation framework
+- [ ] Documentation and best practices
+
+**Deliverable**: Full Helm-style template-based deployments
+
+## Phase 6: Web Dashboard ⏳ FUTURE (6-8 weeks)
+
+**Goal**: Visual interface for declarative management
+
+### 6.1 Backend API
+- [ ] REST API for all CLI operations
+- [ ] WebSocket support for real-time updates
+- [ ] Authentication and authorization
+- [ ] API documentation and testing
+
+### 6.2 React Frontend
+- [ ] Resource visualization and management
+- [ ] Configuration editor with validation
+- [ ] Template/chart management interface
+- [ ] Real-time monitoring dashboard
+
+**Deliverable**: Web-based declarative management interface
+
+## Phase 7: MCP Integration ⏳ FUTURE (4-6 weeks)
+
+**Goal**: AI-powered natural language operations
+
+### 7.1 MCP Server Implementation
+- [ ] Natural language to configuration translation
+- [ ] AI-powered troubleshooting and optimization
+- [ ] Context-aware resource recommendations
+- [ ] Automated documentation generation
+
+**Deliverable**: AI-enhanced infrastructure management
 
 ## Technology Stack Decisions
 
@@ -247,18 +321,34 @@ The system will maintain complete Proxmox server state in a database and provide
 4. **Set up database with basic schema**
 5. **Build minimal CLI with connection testing**
 
-## Success Metrics
+## Success Metrics (Kubernetes/Helm Parity Goals)
 
-- [x] Successfully connect to Proxmox server ✅
-- [x] Synchronize full server state to database (Phase 2.1) ✅
-- [x] System handles state reconciliation (Phase 2.2) ✅
-- [ ] Deploy and manage VMs via CLI (Phase 3)
-- [ ] Apply declarative configurations (Phase 4)
-- [ ] Web interface manages resources (Phase 5)
-- [ ] MCP server responds to natural language (Phase 6)
-- [ ] Production deployment ready (Phase 8)
+### ✅ Foundation Milestones (COMPLETED)
+- [x] **Successfully connect to Proxmox server** - Basic API connectivity ✅
+- [x] **Complete resource discovery** - kubectl get equivalent functionality ✅  
+- [x] **State tracking and history** - Database foundation with change detection ✅
 
-**Current Progress**: 2.5/8 major milestones completed (31%)
+### 🚧 Declarative Management Milestones (IN PROGRESS)
+- [ ] **Resource lifecycle management** - kubectl create/delete equivalent (Phase 2.3)
+- [ ] **Declarative configuration** - kubectl apply -f config.yaml (Phase 4.1)
+- [ ] **State reconciliation** - Kubernetes controller equivalent (Phase 4.2)
+- [ ] **Template-based deployments** - Helm install/upgrade equivalent (Phase 5)
+
+### ⏳ Advanced Milestones (FUTURE)
+- [ ] **Web dashboard for declarative management** - Visual kubectl/Helm interface (Phase 6)
+- [ ] **AI-powered infrastructure management** - Natural language operations (Phase 7)
+
+### 📊 **Current Progress Assessment**
+- **Foundation Complete**: 3/3 milestones (100%) ✅
+- **Declarative Management**: 0/4 milestones (0%) 🚧
+- **Advanced Features**: 0/2 milestones (0%) ⏳
+- **Overall Kubernetes/Helm Parity**: 3/9 milestones (33%)
+
+### 🎯 **Next Critical Milestone**
+**Phase 2.3: Resource Management** - Enable programmatic VM/Container CRUD operations
+- Target: Complete kubectl create/delete equivalent functionality
+- Timeline: 4-6 weeks
+- Impact: Unlocks path to declarative configuration system
 
 ---
 
