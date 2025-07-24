@@ -5,7 +5,20 @@
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import https from 'https';
-import { ProxmoxConfig, ProxmoxResponse, ConnectionResult, VersionInfo, NodeInfo } from '../types';
+import { 
+  ProxmoxConfig, 
+  ProxmoxResponse, 
+  ConnectionResult, 
+  VersionInfo, 
+  NodeInfo,
+  VMInfo,
+  VMConfig,
+  ContainerInfo,
+  ContainerConfig,
+  StorageInfo,
+  StorageContent,
+  TaskInfo
+} from '../types';
 
 export class ProxmoxClient {
   private config: ProxmoxConfig;
@@ -184,6 +197,185 @@ export class ProxmoxClient {
     }
     
     return new Error(`${context}: ${error.message || 'Unknown error'}`);
+  }
+
+  // ===== VM DISCOVERY METHODS =====
+
+  /**
+   * Get list of VMs on a specific node
+   */
+  async getVMs(node: string): Promise<VMInfo[]> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<VMInfo[]>>(`/nodes/${node}/qemu`);
+      const vms = this.extractData(response.data);
+      
+      // Add node information to each VM
+      return vms.map(vm => ({ ...vm, node }));
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get VMs for node ${node}`);
+    }
+  }
+
+  /**
+   * Get current status of a specific VM
+   */
+  async getVMStatus(node: string, vmid: number): Promise<VMInfo> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<VMInfo>>(`/nodes/${node}/qemu/${vmid}/status/current`);
+      const vm = this.extractData(response.data);
+      
+      // Ensure node information is included
+      return { ...vm, node, vmid };
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get status for VM ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Get configuration of a specific VM
+   */
+  async getVMConfig(node: string, vmid: number): Promise<VMConfig> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<VMConfig>>(`/nodes/${node}/qemu/${vmid}/config`);
+      const config = this.extractData(response.data);
+      
+      // Ensure vmid is included
+      return { ...config, vmid };
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get config for VM ${vmid} on node ${node}`);
+    }
+  }
+
+  // ===== CONTAINER DISCOVERY METHODS =====
+
+  /**
+   * Get list of containers on a specific node
+   */
+  async getContainers(node: string): Promise<ContainerInfo[]> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<ContainerInfo[]>>(`/nodes/${node}/lxc`);
+      const containers = this.extractData(response.data);
+      
+      // Add node information to each container
+      return containers.map(container => ({ ...container, node }));
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get containers for node ${node}`);
+    }
+  }
+
+  /**
+   * Get current status of a specific container
+   */
+  async getContainerStatus(node: string, vmid: number): Promise<ContainerInfo> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<ContainerInfo>>(`/nodes/${node}/lxc/${vmid}/status/current`);
+      const container = this.extractData(response.data);
+      
+      // Ensure node information is included
+      return { ...container, node, vmid };
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get status for container ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Get configuration of a specific container
+   */
+  async getContainerConfig(node: string, vmid: number): Promise<ContainerConfig> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<ContainerConfig>>(`/nodes/${node}/lxc/${vmid}/config`);
+      const config = this.extractData(response.data);
+      
+      // Ensure vmid is included
+      return { ...config, vmid };
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get config for container ${vmid} on node ${node}`);
+    }
+  }
+
+  // ===== STORAGE DISCOVERY METHODS =====
+
+  /**
+   * Get list of all storage pools in the cluster
+   */
+  async getStoragePools(): Promise<StorageInfo[]> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<StorageInfo[]>>('/storage');
+      return this.extractData(response.data);
+    } catch (error) {
+      throw this.handleApiError(error, 'Failed to get storage pools');
+    }
+  }
+
+  /**
+   * Get storage accessible from a specific node
+   */
+  async getNodeStorage(node: string): Promise<StorageInfo[]> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<StorageInfo[]>>(`/nodes/${node}/storage`);
+      return this.extractData(response.data);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get storage for node ${node}`);
+    }
+  }
+
+  /**
+   * Get content of a specific storage pool
+   */
+  async getStorageContent(node: string, storage: string): Promise<StorageContent[]> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<StorageContent[]>>(`/nodes/${node}/storage/${storage}/content`);
+      return this.extractData(response.data);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get content for storage ${storage} on node ${node}`);
+    }
+  }
+
+  // ===== TASK MONITORING METHODS =====
+
+  /**
+   * Get list of tasks (running and recent) on a specific node
+   */
+  async getTasks(node: string): Promise<TaskInfo[]> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<TaskInfo[]>>(`/nodes/${node}/tasks`);
+      const tasks = this.extractData(response.data);
+      
+      // Ensure node information is included
+      return tasks.map(task => ({ ...task, node }));
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get tasks for node ${node}`);
+    }
+  }
+
+  /**
+   * Get status of a specific task
+   */
+  async getTaskStatus(node: string, upid: string): Promise<TaskInfo> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<TaskInfo>>(`/nodes/${node}/tasks/${upid}/status`);
+      const task = this.extractData(response.data);
+      
+      // Ensure node and upid information is included
+      return { ...task, node, upid };
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get status for task ${upid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Get execution log of a specific task
+   */
+  async getTaskLog(node: string, upid: string): Promise<string[]> {
+    try {
+      const response = await this.httpClient.get<ProxmoxResponse<Array<{ n: number; t: string }>>>(`/nodes/${node}/tasks/${upid}/log`);
+      const logEntries = this.extractData(response.data);
+      
+      // Extract just the text content from log entries
+      return logEntries.map(entry => entry.t);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to get log for task ${upid} on node ${node}`);
+    }
   }
 
   /**

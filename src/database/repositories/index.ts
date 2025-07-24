@@ -144,3 +144,15 @@ export const containerRepository = RepositoryFactory.getContainerRepository();
 export const storageRepository = RepositoryFactory.getStorageRepository();
 export const taskRepository = RepositoryFactory.getTaskRepository();
 export const stateSnapshotRepository = RepositoryFactory.getStateSnapshotRepository();
+
+// Convenience function to create all repositories
+export async function createRepositories() {
+  return {
+    nodeRepo: RepositoryFactory.getNodeRepository(),
+    vmRepo: RepositoryFactory.getVMRepository(),
+    containerRepo: RepositoryFactory.getContainerRepository(),
+    storageRepo: RepositoryFactory.getStorageRepository(),
+    taskRepo: RepositoryFactory.getTaskRepository(),
+    stateSnapshotRepo: RepositoryFactory.getStateSnapshotRepository()
+  };
+}

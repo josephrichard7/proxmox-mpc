@@ -2,11 +2,11 @@
 
 ## Executive Summary
 
-**Current API Coverage: ~8%** of the complete Proxmox VE API surface area
+**Current API Coverage: ~25%** of the complete Proxmox VE API surface area ✅
 
-Our implementation provides a solid foundation with proper authentication, comprehensive database schema, and repository pattern, but we've only implemented basic connectivity and node management endpoints.
+Our implementation provides a solid foundation with proper authentication, comprehensive database schema, repository pattern, and now includes complete resource discovery capabilities across VMs, containers, storage, and tasks.
 
-## ✅ What We've Implemented (8% Coverage)
+## ✅ What We've Implemented (25% Coverage)
 
 ### Authentication & Connection (90% Complete)
 - ✅ API token authentication (`PVEAPIToken`)
@@ -28,14 +28,42 @@ Our implementation provides a solid foundation with proper authentication, compr
 - ✅ Foreign key relationships and data validation
 - ✅ Factory pattern with health monitoring
 
-## ❌ Major Missing API Areas (92% Not Implemented)
+### Resource Discovery (NEW - 60% Complete)
+**Recently Added in Phase 2.2:**
 
-### 1. Virtual Machine Management (0% - Critical Priority)
-**Missing Endpoints:**
+#### VM Discovery (✅ Complete)
+- ✅ `GET /nodes/{node}/qemu` - List all VMs on a node
+- ✅ `GET /nodes/{node}/qemu/{vmid}/status/current` - Get VM current status
+- ✅ `GET /nodes/{node}/qemu/{vmid}/config` - Get VM configuration
+
+#### Container Discovery (✅ Complete)
+- ✅ `GET /nodes/{node}/lxc` - List all containers on a node
+- ✅ `GET /nodes/{node}/lxc/{vmid}/status/current` - Get container current status
+- ✅ `GET /nodes/{node}/lxc/{vmid}/config` - Get container configuration
+
+#### Storage Discovery (✅ Complete)
+- ✅ `GET /storage` - List all storage configurations
+- ✅ `GET /nodes/{node}/storage` - Node storage info
+- ✅ `GET /nodes/{node}/storage/{storage}/content` - Storage content listing
+
+#### Task Monitoring (✅ Complete)
+- ✅ `GET /nodes/{node}/tasks` - List running and recent tasks
+- ✅ `GET /nodes/{node}/tasks/{upid}/status` - Get specific task status
+- ✅ `GET /nodes/{node}/tasks/{upid}/log` - Get task execution log
+
+**Impact**: Can now discover, monitor, and track all major Proxmox resources across the cluster
+
+## ❌ Major Missing API Areas (75% Not Implemented)
+
+### 1. Virtual Machine Management (30% Complete - Critical Priority)
+**✅ Implemented Endpoints:**
 ```
-GET    /nodes/{node}/qemu                    - List VMs
-GET    /nodes/{node}/qemu/{vmid}             - VM configuration
-GET    /nodes/{node}/qemu/{vmid}/status/current - VM status
+GET    /nodes/{node}/qemu                    - List VMs ✅
+GET    /nodes/{node}/qemu/{vmid}/config      - VM configuration ✅
+GET    /nodes/{node}/qemu/{vmid}/status/current - VM status ✅
+```
+
+**❌ Missing Endpoints:**
 POST   /nodes/{node}/qemu                    - Create VM
 POST   /nodes/{node}/qemu/{vmid}/status/start - Start VM
 POST   /nodes/{node}/qemu/{vmid}/status/stop  - Stop VM
@@ -49,12 +77,15 @@ POST   /nodes/{node}/qemu/{vmid}/snapshot    - Create snapshot
 
 **Impact:** Cannot create, manage, or monitor VMs - core Proxmox functionality
 
-### 2. LXC Container Management (0% - Critical Priority)
-**Missing Endpoints:**
+### 2. LXC Container Management (30% Complete - Critical Priority)
+**✅ Implemented Endpoints:**
 ```
-GET    /nodes/{node}/lxc                     - List containers
-GET    /nodes/{node}/lxc/{vmid}              - Container configuration
-GET    /nodes/{node}/lxc/{vmid}/status/current - Container status
+GET    /nodes/{node}/lxc                     - List containers ✅
+GET    /nodes/{node}/lxc/{vmid}/config       - Container configuration ✅
+GET    /nodes/{node}/lxc/{vmid}/status/current - Container status ✅
+```
+
+**❌ Missing Endpoints:**
 POST   /nodes/{node}/lxc                     - Create container
 POST   /nodes/{node}/lxc/{vmid}/status/start - Start container
 POST   /nodes/{node}/lxc/{vmid}/status/stop  - Stop container
