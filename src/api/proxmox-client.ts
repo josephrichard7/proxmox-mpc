@@ -4,7 +4,7 @@
  */
 
 import axios, { AxiosInstance, AxiosError } from 'axios';
-import https from 'https';
+import * as https from 'https';
 import { 
   ProxmoxConfig, 
   ProxmoxResponse, 
@@ -17,8 +17,16 @@ import {
   ContainerConfig,
   StorageInfo,
   StorageContent,
-  TaskInfo
+  TaskInfo,
+  VMCreateConfig,
+  VMCreationResult,
+  VMDeleteOptions,
+  ContainerCreateConfig,
+  ContainerCreationResult,
+  ContainerDeleteOptions
 } from '../types';
+// Note: Database imports commented out to avoid circular dependency issues during development
+// import { vmRepository, taskRepository, type CreateVMInput, type CreateTaskInput } from '../database/repositories';
 
 export class ProxmoxClient {
   private config: ProxmoxConfig;
@@ -246,6 +254,223 @@ export class ProxmoxClient {
     }
   }
 
+  // ===== VM MANAGEMENT METHODS =====
+
+  /**
+   * Create a new VM
+   */
+  async createVM(node: string, config: VMCreateConfig): Promise<VMCreationResult> {
+    try {
+      // Validate required parameters
+      if (!config.vmid || config.vmid <= 0) {
+        throw new Error('VM ID must be a positive integer');
+      }
+
+      // Prepare the request data
+      const requestData: Record<string, any> = {
+        ...config
+      };
+
+      // Remove undefined values to avoid API issues
+      Object.keys(requestData).forEach(key => {
+        if (requestData[key] === undefined) {
+          delete requestData[key];
+        }
+      });
+
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/qemu`, requestData);
+      const upid = this.extractData(response.data);
+      
+      // Get task info
+      const task = await this.getTaskStatus(node, upid);
+      
+      // TODO: Re-enable database integration once repository imports are fixed
+      // Save task to database
+      // try {
+      //   await taskRepository.create({
+      //     upid: task.upid,
+      //     nodeId: node,
+      //     type: task.type,
+      //     status: task.status,
+      //     user: task.user,
+      //     startTime: new Date(task.starttime * 1000),
+      //     endTime: task.endtime ? new Date(task.endtime * 1000) : undefined,
+      //     exitStatus: task.exitstatus,
+      //     resourceId: config.vmid.toString(),
+      //     pid: task.pid
+      //   });
+      // } catch (dbError) {
+      //   console.warn('Failed to save task to database:', dbError);
+      //   // Continue execution - database error shouldn't fail VM creation
+      // }
+
+      // Save VM to database (initial state)
+      // try {
+      //   const vmData: CreateVMInput = {
+      //     id: config.vmid,
+      //     nodeId: node,
+      //     name: config.name,
+      //     status: 'stopped', // Initial status for new VMs
+      //     template: false,
+      //     cpuCores: config.cores,
+      //     memoryBytes: config.memory ? BigInt(config.memory * 1024 * 1024) : undefined // Convert MB to bytes
+      //   };
+
+      //   await vmRepository.create(vmData);
+      // } catch (dbError) {
+      //   console.warn('Failed to save VM to database:', dbError);
+      //   // Continue execution - database error shouldn't fail VM creation
+      // }
+      
+      return {
+        upid,
+        vmid: config.vmid,
+        node,
+        task
+      };
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to create VM ${config.vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Wait for VM creation to complete
+   */
+  async waitForVMCreation(node: string, vmid: number, timeoutMs: number = 300000): Promise<VMInfo> {
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < timeoutMs) {
+      try {
+        // Check if VM exists and get its status
+        const vm = await this.getVMStatus(node, vmid);
+        if (vm) {
+          return vm;
+        }
+      } catch (error) {
+        // VM might not exist yet, continue waiting
+      }
+      
+      // Wait 2 seconds before next check
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    throw new Error(`Timeout waiting for VM ${vmid} creation on node ${node}`);
+  }
+
+  /**
+   * Start a VM
+   */
+  async startVM(node: string, vmid: number): Promise<TaskInfo> {
+    try {
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/qemu/${vmid}/status/start`);
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to start VM ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Stop a VM (force stop)
+   */
+  async stopVM(node: string, vmid: number, force: boolean = false): Promise<TaskInfo> {
+    try {
+      const requestData = force ? { forceStop: 1 } : {};
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/qemu/${vmid}/status/stop`, requestData);
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to stop VM ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Shutdown a VM gracefully
+   */
+  async shutdownVM(node: string, vmid: number): Promise<TaskInfo> {
+    try {
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/qemu/${vmid}/status/shutdown`);
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to shutdown VM ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Reboot a VM
+   */
+  async rebootVM(node: string, vmid: number): Promise<TaskInfo> {
+    try {
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/qemu/${vmid}/status/reboot`);
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to reboot VM ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Delete a VM
+   */
+  async deleteVM(node: string, vmid: number, options?: VMDeleteOptions): Promise<TaskInfo> {
+    try {
+      const requestData: Record<string, any> = {
+        'skip-lock': options?.skipLock ? 1 : undefined,
+        force: options?.force ? 1 : undefined,
+        'destroy-unreferenced-disks': options?.destroyUnreferencedDisks ? 1 : undefined
+      };
+
+      // Remove undefined values
+      Object.keys(requestData).forEach(key => {
+        if (requestData[key] === undefined) {
+          delete requestData[key];
+        }
+      });
+
+      const response = await this.httpClient.delete<ProxmoxResponse<string>>(`/nodes/${node}/qemu/${vmid}`, {
+        data: requestData
+      });
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to delete VM ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Wait for VM to reach a specific status
+   */
+  async waitForVMStatus(node: string, vmid: number, targetStatus: string, timeoutMs: number = 120000): Promise<VMInfo> {
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < timeoutMs) {
+      try {
+        const vm = await this.getVMStatus(node, vmid);
+        if (vm.status === targetStatus) {
+          return vm;
+        }
+      } catch (error) {
+        // VM might not exist or might be transitioning
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (targetStatus === 'deleted' && errorMessage.includes('500')) {
+          // VM is likely deleted
+          throw new Error(`VM ${vmid} has been deleted`);
+        }
+      }
+      
+      // Wait 2 seconds before next check
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    throw new Error(`Timeout waiting for VM ${vmid} to reach status ${targetStatus} on node ${node}`);
+  }
+
   // ===== CONTAINER DISCOVERY METHODS =====
 
   /**
@@ -291,6 +516,227 @@ export class ProxmoxClient {
     } catch (error) {
       throw this.handleApiError(error, `Failed to get config for container ${vmid} on node ${node}`);
     }
+  }
+
+  // ===== CONTAINER MANAGEMENT METHODS =====
+
+  /**
+   * Create a new container
+   */
+  async createContainer(node: string, config: ContainerCreateConfig): Promise<ContainerCreationResult> {
+    try {
+      // Validate required parameters
+      if (!config.vmid || config.vmid <= 0) {
+        throw new Error('Container ID must be a positive integer');
+      }
+
+      if (!config.ostemplate) {
+        throw new Error('ostemplate is required for container creation');
+      }
+
+      // Prepare the request data
+      const requestData: Record<string, any> = {
+        ...config
+      };
+
+      // Remove undefined values to avoid API issues
+      Object.keys(requestData).forEach(key => {
+        if (requestData[key] === undefined) {
+          delete requestData[key];
+        }
+      });
+
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/lxc`, requestData);
+      const upid = this.extractData(response.data);
+      
+      // Get task info
+      const task = await this.getTaskStatus(node, upid);
+      
+      // TODO: Re-enable database integration once repository imports are fixed
+      // Save task to database
+      // try {
+      //   await taskRepository.create({
+      //     upid: task.upid,
+      //     nodeId: node,
+      //     type: task.type,
+      //     status: task.status,
+      //     user: task.user,
+      //     startTime: new Date(task.starttime * 1000),
+      //     endTime: task.endtime ? new Date(task.endtime * 1000) : undefined,
+      //     exitStatus: task.exitstatus,
+      //     resourceId: config.vmid.toString(),
+      //     pid: task.pid
+      //   });
+      // } catch (dbError) {
+      //   console.warn('Failed to save task to database:', dbError);
+      //   // Continue execution - database error shouldn't fail container creation
+      // }
+
+      // Save container to database (initial state)
+      // try {
+      //   const containerData: CreateContainerInput = {
+      //     id: config.vmid,
+      //     nodeId: node,
+      //     hostname: config.hostname,
+      //     status: 'stopped', // Initial status for new containers
+      //     template: false,
+      //     cpuCores: config.cores,
+      //     memoryBytes: config.memory ? BigInt(config.memory * 1024 * 1024) : undefined // Convert MB to bytes
+      //   };
+
+      //   await containerRepository.create(containerData);
+      // } catch (dbError) {
+      //   console.warn('Failed to save container to database:', dbError);
+      //   // Continue execution - database error shouldn't fail container creation
+      // }
+      
+      return {
+        upid,
+        vmid: config.vmid,
+        node,
+        task
+      };
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to create container ${config.vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Wait for container creation to complete
+   */
+  async waitForContainerCreation(node: string, vmid: number, timeoutMs: number = 300000): Promise<ContainerInfo> {
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < timeoutMs) {
+      try {
+        // Check if container exists and get its status
+        const container = await this.getContainerStatus(node, vmid);
+        if (container) {
+          return container;
+        }
+      } catch (error) {
+        // Container might not exist yet, continue waiting
+      }
+      
+      // Wait 2 seconds before next check
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    throw new Error(`Timeout waiting for container ${vmid} creation on node ${node}`);
+  }
+
+  /**
+   * Start a container
+   */
+  async startContainer(node: string, vmid: number): Promise<TaskInfo> {
+    try {
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/lxc/${vmid}/status/start`);
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to start container ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Stop a container (force stop)
+   */
+  async stopContainer(node: string, vmid: number, force: boolean = false): Promise<TaskInfo> {
+    try {
+      const requestData = force ? { forceStop: 1 } : {};
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/lxc/${vmid}/status/stop`, requestData);
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to stop container ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Shutdown a container gracefully
+   */
+  async shutdownContainer(node: string, vmid: number): Promise<TaskInfo> {
+    try {
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/lxc/${vmid}/status/shutdown`);
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to shutdown container ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Reboot a container
+   */
+  async rebootContainer(node: string, vmid: number): Promise<TaskInfo> {
+    try {
+      const response = await this.httpClient.post<ProxmoxResponse<string>>(`/nodes/${node}/lxc/${vmid}/status/reboot`);
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to reboot container ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Delete a container
+   */
+  async deleteContainer(node: string, vmid: number, options?: ContainerDeleteOptions): Promise<TaskInfo> {
+    try {
+      const requestData: Record<string, any> = {
+        'skip-lock': options?.skipLock ? 1 : undefined,
+        force: options?.force ? 1 : undefined,
+        purge: options?.purge ? 1 : undefined
+      };
+
+      // Remove undefined values
+      Object.keys(requestData).forEach(key => {
+        if (requestData[key] === undefined) {
+          delete requestData[key];
+        }
+      });
+
+      const response = await this.httpClient.delete<ProxmoxResponse<string>>(`/nodes/${node}/lxc/${vmid}`, {
+        data: requestData
+      });
+      const upid = this.extractData(response.data);
+      
+      return await this.getTaskStatus(node, upid);
+    } catch (error) {
+      throw this.handleApiError(error, `Failed to delete container ${vmid} on node ${node}`);
+    }
+  }
+
+  /**
+   * Wait for container to reach a specific status
+   */
+  async waitForContainerStatus(node: string, vmid: number, targetStatus: string, timeoutMs: number = 120000): Promise<ContainerInfo> {
+    const startTime = Date.now();
+    
+    while (Date.now() - startTime < timeoutMs) {
+      try {
+        const container = await this.getContainerStatus(node, vmid);
+        if (container.status === targetStatus) {
+          return container;
+        }
+      } catch (error) {
+        // Container might not exist or might be transitioning
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        if (targetStatus === 'deleted' && errorMessage.includes('500')) {
+          // Container is likely deleted
+          throw new Error(`Container ${vmid} has been deleted`);
+        }
+      }
+      
+      // Wait 2 seconds before next check
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    throw new Error(`Timeout waiting for container ${vmid} to reach status ${targetStatus} on node ${node}`);
   }
 
   // ===== STORAGE DISCOVERY METHODS =====
