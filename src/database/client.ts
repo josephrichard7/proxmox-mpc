@@ -4,7 +4,7 @@
 
 import { PrismaClient } from '@prisma/client';
 
-class DatabaseClient {
+export class DatabaseClient {
   private prisma: PrismaClient;
   private static instance: DatabaseClient;
 

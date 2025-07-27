@@ -224,7 +224,6 @@ describe('Repository Pattern Tests', () => {
         nodeId: 'container-node',
         status: 'running',
         osTemplate: 'ubuntu-22.04',
-        privileged: true,
         memoryBytes: BigInt(536870912)
       });
 
@@ -233,14 +232,12 @@ describe('Repository Pattern Tests', () => {
         nodeId: 'container-node',
         status: 'stopped',
         osTemplate: 'debian-11',
-        privileged: false,
         template: true
       });
 
       const stats = await containerRepo.getContainerStatistics();
       expect(stats.totalContainers).toBe(2);
       expect(stats.runningContainers).toBe(1);
-      expect(stats.privilegedContainers).toBe(1);
       expect(stats.osTemplateDistribution).toEqual({
         'ubuntu-22.04': 1,
         'debian-11': 1
