@@ -1,40 +1,62 @@
-# proxmox-mpc
+# Proxmox-MPC: Interactive Infrastructure Console
 
-A console tool, web application, and Model Context Protocol (MCP) server to help manage and create resources in Proxmox home lab servers with natural language interaction and declarative state management.
+**Proxmox-MPC** is an **Interactive Infrastructure-as-Code Console** for Proxmox Virtual Environment, providing a **Claude Code-like experience** for infrastructure operations. It transforms infrastructure management into a conversational, project-based workflow that automatically generates and maintains Infrastructure-as-Code.
 
-## Description
+## 🎯 Core Concept
 
-This application provides a comprehensive solution for managing Proxmox Virtual Environment (PVE) infrastructure through multiple interfaces:
+```bash
+$ proxmox-mpc                           # Launch interactive console
+🔧 Proxmox Infrastructure Console v1.0.0
+Welcome! Type /help for commands or /init to get started.
 
-- **Console Tool**: CLI for direct server management
-- **Web Application**: Browser-based interface for visual management  
-- **MCP Server**: Model Context Protocol integration for AI-powered interactions
-- **State Management**: Kubernetes/Helm-style declarative configuration management
-- **Natural Language**: Interact with your Proxmox server using natural language commands
+proxmox-mpc> /init                      # Initialize project workspace
+🏗️  Enter Proxmox server details...
+✅ Project initialized!
 
-The system maintains the full state of the Proxmox server in a database and works like Helm and Kubernetes, continuously reconciling the actual infrastructure state with the desired state defined in configuration files.
+proxmox-mpc> /sync                      # Import existing infrastructure
+🔄 Discovered 12 VMs, 5 containers
+🏗️  Generated terraform/ and ansible/ configurations
+✅ Infrastructure imported as code!
 
-## Features
+proxmox-mpc> create vm --name web-01 --cores 2 --memory 4096
+📝 Generated terraform/vms/web-01.tf
+📝 Generated ansible/playbooks/web-01.yml
+🧪 Generated tests/vms/web-01.test.js
+✅ Ready to apply!
 
-- 🖥️ Multi-interface support (CLI, Web, MCP)
-- 🗣️ Natural language interaction with Proxmox resources
-- 📊 Complete state synchronization and management
-- 🔄 Declarative configuration with automatic reconciliation
-- 🏠 Designed for home lab environments
-- 📈 Resource monitoring and management
+proxmox-mpc> /test                      # Validate changes
+🧪 All tests passed ✅
 
-## Current Status
+proxmox-mpc> /apply                     # Deploy to server
+🚀 Applying changes...
+✅ VM web-01 created successfully!
+```
 
-**🚧 Active Development** - Phase 2.1 (Database Design) in progress
+## ✨ Key Features
 
-### ✅ Working Features
-- **Proxmox API Connection**: Test connectivity to your Proxmox server
-- **Node Management**: List cluster nodes with resource usage
-- **CLI Interface**: Command-line tools with verbose output options
+- **🎮 Interactive Console** - Claude Code-like experience with slash commands
+- **📁 Project Workspaces** - Each directory becomes a Proxmox infrastructure project
+- **🏗️ Automatic IaC Generation** - Creates Terraform + Ansible configs from existing infrastructure
+- **🧪 Test-Driven Infrastructure** - Generates and runs tests before deployment
+- **🔄 State Synchronization** - Bidirectional sync between server and local SQLite database
+- **🌍 Multi-Server Deployment** - Export configurations to replicate infrastructure
 
-### 🧪 Tested Configuration
-- **Proxmox VE**: 8.4.1 (successfully tested)
+## 🚀 Current Status
+
+**🚧 Phase 4 Development** - Interactive Console & IaC Generation
+
+### ✅ **COMPLETED** (37.5% - 3/8 phases)
+- **Foundation & Core Infrastructure** - TypeScript/Node.js project with comprehensive testing
+- **Database & State Management** - Complete state tracking with Prisma ORM  
+- **CLI Enhancement** - Professional interface with 20+ commands and safety features
+
+### 🎯 **NEXT**: Interactive Console (Phase 4 - 8-10 weeks)
+Transform into Claude Code-like interactive console with automatic Infrastructure-as-Code generation
+
+### 🧪 **Tested Configuration**
+- **Proxmox VE**: 8.4.1 (successfully tested)  
 - **Authentication**: API token authentication
+- **Testing**: 163/175 tests passing (93% success rate)
 - **SSL**: Self-signed certificate handling for homelab environments
 
 ## Getting Started
@@ -71,27 +93,38 @@ The system maintains the full state of the Proxmox server in a database and work
 
 ### Usage
 
-#### Available CLI Commands
+#### Current CLI Commands (Legacy Interface)
 
 ```bash
-# Test connection to your Proxmox server
-npm run cli test-connection
+# Connection and Discovery
+npm run cli test-connection -v            # Test Proxmox API connectivity
+npm run cli list-nodes -v                 # List cluster nodes
+npm run cli discover-vms --status running # List VMs with filtering
+npm run cli discover-containers           # List containers
+npm run cli discover-storage              # List storage pools
+npm run cli discover-all                  # Complete infrastructure overview
 
-# Test connection with detailed output
-npm run cli test-connection -v
+# VM Management  
+npm run cli vm create --vmid 100 --name web-01 --cores 2 --memory 4096
+npm run cli vm start 100 --wait           # Start VM and wait
+npm run cli vm stop 100 --force           # Force stop VM
+npm run cli vm delete 100 --confirm       # Delete with confirmation
 
-# List cluster nodes with resource usage
-npm run cli list-nodes
+# Container Management
+npm run cli container create --vmid 200 --ostemplate ubuntu-20.04
+npm run cli container start 200 --wait    # Start container
+npm run cli container stop 200            # Stop container
 
-# List nodes with detailed information
-npm run cli list-nodes -v
+# Batch Operations
+npm run cli vm batch-start 100 101 102 --wait
+npm run cli vm batch-stop 100 101 --continue-on-error
 
-# Run all tests
-npm test
-
-# Check TypeScript compilation
-npm run typecheck
+# Development
+npm test                                   # Run all tests
+npm run typecheck                          # TypeScript compilation
 ```
+
+**🎯 Future**: Interactive console will replace these with conversational commands
 
 ### API Token Setup
 

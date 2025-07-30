@@ -4,13 +4,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Proxmox-MPC is a comprehensive management system for Proxmox Virtual Environment (PVE) with three main components:
+**Proxmox-MPC** is an **Interactive Infrastructure-as-Code Console** for Proxmox Virtual Environment, similar to Claude Code's experience. It provides a project-based workspace where infrastructure is managed through interactive commands and automatically generates Terraform/Ansible configurations.
 
-1. **Console Tool (CLI)** - Command-line interface for direct server management
-2. **Web Application** - React-based browser interface for visual management  
-3. **Model Context Protocol (MCP) Server** - AI integration for natural language interactions
+### **Core Concept: Project-Based Infrastructure Console**
 
-The system maintains complete Proxmox server state in a database and provides Kubernetes/Helm-style declarative configuration management with automatic reconciliation.
+```bash
+$ proxmox-mpc                    # Launch interactive console
+proxmox-mpc> /init              # Initialize new project workspace  
+proxmox-mpc> /sync              # Discover & sync existing infrastructure
+proxmox-mpc> create vm --name web-01  # Generate IaC files for new resources
+proxmox-mpc> /test              # Validate infrastructure changes
+proxmox-mpc> /apply             # Deploy to Proxmox server
+```
+
+### **Key Features:**
+1. **Interactive Console** - Claude Code-like experience with slash commands
+2. **Project Workspaces** - Each directory becomes a Proxmox infrastructure project
+3. **Automatic IaC Generation** - Creates Terraform + Ansible configs from existing infrastructure
+4. **Test-Driven Infrastructure** - Generates and runs tests before deployment
+5. **State Synchronization** - Bidirectional sync between server and local SQLite database
+6. **Multi-Server Deployment** - Export configurations to replicate infrastructure
 
 ## Current Implementation Status
 
@@ -64,42 +77,74 @@ This project follows an 8-phase incremental development approach where each phas
 - Maintain >80% test coverage
 - Test manually with real Proxmox server before phase completion
 
-### Current Phase: Declarative Configuration System (Phase 4)
-Focus on YAML-based infrastructure as code with kubectl apply equivalent functionality.
+### Current Phase: Interactive Console & IaC Generation (Phase 4)
+Transform into Claude Code-like interactive console with automatic Infrastructure-as-Code generation.
 
 **Next Implementation Steps:**
-1. Implement YAML/JSON configuration parser and validator
-2. Create resource specification schemas (VM, Container, Storage)
-3. Implement apply/delete operations for declarative management
-4. Add state diffing and validation capabilities
+1. Build interactive console with readline and slash command support
+2. Implement project workspace initialization and structure
+3. Create Terraform/Ansible configuration generators from existing infrastructure
+4. Add test generation and validation framework
+5. Implement bidirectional sync between server, database, and IaC files
 
 ## Project Structure
 
+### **Source Code Structure**
 ```
 src/
 ├── api/              # Proxmox API client (✅ implemented)
-│   ├── proxmox-client.ts
-│   ├── config.ts
-│   └── __tests__/
-├── cli/              # Command-line interface (✅ basic commands)
-│   └── index.ts
-├── database/         # Database layer (🚧 planned)
-├── types/            # TypeScript definitions (✅ basic types)
-└── utils/            # Utility functions
-
-docs/                 # Implementation plans and API research
-├── proxmox-api-research.md      # ✅ Complete API documentation
-├── phase-1.2-implementation.md  # ✅ Phase 1.2 completed
-└── phase-2.1-implementation.md  # ✅ Phase 2.1 planning
+├── console/          # Interactive console interface (🚧 next priority)
+├── generators/       # Terraform/Ansible code generators (⏳ planned)
+├── workspace/        # Project workspace management (⏳ planned)
+├── sync/             # State synchronization engine (⏳ planned)
+├── database/         # Database layer (✅ implemented)
+├── types/            # TypeScript definitions (✅ implemented)
+└── utils/            # Utility functions (✅ implemented)
 ```
 
-## State Management Concept
+### **Generated Project Workspace Structure**
+```
+my-proxmox-project/          # User project directory
+├── .proxmox/
+│   ├── config.yml           # Server connection details
+│   ├── state.db            # Local SQLite database
+│   └── history/            # Infrastructure state snapshots
+├── terraform/
+│   ├── main.tf             # Generated main configuration
+│   ├── nodes.tf            # Node resources
+│   ├── vms/                # Individual VM configurations
+│   └── containers/         # Individual container configurations
+├── ansible/
+│   ├── inventory.yml       # Generated inventory
+│   ├── playbooks/          # Configuration playbooks
+│   └── roles/              # Reusable roles
+├── tests/
+│   ├── infrastructure.test.js  # Generated infrastructure tests
+│   └── integration/        # Integration test suites
+└── docs/
+    └── architecture.md     # Generated documentation
+```
 
-The system will work like Helm/Kubernetes by:
-1. Reading declarative configuration files (YAML/JSON)
-2. Comparing desired state vs actual Proxmox server state
-3. Automatically reconciling differences through API calls
-4. Maintaining complete state history and audit trails
+## Interactive Console Commands
+
+### **Core Slash Commands**
+- **`/init`** - Initialize new Proxmox project workspace with configuration wizard
+- **`/sync`** - Bidirectional sync: server ↔ database ↔ IaC files
+- **`/apply`** - Deploy Terraform/Ansible changes to Proxmox server
+- **`/plan`** - Preview infrastructure changes before applying
+- **`/test`** - Run generated infrastructure tests
+- **`/status`** - Show project status, server health, and resource overview
+- **`/diff`** - Compare local state vs server state
+- **`/rollback <snapshot>`** - Revert to previous infrastructure state
+- **`/export <target-dir>`** - Export configuration for deployment to other servers
+
+### **Resource Management Commands**
+- **`create vm --name <name> [options]`** - Generate VM Terraform/Ansible configs
+- **`create container --name <name> [options]`** - Generate container configs  
+- **`update vm <id> [options]`** - Modify existing VM configuration
+- **`delete vm <id>`** - Remove VM from infrastructure (with safety prompts)
+- **`list vms [filters]`** - Show VMs with status and configuration
+- **`describe vm <id>`** - Detailed VM information and configuration
 
 ## Prerequisites
 
@@ -107,12 +152,45 @@ The system will work like Helm/Kubernetes by:
 - Node.js development environment
 - Database setup (SQLite for local development)
 
-## Configuration
+## Workflow Example
 
-The system expects:
-- `.env` file with Proxmox server connection details (see .env.example)
-- Configuration files defining desired infrastructure state (future)
-- Database connection configuration
+### **Typical Usage Flow**
+```bash
+# 1. Create new project directory
+mkdir my-datacenter && cd my-datacenter
+
+# 2. Launch interactive console
+proxmox-mpc
+
+# 3. Initialize project workspace
+proxmox-mpc> /init
+🏗️  Enter Proxmox server details...
+✅ Project initialized!
+
+# 4. Import existing infrastructure
+proxmox-mpc> /sync
+🔄 Discovered 12 VMs, 5 containers
+🏗️  Generated terraform/ and ansible/ configurations
+✅ Infrastructure imported as code!
+
+# 5. Make changes
+proxmox-mpc> create vm --name web-02 --cores 4 --memory 8192
+📝 Generated terraform/vms/web-02.tf
+📝 Generated ansible/playbooks/web-02.yml
+🧪 Generated tests/vms/web-02.test.js
+
+# 6. Test and deploy
+proxmox-mpc> /test
+🧪 All tests passed ✅
+
+proxmox-mpc> /apply
+🚀 Deploying changes...
+✅ VM web-02 created successfully!
+
+# 7. Keep in sync
+proxmox-mpc> /sync
+🔄 Updated local state database
+```
 
 ## Testing
 
