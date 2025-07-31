@@ -5,11 +5,11 @@
  * Main entry point for the Claude Code-like interactive console
  */
 
-import { SimpleInteractiveConsole } from './console/simple-repl';
+import { InteractiveConsole } from './console/repl';
 
 async function main() {
   try {
-    const console = new SimpleInteractiveConsole();
+    const console = new InteractiveConsole();
     await console.start();
   } catch (error) {
     console.error('❌ Failed to start interactive console:');
