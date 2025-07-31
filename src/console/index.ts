@@ -4,8 +4,10 @@
  */
 
 export { InteractiveConsole } from './repl';
+export { SimpleInteractiveConsole } from './simple-repl';
+export { EnhancedInteractiveConsole } from './enhanced-repl';
 export { SlashCommandRegistry } from './commands';
 export type { ConsoleSession } from './repl';
 
 // Re-export for convenience
-export default InteractiveConsole;
+export { InteractiveConsole as default };

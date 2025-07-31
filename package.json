@@ -1,10 +1,10 @@
 {
   "name": "proxmox-mpc",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A console tool, web application, and MCP server for managing Proxmox home lab servers with natural language interaction and declarative state management",
   "main": "dist/index.js",
   "bin": {
-    "proxmox-mpc": "dist/console.js"
+    "proxmox-mpc": "bin/proxmox-mpc"
   },
   "scripts": {
     "build": "tsc",

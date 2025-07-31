@@ -19,13 +19,18 @@ export class SlashCommandRegistry {
   }
 
   private registerBuiltinCommands(): void {
-    this.register('help', new HelpCommand().execute);
-    this.register('init', new InitCommand().execute);
-    this.register('status', new StatusCommand().execute);
-    this.register('exit', new ExitCommand().execute);
+    const helpCommand = new HelpCommand();
+    const initCommand = new InitCommand();
+    const statusCommand = new StatusCommand();
+    const exitCommand = new ExitCommand();
+    
+    this.register('help', helpCommand.execute.bind(helpCommand));
+    this.register('init', initCommand.execute.bind(initCommand));
+    this.register('status', statusCommand.execute.bind(statusCommand));
+    this.register('exit', exitCommand.execute.bind(exitCommand));
     
     // Aliases
-    this.register('quit', new ExitCommand().execute);
+    this.register('quit', exitCommand.execute.bind(exitCommand));
   }
 
   /**

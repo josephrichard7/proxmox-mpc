@@ -27,7 +27,7 @@ export class InitCommand {
 
     try {
       // Create workspace with interactive configuration
-      const workspace = await this.createWorkspaceInteractively();
+      const workspace = await this.createWorkspaceInteractively(session);
       
       // Update session
       session.workspace = workspace;
@@ -46,24 +46,22 @@ export class InitCommand {
     }
   }
 
-  private async createWorkspaceInteractively(): Promise<ProjectWorkspace> {
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout
-    });
+  private async createWorkspaceInteractively(session: ConsoleSession): Promise<ProjectWorkspace> {
+    console.log('📋 Please provide your Proxmox server details:\n');
 
     try {
-      console.log('📋 Please provide your Proxmox server details:\n');
+      // Use the existing readline interface from the session
+      const rl = session.rl;
+      
+      const host = await this.prompt(rl, '🌐 Proxmox host (e.g., 192.168.1.100): ');
+      const port = await this.prompt(rl, '🔌 Port [8006]: ') || '8006';
+      const username = await this.prompt(rl, '👤 Username [root@pam]: ') || 'root@pam';
+      const tokenId = await this.prompt(rl, '🔑 Token ID: ');
+      const tokenSecret = await this.promptPassword(rl, '🔐 Token Secret: ');
+      const node = await this.prompt(rl, '🖥️  Default node [pve]: ') || 'pve';
+      const skipTLS = await this.prompt(rl, '🔒 Skip TLS verification? [y/N]: ');
 
-      const host = await this.prompt(rl, '   Proxmox Host (IP or domain): ');
-      const port = await this.prompt(rl, '   Port [8006]: ') || '8006';
-      const username = await this.prompt(rl, '   Username [root@pam]: ') || 'root@pam';
-      const tokenId = await this.prompt(rl, '   API Token ID: ');
-      const tokenSecret = await this.promptPassword(rl, '   API Token Secret: ');
-      const node = await this.prompt(rl, '   Default Node: ');
-
-      console.log('\n⚙️  Optional settings:');
-      const rejectUnauthorized = await this.prompt(rl, '   Reject unauthorized SSL [n]: ') || 'n';
+      console.log('\n🔧 Creating project structure...');
 
       const config = {
         host: host.trim(),
@@ -72,23 +70,32 @@ export class InitCommand {
         tokenId: tokenId.trim(),
         tokenSecret: tokenSecret.trim(),
         node: node.trim(),
-        rejectUnauthorized: rejectUnauthorized.toLowerCase().startsWith('y')
+        rejectUnauthorized: skipTLS.toLowerCase().trim() !== 'y'
       };
 
-      // Validate required fields
-      if (!config.host || !config.tokenId || !config.tokenSecret || !config.node) {
-        throw new Error('Host, Token ID, Token Secret, and Node are required');
-      }
-
-      console.log('\n🔧 Creating project structure...');
       const workspace = await ProjectWorkspace.create(process.cwd(), config);
-
       return workspace;
 
-    } finally {
-      rl.close();
+    } catch (error) {
+      console.error('\n❌ Failed to collect configuration interactively');
+      console.log('💡 You can manually edit .proxmox/config.yml after initialization\n');
+      
+      // Fall back to basic configuration
+      const config = {
+        host: 'your-proxmox-server.local',
+        port: 8006,
+        username: 'root@pam',
+        tokenId: 'proxmox-mpc',
+        tokenSecret: 'your-token-secret',
+        node: 'pve',
+        rejectUnauthorized: false
+      };
+
+      const workspace = await ProjectWorkspace.create(process.cwd(), config);
+      return workspace;
     }
   }
+
 
   private prompt(rl: readline.Interface, question: string): Promise<string> {
     return new Promise((resolve) => {
@@ -100,14 +107,26 @@ export class InitCommand {
 
   private promptPassword(rl: readline.Interface, question: string): Promise<string> {
     return new Promise((resolve) => {
+      // Temporarily disable echo by setting raw mode
+      const stdin = process.stdin;
+      const wasRaw = stdin.isRaw;
+      
       process.stdout.write(question);
       
+      if (stdin.setRawMode) {
+        stdin.setRawMode(true);
+      }
+      
       let password = '';
+      
       const onData = (char: Buffer) => {
         const c = char.toString();
         
         if (c === '\r' || c === '\n') {
-          process.stdin.removeListener('data', onData);
+          stdin.removeListener('data', onData);
+          if (stdin.setRawMode) {
+            stdin.setRawMode(wasRaw);
+          }
           process.stdout.write('\n');
           resolve(password);
         } else if (c === '\x7f' || c === '\x08') {
@@ -118,6 +137,10 @@ export class InitCommand {
           }
         } else if (c === '\x03') {
           // Ctrl+C
+          stdin.removeListener('data', onData);
+          if (stdin.setRawMode) {
+            stdin.setRawMode(wasRaw);
+          }
           process.stdout.write('\n');
           process.exit(0);
         } else if (c >= ' ' && c <= '~') {
@@ -127,7 +150,7 @@ export class InitCommand {
         }
       };
       
-      process.stdin.on('data', onData);
+      stdin.on('data', onData);
     });
   }
 }

@@ -13,6 +13,7 @@ export interface ConsoleSession {
   client?: ProxmoxClient;
   history: string[];
   startTime: Date;
+  rl: readline.Interface;
 }
 
 export class InteractiveConsole {
@@ -32,6 +33,7 @@ export class InteractiveConsole {
     this.session = {
       history: [],
       startTime: new Date(),
+      rl: this.rl,
     };
 
     this.commandRegistry = new SlashCommandRegistry();

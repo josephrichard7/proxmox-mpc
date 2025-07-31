@@ -65,7 +65,7 @@ describe('Console Integration', () => {
 
     it('should have proxmox-mpc bin entry', () => {
       const packageJson = require('../../package.json');
-      expect(packageJson.bin['proxmox-mpc']).toBe('dist/console.js');
+      expect(packageJson.bin['proxmox-mpc']).toBe('bin/proxmox-mpc');
     });
 
     it('should have required dependencies', () => {

@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+
+/**
+ * Proxmox-MPC Global Binary
+ * Uses tsx to run TypeScript directly for development
+ */
+
+const { spawn } = require('child_process');
+const path = require('path');
+
+// Get the directory where this script is located
+const binDir = __dirname;
+const projectDir = path.dirname(binDir);
+const consolePath = path.join(projectDir, 'src', 'console.ts');
+
+// Run tsx with the console.ts file
+const tsx = spawn('tsx', [consolePath], {
+  stdio: 'inherit',
+  env: { ...process.env, NODE_PATH: projectDir }
+});
+
+tsx.on('error', (err) => {
+  if (err.code === 'ENOENT') {
+    console.error('❌ tsx not found. Please install tsx globally:');
+    console.error('   npm install -g tsx');
+    process.exit(1);
+  } else {
+    console.error('❌ Failed to start console:', err.message);
+    process.exit(1);
+  }
+});
+
+tsx.on('close', (code) => {
+  process.exit(code);
+});

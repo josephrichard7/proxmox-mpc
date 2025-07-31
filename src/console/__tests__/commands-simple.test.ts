@@ -16,6 +16,7 @@ describe('SlashCommandRegistry Basic Tests', () => {
     mockSession = {
       history: [],
       startTime: new Date(),
+      rl: {} as any,
     };
   });
 
@@ -59,6 +60,7 @@ describe('HelpCommand Basic Tests', () => {
     mockSession = {
       history: [],
       startTime: new Date(),
+      rl: {} as any,
     };
     logSpy = jest.spyOn(global.console, 'log').mockImplementation(() => {});
   });
