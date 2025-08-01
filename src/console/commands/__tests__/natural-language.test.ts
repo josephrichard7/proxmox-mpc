@@ -311,34 +311,23 @@ describe('Natural Language Interface TDD Tests', () => {
       const input = 'Create 3 VMs with monitoring';
       const progressCallback = jest.fn();
 
-      // Mock progress streaming
-      mockClaudeCode.executeWithContext.mockImplementation(async (input, context, endpoint) => {
-        // Simulate progress updates
-        progressCallback('🤖 Understanding request...');
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        progressCallback('📋 Planning infrastructure...');
-        await new Promise(resolve => setTimeout(resolve, 100));
-        
-        progressCallback('🏗️ Generating configurations...');
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        return {
-          executionPlan: [
-            {
-              type: 'generate',
-              description: 'Generate VM configurations',
-              commands: [
-                'create vm monitoring-01 --cores 2 --memory 4096',
-                'create vm monitoring-02 --cores 2 --memory 4096',
-                'create vm monitoring-03 --cores 2 --memory 4096'
-              ],
-              dependencies: []
-            }
-          ],
-          requiresConfirmation: false,
-          confidence: 0.95
-        };
+      // Mock Claude Code detection and execution
+      mockClaudeCode.detectNaturalLanguage.mockReturnValue(true);
+      mockClaudeCode.executeWithContext.mockResolvedValue({
+        executionPlan: [
+          {
+            type: 'generate',
+            description: 'Generate VM configurations',
+            commands: [
+              'create vm monitoring-01 --cores 2 --memory 4096',
+              'create vm monitoring-02 --cores 2 --memory 4096',
+              'create vm monitoring-03 --cores 2 --memory 4096'
+            ],
+            dependencies: []
+          }
+        ],
+        requiresConfirmation: false,
+        confidence: 0.95
       });
 
       await nlProcessor.processInputWithProgress(input, mockWorkspaceContext, progressCallback);
