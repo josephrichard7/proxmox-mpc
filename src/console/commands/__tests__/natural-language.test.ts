@@ -387,6 +387,7 @@ describe('Natural Language Interface TDD Tests', () => {
     it('should validate infrastructure requirements before execution', async () => {
       const input = 'Create 10 VMs with 32GB RAM each';
 
+      mockClaudeCode.detectNaturalLanguage.mockReturnValue(true);
       mockClaudeCode.executeWithContext.mockResolvedValue({
         executionPlan: [
           {
