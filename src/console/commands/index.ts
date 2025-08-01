@@ -14,6 +14,10 @@ import { PlanCommand } from './plan';
 import { ValidateCommand } from './validate';
 import { DestroyCommand } from './destroy';
 import { ExitCommand } from './exit';
+import { DebugCommand } from './debug';
+import { HealthCommand } from './health';
+import { LogsCommand } from './logs';
+import { ReportIssueCommand } from './report-issue';
 
 export type SlashCommandHandler = (args: string[], session: ConsoleSession) => Promise<void>;
 
@@ -35,7 +39,12 @@ export class SlashCommandRegistry {
     const validateCommand = new ValidateCommand();
     const destroyCommand = new DestroyCommand();
     const exitCommand = new ExitCommand();
+    const debugCommand = new DebugCommand();
+    const healthCommand = new HealthCommand();
+    const logsCommand = new LogsCommand();
+    const reportIssueCommand = new ReportIssueCommand();
     
+    // Core commands
     this.register('help', helpCommand.execute.bind(helpCommand));
     this.register('init', initCommand.execute.bind(initCommand));
     this.register('status', statusCommand.execute.bind(statusCommand));
@@ -46,6 +55,12 @@ export class SlashCommandRegistry {
     this.register('validate', validateCommand.execute.bind(validateCommand));
     this.register('destroy', destroyCommand.execute.bind(destroyCommand));
     this.register('exit', exitCommand.execute.bind(exitCommand));
+    
+    // Observability commands
+    this.register('debug', debugCommand.execute.bind(debugCommand));
+    this.register('health', healthCommand.execute.bind(healthCommand));
+    this.register('logs', logsCommand.execute.bind(logsCommand));
+    this.register('report-issue', reportIssueCommand.execute.bind(reportIssueCommand));
     
     // Aliases
     this.register('quit', exitCommand.execute.bind(exitCommand));

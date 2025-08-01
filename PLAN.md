@@ -227,28 +227,190 @@ interface MCPServerCapabilities {
 - [ ] **Documentation Generation**: AI-generated infrastructure documentation
 - [ ] **Workflow Automation**: AI-assisted infrastructure workflows and best practices
 
-**📋 Natural Language Model Strategy**: See [Phase 7 Natural Language Model Analysis](docs/phase-7-natural-language-model-analysis.md) for comprehensive evaluation of fine-tuned vs general-purpose small language models.
+#### 7.3 Natural Language Interface Implementation (2-3 weeks)
+**Target**: Two-pronged approach for natural language infrastructure operations
 
-**🎯 Recommended Approach**: Start with **Microsoft Phi-3.5 Mini (3.8B)** enhanced with RAG and few-shot prompting, evaluate fine-tuning based on performance metrics.
+**🎯 Approach 1: Seamless Claude Code Integration (Transparent to User)**
+- [ ] **Natural Language Parser**: Detect when user input is natural language vs slash commands
+- [ ] **Claude Code Headless Integration**: Internal integration using `-p` flag with proxmox-mcp context
+- [ ] **MCP Server Context**: Provide Claude Code with full workspace context via MCP server
+- [ ] **Multi-Step Workflow Execution**: Claude Code generates and executes complete infrastructure workflows
+- [ ] **Progress Streaming**: Real-time feedback during multi-step operations (IaC generation → testing → deployment)
+- [ ] **Error Recovery**: Intelligent error handling and retry mechanisms with Claude Code assistance
 
 ```bash
-# Target MCP integration experience
-# AI Model (Claude/GPT) can now:
-# 1. Access full infrastructure context via MCP
-# 2. Execute infrastructure operations
-# 3. Generate diagnostic reports
-# 4. Provide intelligent recommendations
+# Target seamless natural language experience:
+proxmox-mpc> Create 3 VMs with Talos/k8s to later deploy Rancher
+🤖 Understanding request... 
+📋 Planning infrastructure:
+   • 3 VMs for Kubernetes cluster (1 control plane, 2 workers)
+   • Talos Linux configuration for k8s
+   • Rancher deployment preparation
+   • Load balancer configuration
+✅ Plan approved. Executing...
 
-# Example AI-powered workflow:
-AI: "I can see your Proxmox infrastructure has 12 VMs. 
-     The web-server VM is using 85% CPU. 
-     Would you like me to scale it up or create a load balancer?"
+🏗️  Generating Terraform configurations...
+🧪 Generating test suite...
+🔧 Generating Ansible playbooks...
+✅ Infrastructure-as-Code generated
 
-User: "Create a load balancer"
+🧪 Running infrastructure tests...
+✅ All tests passed
 
-AI: "I'll create a load balancer configuration and apply it.
-     [Uses MCP tools to generate and deploy infrastructure]
-     Load balancer created successfully with 2 backend servers."
+🚀 Deploying infrastructure...
+   • Creating VM talos-cp-01 (control plane)
+   • Creating VM talos-worker-01
+   • Creating VM talos-worker-02
+   • Configuring Talos Linux
+   • Bootstrapping Kubernetes cluster
+✅ Infrastructure deployed successfully
+
+📊 Cluster Status:
+   • 3 nodes ready
+   • Kubernetes v1.28.0 running
+   • Ready for Rancher deployment
+   
+💡 Next steps: Run 'deploy rancher on cluster talos-k8s' to install Rancher
+```
+
+**Implementation Architecture:**
+```typescript
+interface NaturalLanguageProcessor {
+  async processInput(input: string, context: WorkspaceContext): Promise<{
+    isNaturalLanguage: boolean;
+    executionPlan: ExecutionStep[];
+    requiresConfirmation: boolean;
+  }>;
+}
+
+interface ExecutionStep {
+  type: 'generate' | 'test' | 'deploy' | 'validate';
+  description: string;
+  commands: string[];
+  dependencies: string[];
+}
+
+// Internal Claude Code integration
+class ClaudeCodeIntegration {
+  async executeWithContext(
+    naturalLanguageInput: string,
+    workspaceContext: WorkspaceContext,
+    mcpServerEndpoint: string
+  ): Promise<ExecutionPlan> {
+    // Construct Claude Code prompt with full context
+    const prompt = `
+Context: Proxmox infrastructure management workspace
+Current State: ${JSON.stringify(workspaceContext)}
+Available Commands: ${this.getAvailableCommands()}
+MCP Server: ${mcpServerEndpoint}
+
+User Request: "${naturalLanguageInput}"
+
+Generate a complete execution plan using proxmox-mpc commands to fulfill this request.
+Include: terraform generation, ansible configuration, testing, and deployment steps.
+`;
+    
+    // Execute: claude -p "${prompt}" --output-format stream-json
+    return this.parseClaudeResponse(await this.executeClaudeHeadless(prompt));
+  }
+}
+```
+
+**🎯 Approach 2: Fine-Tuned Embedded Model**
+- [ ] **Training Dataset Generation**: Create comprehensive infrastructure command dataset with natural language inputs and proxmox-mpc command outputs
+- [ ] **Domain-Specific Training Data**: Generate 10,000+ examples of infrastructure requests mapped to proxmox-mpc commands
+- [ ] **Model Selection & Fine-Tuning**: Fine-tune Microsoft Phi-3.5 Mini (3.8B) or similar SLM for infrastructure domain
+- [ ] **Embedded Model Integration**: Integrate fine-tuned model directly into proxmox-mpc binary for offline operation
+- [ ] **Evaluation Framework**: Implement comprehensive evaluation strategy with accuracy, latency, and safety metrics
+- [ ] **Fallback Strategy**: Graceful degradation to exact command matching when model confidence is low
+
+```typescript
+// Target embedded model integration:
+interface NLProcessor {
+  processNaturalLanguage(input: string): Promise<{
+    commands: string[];
+    confidence: number;
+    explanation: string;
+    requiresConfirmation: boolean;
+  }>;
+}
+
+// Example training data structure:
+interface TrainingExample {
+  input: string; // "Create a VM with 4 cores and 8GB RAM on node pve-01"
+  output: string; // "create vm --name vm-001 --node pve-01 --cores 4 --memory 8192"
+  context: string; // Infrastructure state context
+  difficulty: 'basic' | 'intermediate' | 'advanced';
+  safety_level: 'safe' | 'requires_confirmation' | 'dangerous';
+}
+```
+
+**📊 Evaluation Strategy:**
+- [ ] **Accuracy Metrics**: Command parsing accuracy, parameter extraction precision
+- [ ] **Safety Metrics**: Dangerous command detection, confirmation requirement accuracy
+- [ ] **Performance Metrics**: Response latency (<500ms), model size optimization
+- [ ] **User Experience**: Natural language understanding quality, error handling effectiveness
+- [ ] **A/B Testing**: Compare embedded model vs Claude Code headless mode performance
+
+**📋 Natural Language Model Strategy**: See [Phase 7 Natural Language Model Analysis](docs/phase-7-natural-language-model-analysis.md) for comprehensive evaluation of fine-tuned vs general-purpose small language models.
+
+**🎯 Recommended Implementation Order**: Start with **Claude Code headless mode** for immediate capabilities, then develop **fine-tuned embedded model** for offline/performance-critical scenarios.
+
+```bash
+# Target seamless MCP + Claude Code integration experience:
+proxmox-mpc> Create a load balancer for the high-traffic web servers
+
+🤖 Analyzing current infrastructure via MCP...
+📊 Found: 2 web servers (web-01, web-02) at 85% CPU utilization
+📋 Planning: HAProxy load balancer with health checks
+
+🏗️  Generating infrastructure:
+   • Terraform: HAProxy VM with 2GB RAM, 2 vCPUs
+   • Ansible: Load balancer configuration with backend servers
+   • Tests: Health check validation, failover scenarios
+
+🧪 Testing configuration...
+✅ All tests passed
+
+🚀 Deploying load balancer...
+   • VM lb-web-01 created successfully
+   • HAProxy configured with web-01, web-02 backends
+   • Health checks enabled (30s intervals)
+
+📊 Load Balancer Status:
+   • Frontend: 192.168.1.100:80 → Backend Pool
+   • Backend: web-01:80 (UP), web-02:80 (UP)
+   • Health: All servers healthy
+   
+💡 Traffic is now distributed. CPU usage reduced to 45% per server.
+
+# Example of complex multi-step workflow:
+proxmox-mpc> Set up a complete development environment with GitLab, registry, and CI runners
+
+🤖 Understanding complex request...
+📋 Multi-step plan identified:
+   1. GitLab CE server (4GB RAM, Docker registry)
+   2. PostgreSQL database (persistent storage)
+   3. Redis cache server
+   4. 3x GitLab Runner VMs (Docker executors)
+   5. Nginx reverse proxy with SSL
+   6. Backup strategy configuration
+
+⏱️  Estimated deployment time: 12-15 minutes
+❓ Proceed with deployment? (y/N): y
+
+🏗️  Generating complete infrastructure... (30+ files)
+🧪 Running comprehensive test suite... (45 tests)
+🚀 Executing deployment pipeline...
+   [Real-time progress streaming for each component]
+✅ Development environment ready!
+
+🔗 Access URLs:
+   • GitLab: https://gitlab.dev.local
+   • Registry: https://registry.dev.local  
+   • Admin: root / [generated password in vault]
+
+💡 Next: Run 'configure gitlab project templates' to set up project scaffolding
 ```
 
 ### Phase 8: Enterprise Features ⏳ **FUTURE** (4-6 weeks)
@@ -317,10 +479,12 @@ AI: "I'll create a load balancer configuration and apply it.
 - **Git**: Version control integration for infrastructure history
 
 ### **AI & Natural Language Processing**
-- **Primary NL Model**: Microsoft Phi-3.5 Mini (3.8B) with RAG enhancement
+- **Approach 1: Claude Code Headless**: Anthropic Claude Code SDK integration with `-p` flag for non-interactive mode
+- **Approach 2: Embedded Model**: Fine-tuned Microsoft Phi-3.5 Mini (3.8B) integrated directly into proxmox-mcp binary
 - **MCP Integration**: Full Model Context Protocol server for AI collaboration
-- **Hybrid Architecture**: Local SLM + cloud models via MCP for optimal performance
-- **Enhancement Techniques**: Few-shot prompting, context injection, validation layers
+- **Hybrid Architecture**: Claude Code headless + embedded model + cloud models via MCP for optimal performance
+- **Training Pipeline**: 10,000+ infrastructure command examples with comprehensive evaluation framework
+- **Enhancement Techniques**: Few-shot prompting, context injection, validation layers, Unix-style composability
 
 ### **Enterprise Features**
 - **Security**: HashiCorp Vault, RBAC, audit logging
