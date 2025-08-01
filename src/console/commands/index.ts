@@ -9,6 +9,10 @@ import { InitCommand } from './init';
 import { StatusCommand } from './status';
 import { SyncCommand } from './sync';
 import { TestCommand } from './test';
+import { ApplyCommand } from './apply';
+import { PlanCommand } from './plan';
+import { ValidateCommand } from './validate';
+import { DestroyCommand } from './destroy';
 import { ExitCommand } from './exit';
 
 export type SlashCommandHandler = (args: string[], session: ConsoleSession) => Promise<void>;
@@ -26,6 +30,10 @@ export class SlashCommandRegistry {
     const statusCommand = new StatusCommand();
     const syncCommand = new SyncCommand();
     const testCommand = new TestCommand();
+    const applyCommand = new ApplyCommand();
+    const planCommand = new PlanCommand();
+    const validateCommand = new ValidateCommand();
+    const destroyCommand = new DestroyCommand();
     const exitCommand = new ExitCommand();
     
     this.register('help', helpCommand.execute.bind(helpCommand));
@@ -33,6 +41,10 @@ export class SlashCommandRegistry {
     this.register('status', statusCommand.execute.bind(statusCommand));
     this.register('sync', syncCommand.execute.bind(syncCommand));
     this.register('test', testCommand.execute.bind(testCommand));
+    this.register('apply', applyCommand.execute.bind(applyCommand));
+    this.register('plan', planCommand.execute.bind(planCommand));
+    this.register('validate', validateCommand.execute.bind(validateCommand));
+    this.register('destroy', destroyCommand.execute.bind(destroyCommand));
     this.register('exit', exitCommand.execute.bind(exitCommand));
     
     // Aliases

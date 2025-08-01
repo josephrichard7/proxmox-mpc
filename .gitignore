@@ -87,3 +87,6 @@ out/
 # Proxmox-specific
 proxmox-config.json
 cluster-state.json
+
+# Crush
+.crush/
