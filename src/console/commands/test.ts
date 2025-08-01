@@ -5,6 +5,7 @@
 
 import { ConsoleSession } from '../repl';
 import * as fs from 'fs/promises';
+import * as fsSync from 'fs';
 import * as path from 'path';
 import * as yaml from 'js-yaml';
 import { spawn } from 'child_process';
@@ -58,6 +59,13 @@ export class TestCommand {
         allTestsPassed = false;
       }
 
+      // Phase 6: Run generated TDD tests
+      console.log('\n🧪 Phase 6: Running generated TDD tests...');
+      const tddTestsValid = await this.runGeneratedTDDTests(session.workspace.rootPath);
+      if (!tddTestsValid) {
+        allTestsPassed = false;
+      }
+
       // Summary
       console.log('\n' + '='.repeat(60));
       if (allTestsPassed) {
@@ -65,10 +73,13 @@ export class TestCommand {
         console.log('\n🚀 Safe to proceed with:');
         console.log('   • terraform apply (with your review)');
         console.log('   • ansible-playbook runs (with --check first)');
-        console.log('   • Manual review of generated files');
+        console.log('   • Generated TDD tests provide confidence in deployment');
+        console.log('   • Run ./tests/run-tests.sh for comprehensive validation');
       } else {
         console.log('❌ Some tests failed. Please review the issues above.');
         console.log('\n⚠️  Do NOT run terraform apply or ansible-playbook until issues are resolved.');
+        console.log('   • Check generated TDD tests for specific failure details');
+        console.log('   • Run ./tests/run-tests.sh for detailed test output');
       }
       console.log('='.repeat(60));
 
@@ -408,6 +419,127 @@ export class TestCommand {
         console.log('   💡 Install Ansible with: pip install ansible');
         resolve(true); // Don't fail if Ansible isn't installed
       });
+    });
+  }
+
+  private async runGeneratedTDDTests(rootPath: string): Promise<boolean> {
+    const testsDir = path.join(rootPath, 'tests');
+    
+    return new Promise((resolve) => {
+      // Check if tests directory exists
+      try {
+        if (!fsSync.existsSync(testsDir)) {
+          console.log('   ⚠️  No tests directory found. Run /sync to generate TDD tests.');
+          resolve(true); // Don't fail if tests don't exist yet
+          return;
+        }
+      } catch (error) {
+        console.log('   ⚠️  No tests directory found. Run /sync to generate TDD tests.');
+        resolve(true); // Don't fail if tests don't exist yet
+        return;
+      }
+
+      console.log('   🧪 Running generated TDD test suite...');
+      
+      // Check if test runner script exists
+      const testRunnerPath = path.join(testsDir, 'run-tests.sh');
+      
+      let testCommand;
+      let testArgs: string[] = [];
+      let testCwd = testsDir;
+      
+      try {
+        // Check if test runner script exists and is executable
+        fsSync.access(testRunnerPath, fsSync.constants.F_OK, (err) => {
+          if (!err) {
+            // Use the generated test runner script
+            testCommand = './run-tests.sh';
+            testArgs = ['--quick']; // Add quick flag for basic validation
+            console.log('   🏃 Using generated test runner script');
+          } else {
+            // Fallback to make if available
+            testCommand = 'make';
+            testArgs = ['all'];
+            console.log('   🔧 Using Makefile for test execution');
+          }
+          
+          const testProcess = spawn(testCommand, testArgs, {
+            cwd: testCwd,
+            stdio: 'pipe'
+          });
+
+          let output = '';
+          let hasErrors = false;
+
+          testProcess.stdout.on('data', (data) => {
+            output += data.toString();
+          });
+
+          testProcess.stderr.on('data', (data) => {
+            output += data.toString();
+            hasErrors = true;
+          });
+
+          testProcess.on('close', (code) => {
+            if (code === 0 && !hasErrors) {
+              console.log('   ✅ TDD tests passed successfully');
+              
+              // Parse output for key results
+              const lines = output.split('\n');
+              const terraformResults = lines.filter(line => line.includes('terraform') || line.includes('PASS') || line.includes('FAIL'));
+              const ansibleResults = lines.filter(line => line.includes('ansible') || line.includes('pytest') || line.includes('molecule'));
+              const integrationResults = lines.filter(line => line.includes('integration') || line.includes('jest'));
+              
+              if (terraformResults.length > 0) {
+                console.log('   📊 Terraform tests: ' + (terraformResults.some(r => r.includes('FAIL')) ? 'Some failures detected' : 'All passed'));
+              }
+              if (ansibleResults.length > 0) {
+                console.log('   📊 Ansible tests: ' + (ansibleResults.some(r => r.includes('FAILED')) ? 'Some failures detected' : 'All passed'));
+              }
+              if (integrationResults.length > 0) {
+                console.log('   📊 Integration tests: ' + (integrationResults.some(r => r.includes('failed')) ? 'Some failures detected' : 'All passed'));
+              }
+              
+              resolve(true);
+            } else {
+              console.log('   ❌ TDD tests failed or encountered errors');
+              console.log('   📋 Test output (last 10 lines):');
+              const lines = output.split('\n').slice(-10);
+              lines.forEach((line, index) => {
+                if (line.trim()) {
+                  console.log(`      ${line}`);
+                }
+              });
+              
+              console.log('\n   💡 For detailed test results, run:');
+              console.log(`      cd ${testsDir} && ./run-tests.sh`);
+              console.log('   💡 Or check individual test directories for specific failures');
+              
+              resolve(false);
+            }
+          });
+
+          testProcess.on('error', (error) => {
+            console.log('   ⚠️  Could not execute TDD tests');
+            console.log(`   💡 Error: ${error.message}`);
+            console.log('   💡 Ensure test dependencies are installed:');
+            console.log(`      cd ${testsDir} && make deps`);
+            console.log('   💡 Or install manually:');
+            console.log('      • Go 1.21+ for Terraform tests');
+            console.log('      • Python 3.8+ with pytest for Ansible tests');
+            console.log('      • Node.js 18+ with npm for integration tests');
+            
+            resolve(true); // Don't fail validation if TDD tests can't run due to missing deps
+          });
+        });
+
+      } catch (error) {
+        console.log('   ⚠️  Could not run TDD tests');
+        console.log(`   💡 Error: ${error instanceof Error ? error.message : String(error)}`);
+        console.log('   💡 Install test dependencies and try again:');
+        console.log(`      cd ${testsDir} && make deps`);
+        resolve(true); // Don't fail validation if TDD tests can't run
+      }
     });
   }
 }

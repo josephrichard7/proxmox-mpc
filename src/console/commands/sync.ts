@@ -7,6 +7,7 @@ import { ConsoleSession } from '../repl';
 import { ProxmoxClient } from '../../api';
 import { TerraformGenerator } from '../../generators/terraform';
 import { AnsibleGenerator } from '../../generators/ansible';
+import { TestGenerator } from '../../generators/tests';
 
 export class SyncCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {
@@ -42,7 +43,10 @@ export class SyncCommand {
       // Phase 3: Generate Ansible configurations
       await this.generateAnsibleConfigs(client, session);
 
-      // Phase 4: Update local database
+      // Phase 4: Generate TDD test suite
+      await this.generateTestSuite(client, session);
+
+      // Phase 5: Update local database
       await this.updateLocalDatabase(client, session);
 
       console.log('\n✅ Infrastructure synchronization complete!');
@@ -50,12 +54,16 @@ export class SyncCommand {
       console.log('   • terraform/*.tf - Infrastructure resources');
       console.log('   • ansible/inventory.yml - Server inventory');
       console.log('   • ansible/playbooks/*.yml - Configuration playbooks');
-      console.log('   • tests/*.test.js - Infrastructure validation tests');
+      console.log('   • tests/ - Comprehensive TDD test suite');
+      console.log('     ├── terraform/ - Terratest Go tests');
+      console.log('     ├── ansible/ - pytest and molecule tests');
+      console.log('     └── integration/ - End-to-end workflow tests');
       
       console.log('\n🚀 Next steps:');
       console.log('   • Use /status to verify imported infrastructure'); 
-      console.log('   • Use /test to validate configurations');
-      console.log('   • Use /apply to deploy any changes');
+      console.log('   • Use /test to validate configurations and run TDD tests');
+      console.log('   • Run ./tests/run-tests.sh for comprehensive validation');
+      console.log('   • Use /apply to deploy any changes after validation');
 
     } catch (error) {
       console.error(`❌ Sync failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -171,8 +179,55 @@ export class SyncCommand {
     }
   }
 
+  private async generateTestSuite(client: ProxmoxClient, session: ConsoleSession): Promise<void> {
+    console.log('\n🧪 Phase 4: Generating TDD test suite...');
+
+    try {
+      const testGenerator = new TestGenerator(session.workspace!);
+      
+      // Collect all infrastructure data for test generation
+      const nodes = await client.getNodes();
+      let allVMs: any[] = [];
+      let allContainers: any[] = [];
+      let allStorage: any[] = [];
+      
+      // Gather all resources from all nodes
+      for (const node of nodes) {
+        try {
+          const vms = await client.getVMs(node.node);
+          allVMs.push(...vms);
+          
+          const containers = await client.getContainers(node.node);
+          allContainers.push(...containers);
+        } catch (error) {
+          console.log(`   ⚠️  Could not get resources from node ${node.node}: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+
+      // Get storage information
+      try {
+        allStorage = await client.getStoragePools();
+      } catch (error) {
+        console.log(`   ⚠️  Could not get storage information: ${error instanceof Error ? error.message : String(error)}`);
+        allStorage = [];
+      }
+      
+      // Generate comprehensive test suite
+      await testGenerator.generateTestSuite(allVMs, allContainers, allStorage);
+      
+      console.log('   ✅ Generated comprehensive TDD test suite');
+      console.log(`   📊 Test coverage: ${allVMs.length + allContainers.length} resources, ${nodes.length} nodes`);
+      console.log('   🏗️  Terraform tests: Syntax validation, planning, resource verification');
+      console.log('   🎵 Ansible tests: Inventory validation, playbook syntax, molecule integration');
+      console.log('   🔗 Integration tests: End-to-end workflow and consistency validation');
+
+    } catch (error) {
+      throw new Error(`Test generation failed: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   private async updateLocalDatabase(client: ProxmoxClient, session: ConsoleSession): Promise<void> {
-    console.log('\n💽 Phase 4: Updating local database...');
+    console.log('\n💽 Phase 5: Updating local database...');
 
     try {
       // TODO: Implement database synchronization
