@@ -443,6 +443,8 @@ describe('Natural Language Interface TDD Tests', () => {
     it('should use current infrastructure state for intelligent decisions', async () => {
       const input = 'Scale up the web tier';
 
+      mockClaudeCode.detectNaturalLanguage.mockReturnValue(true);
+
       // Mock current state with existing web servers
       const contextWithWebServers: WorkspaceContext = {
         ...mockWorkspaceContext,
