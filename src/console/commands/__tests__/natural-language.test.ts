@@ -417,6 +417,7 @@ describe('Natural Language Interface TDD Tests', () => {
     it('should provide intelligent error recovery suggestions', async () => {
       const input = 'Deploy application that requires specific ports';
 
+      mockClaudeCode.detectNaturalLanguage.mockReturnValue(true);
       mockClaudeCode.executeWithContext.mockResolvedValue({
         executionPlan: [
           {
