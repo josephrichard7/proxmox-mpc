@@ -352,6 +352,7 @@ describe('Natural Language Interface TDD Tests', () => {
     it('should provide estimated completion times', async () => {
       const input = 'Deploy a complete monitoring stack';
 
+      mockClaudeCode.detectNaturalLanguage.mockReturnValue(true);
       mockClaudeCode.executeWithContext.mockResolvedValue({
         executionPlan: [
           {
