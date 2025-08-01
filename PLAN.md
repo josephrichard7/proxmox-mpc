@@ -180,47 +180,100 @@ proxmox-mpc> /report-issue "terraform apply failed"
 📤 Upload this file when asking AI assistants for help
 ```
 
-### Phase 7: Enterprise Features ⏳ **FUTURE** (4-6 weeks)
+### Phase 7: MCP Server Integration ⚡ **HIGH Priority** (3-4 weeks)
 
-#### 7.1 CI/CD Integration (2-3 weeks)
+#### 7.1 Basic MCP Server Implementation (2 weeks)
+**Target**: Enable AI model integration with rich infrastructure context
+
+**Deliverables:**
+- [ ] **MCP Protocol Server**: Full Model Context Protocol server implementation
+- [ ] **Resource Context**: Expose infrastructure state, configurations, and logs to AI models
+- [ ] **Tool Integration**: MCP tools for infrastructure operations (create, update, delete resources)
+- [ ] **Context Awareness**: Intelligent infrastructure context understanding with workspace state
+- [ ] **AI Model Support**: Integration with Claude, GPT, and other AI models via MCP
+- [ ] **Session Management**: Persistent MCP sessions with workspace context
+
+```typescript
+// Target MCP server capabilities
+interface MCPServerCapabilities {
+  resources: {
+    workspace: WorkspaceResource;
+    infrastructure: InfrastructureResource;
+    logs: LogResource;
+    diagnostics: DiagnosticsResource;
+  };
+  tools: {
+    createVM: MCPTool;
+    deployInfrastructure: MCPTool;
+    runDiagnostics: MCPTool;
+    generateReport: MCPTool;
+  };
+  prompts: {
+    troubleshoot: MCPPrompt;
+    optimize: MCPPrompt;
+    plan: MCPPrompt;
+  };
+}
+```
+
+#### 7.2 Advanced MCP Features & AI Automation (1-2 weeks)
+**Target**: Intelligent infrastructure automation and optimization
+
+**Deliverables:**
+- [ ] **AI-Driven Operations**: Automated infrastructure optimization based on AI recommendations
+- [ ] **Natural Language Interface**: MCP-powered natural language to infrastructure operations
+- [ ] **Smart Suggestions**: AI-powered configuration recommendations via MCP
+- [ ] **Automated Troubleshooting**: AI-driven problem diagnosis and resolution
+- [ ] **Documentation Generation**: AI-generated infrastructure documentation
+- [ ] **Workflow Automation**: AI-assisted infrastructure workflows and best practices
+
+```bash
+# Target MCP integration experience
+# AI Model (Claude/GPT) can now:
+# 1. Access full infrastructure context via MCP
+# 2. Execute infrastructure operations
+# 3. Generate diagnostic reports
+# 4. Provide intelligent recommendations
+
+# Example AI-powered workflow:
+AI: "I can see your Proxmox infrastructure has 12 VMs. 
+     The web-server VM is using 85% CPU. 
+     Would you like me to scale it up or create a load balancer?"
+
+User: "Create a load balancer"
+
+AI: "I'll create a load balancer configuration and apply it.
+     [Uses MCP tools to generate and deploy infrastructure]
+     Load balancer created successfully with 2 backend servers."
+```
+
+### Phase 8: Enterprise Features ⏳ **FUTURE** (4-6 weeks)
+
+#### 8.1 CI/CD Integration (2-3 weeks)
 - [ ] **GitHub Actions**: Automated testing and deployment workflows
 - [ ] **GitLab CI/CD**: Pipeline integration for infrastructure changes
 - [ ] **Webhook Support**: Event-driven infrastructure operations
 - [ ] **API Gateway**: REST API for programmatic access
 
-#### 7.2 Security & Governance (2-3 weeks)
+#### 8.2 Security & Governance (2-3 weeks)
 - [ ] **RBAC Integration**: Role-based access control
 - [ ] **Secrets Management**: Integration with HashiCorp Vault, etc.
 - [ ] **Audit Logging**: Comprehensive security audit trails
 - [ ] **Compliance Reporting**: Automated compliance validation
 
-### Phase 8: Web Dashboard ⏳ **FUTURE** (6-8 weeks)
+### Phase 9: Web Dashboard ⏳ **FUTURE** (6-8 weeks)
 
-#### 8.1 Backend API (3-4 weeks)
+#### 9.1 Backend API (3-4 weeks)
 - [ ] **REST API**: Full API for all console operations
 - [ ] **WebSocket Support**: Real-time updates and notifications
 - [ ] **Authentication**: Secure web-based authentication
 - [ ] **API Documentation**: Comprehensive API documentation
 
-#### 8.2 React Frontend (3-4 weeks)
+#### 9.2 React Frontend (3-4 weeks)
 - [ ] **Interactive Dashboard**: Visual infrastructure management
 - [ ] **Configuration Editor**: Visual YAML/JSON editor with validation
 - [ ] **Real-time Monitoring**: Live infrastructure status and metrics
 - [ ] **Template Management**: Visual template and chart management
-
-### Phase 9: AI Integration ⏳ **FUTURE** (4-6 weeks)
-
-#### 9.1 Natural Language Processing (2-3 weeks)
-- [ ] **Command Translation**: Natural language to infrastructure operations
-- [ ] **Smart Suggestions**: AI-powered configuration recommendations
-- [ ] **Troubleshooting**: Automated problem diagnosis and resolution
-- [ ] **Documentation**: AI-generated infrastructure documentation
-
-#### 9.2 MCP Server Integration (2-3 weeks)
-- [ ] **MCP Protocol**: Full Model Context Protocol server implementation
-- [ ] **AI Model Integration**: Claude, GPT, and other AI model support
-- [ ] **Context Awareness**: Intelligent infrastructure context understanding
-- [ ] **Automation**: AI-driven infrastructure optimization
 
 ## 🎯 Success Metrics
 
@@ -308,19 +361,39 @@ proxmox-mpc> /report-issue "terraform apply failed"
 3. **Error Classification**: Intelligent categorization with suggested AI prompts
 4. **Anonymization**: Sensitive data redaction for safe sharing with AI assistants
 
-### **Future Phases (Weeks 5-8): Advanced Workflow Features**
-1. **Drift Detection**: Continuous monitoring of configuration drift
-2. **Multi-Environment Support**: Dev/staging/prod environment management
+### **Phase 7: MCP Server Integration** ⚡ **NEXT PRIORITY** (3-4 weeks)
+
+### **Week 5-6: Basic MCP Server Implementation**
+1. **MCP Protocol Server**: Implement full Model Context Protocol server
+2. **Resource Context**: Expose infrastructure state and configurations to AI models
+3. **Tool Integration**: MCP tools for infrastructure operations (create, update, delete)
+4. **Session Management**: Persistent MCP sessions with workspace context
+
+### **Week 7-8: Advanced MCP Features & AI Automation**
+1. **AI-Driven Operations**: Automated infrastructure optimization via AI recommendations
+2. **Natural Language Interface**: MCP-powered natural language to infrastructure operations
+3. **Smart Suggestions**: AI-powered configuration recommendations
+4. **Automated Troubleshooting**: AI-driven problem diagnosis and resolution
+
+### **Future Phases (Weeks 9-12): Enterprise Features**
+1. **CI/CD Integration**: GitHub Actions, GitLab CI/CD, webhook support
+2. **Security & Governance**: RBAC, secrets management, audit logging
 3. **Advanced Operations**: Backup/restore, migration tools, compliance validation
 
 ## 📈 Progress Tracking
 
 **Current Phase**: Phase 6 - Observability & Diagnostics (Starting)
-**Next Milestone**: Comprehensive logging and AI-assisted diagnostics system
-**Timeline**: 3-4 weeks
-**Success Criteria**: `/debug`, `/health`, `/report-issue` commands working with full observability
+**Next Phase**: Phase 7 - MCP Server Integration (HIGH Priority)
+**Current Timeline**: 3-4 weeks (Observability) + 3-4 weeks (MCP) = 6-8 weeks total
+**Success Criteria**: Full observability foundation + MCP server with AI integration
 
 **Overall Project Progress**: 70% complete (5/9 phases completed - Phase 6 starting)
-**Next Major Milestone**: Complete observability platform for AI collaboration
-**Timeline to Next Milestone**: 3-4 weeks
-**Impact**: Enables seamless AI-assisted troubleshooting and issue resolution
+**Next Major Milestone**: AI-powered infrastructure management via MCP
+**Timeline to AI Integration**: 6-8 weeks (Observability + MCP)
+**Impact**: Transforms proxmox-mpc into AI-collaborative infrastructure platform
+
+### **Strategic Advantage of Accelerated MCP Timeline**:
+- **Phase 6** provides rich diagnostic data perfect for AI context
+- **Phase 7** leverages that data for intelligent MCP integration  
+- **Combined impact**: AI models get comprehensive infrastructure context for better assistance
+- **User benefit**: Seamless AI collaboration for infrastructure management
