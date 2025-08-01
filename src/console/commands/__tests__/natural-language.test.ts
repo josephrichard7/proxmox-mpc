@@ -485,6 +485,8 @@ describe('Natural Language Interface TDD Tests', () => {
     it('should learn from previous operations and suggest improvements', async () => {
       const input = 'Create another database server';
 
+      mockClaudeCode.detectNaturalLanguage.mockReturnValue(true);
+
       // Mock context with existing database and known configuration patterns
       const contextWithHistory: WorkspaceContext = {
         ...mockWorkspaceContext,
