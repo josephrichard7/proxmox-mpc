@@ -569,6 +569,7 @@ describe('Natural Language Interface TDD Tests', () => {
     it('should provide dry-run options for complex operations', async () => {
       const input = 'Migrate all VMs to new storage';
 
+      mockClaudeCode.detectNaturalLanguage.mockReturnValue(true);
       mockClaudeCode.executeWithContext.mockResolvedValue({
         executionPlan: [
           {
