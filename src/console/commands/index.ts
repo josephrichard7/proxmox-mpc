@@ -7,6 +7,8 @@ import { ConsoleSession } from '../repl';
 import { HelpCommand } from './help';
 import { InitCommand } from './init';
 import { StatusCommand } from './status';
+import { SyncCommand } from './sync';
+import { TestCommand } from './test';
 import { ExitCommand } from './exit';
 
 export type SlashCommandHandler = (args: string[], session: ConsoleSession) => Promise<void>;
@@ -22,11 +24,15 @@ export class SlashCommandRegistry {
     const helpCommand = new HelpCommand();
     const initCommand = new InitCommand();
     const statusCommand = new StatusCommand();
+    const syncCommand = new SyncCommand();
+    const testCommand = new TestCommand();
     const exitCommand = new ExitCommand();
     
     this.register('help', helpCommand.execute.bind(helpCommand));
     this.register('init', initCommand.execute.bind(initCommand));
     this.register('status', statusCommand.execute.bind(statusCommand));
+    this.register('sync', syncCommand.execute.bind(syncCommand));
+    this.register('test', testCommand.execute.bind(testCommand));
     this.register('exit', exitCommand.execute.bind(exitCommand));
     
     // Aliases

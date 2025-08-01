@@ -21,9 +21,9 @@ export class HelpCommand {
     console.log('  /help                 Show this help message');
     console.log('  /init                 Initialize new project workspace');
     console.log('  /status               Show project and server status');
-    console.log('  /sync                 Sync infrastructure state (future)');
+    console.log('  /sync                 Sync infrastructure state');
+    console.log('  /test                 Validate generated IaC without deployment');
     console.log('  /apply                Deploy changes to server (future)');
-    console.log('  /test                 Run infrastructure tests (future)');
     console.log('  /exit                 Exit the console\n');
     
     console.log('🏗️  Resource Commands (Future):');
@@ -98,6 +98,23 @@ export class HelpCommand {
         console.log('  • Update local database with current state\n');
         console.log('Usage: /sync');
         console.log('Example: /sync\n');
+        break;
+        
+      case 'test':
+        console.log('\n/test - Validate Infrastructure-as-Code\n');
+        console.log('Comprehensive validation of generated configurations without deployment:');
+        console.log('  • Phase 1: Validate workspace structure');
+        console.log('  • Phase 2: Validate Terraform configurations');
+        console.log('  • Phase 3: Validate Ansible configurations');
+        console.log('  • Phase 4: Run terraform plan (dry-run)');
+        console.log('  • Phase 5: Validate Ansible syntax\n');
+        console.log('This command ensures:');
+        console.log('  • All required files and directories exist');
+        console.log('  • Terraform HCL syntax is valid');
+        console.log('  • Ansible YAML syntax is correct');
+        console.log('  • Infrastructure changes can be previewed safely\n');
+        console.log('Usage: /test');
+        console.log('Example: /test\n');
         break;
         
       default:

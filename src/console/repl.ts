@@ -156,7 +156,7 @@ export class InteractiveConsole {
     console.log('  /help                 Show this help message');
     console.log('  /init                 Initialize new project workspace');
     console.log('  /status               Show project and server status');
-    console.log('  /sync                 Sync infrastructure state');
+    console.log('  /sync                 Import existing infrastructure as IaC');
     console.log('  /exit                 Exit the console\n');
     
     console.log('🏗️  Resource Commands (Future):');

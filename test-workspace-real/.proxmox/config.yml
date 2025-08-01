@@ -1,0 +1,10 @@
+host: 192.168.0.19
+port: 8006
+username: root@pam
+tokenId: proxmox-cli
+tokenSecret: 14c8f393-e797-4fc6-a08b-b98e021ab792
+node: proxmox
+rejectUnauthorized: false
+name: test-workspace-real
+created: '2025-07-31T23:00:00.000Z'
+version: 0.1.0

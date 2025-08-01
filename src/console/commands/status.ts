@@ -76,6 +76,7 @@ export class StatusCommand {
       // Get nodes
       const nodes = await client.getNodes();
       console.log(`   Nodes: ${nodes.length} total`);
+      console.log(`   📝 Available nodes:`, nodes.map(n => `${n.node} (${n.status})`).join(', '));
       
       // Get VMs and containers from all nodes
       let totalVMs = 0;
@@ -85,10 +86,15 @@ export class StatusCommand {
 
       for (const node of nodes) {
         try {
-          const [vms, containers] = await Promise.all([
-            client.getVMs(node.node),
-            client.getContainers(node.node)
-          ]);
+          console.log(`   🔍 Checking node: ${node.node}`);
+          
+          // Get VMs first
+          const vms = await client.getVMs(node.node);
+          console.log(`   📊 VMs on ${node.node}:`, vms.length > 0 ? vms.map(vm => `${vm.vmid}:${vm.name}(${vm.status})`).join(', ') : 'none');
+          
+          // Get containers
+          const containers = await client.getContainers(node.node);
+          console.log(`   📊 Containers on ${node.node}:`, containers.length > 0 ? containers.map(c => `${c.vmid}:${c.name}(${c.status})`).join(', ') : 'none');
           
           totalVMs += vms.length;
           totalContainers += containers.length;
@@ -96,7 +102,7 @@ export class StatusCommand {
           runningContainers += containers.filter(c => c.status === 'running').length;
           
         } catch (error) {
-          console.log(`   ⚠️  Failed to get resources from node ${node.node}`);
+          console.log(`   ⚠️  Failed to get resources from node ${node.node}: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
 

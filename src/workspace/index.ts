@@ -67,7 +67,9 @@ export class ProjectWorkspace {
     const configPath = path.join(searchPath, '.proxmox', 'config.yml');
     
     try {
-      const configContent = await fs.readFile(configPath, 'utf8');
+      // Use synchronous version to avoid async issues in tsx subprocess
+      const fsSync = require('fs');
+      const configContent = fsSync.readFileSync(configPath, 'utf8');
       const config = yaml.load(configContent) as WorkspaceConfig;
       
       return new ProjectWorkspace(searchPath, config);

@@ -16,6 +16,7 @@ const consolePath = path.join(projectDir, 'src', 'console.ts');
 // Run tsx with the console.ts file
 const tsx = spawn('tsx', [consolePath], {
   stdio: 'inherit',
+  cwd: process.cwd(), // Preserve user's current working directory
   env: { ...process.env, NODE_PATH: projectDir }
 });
 
