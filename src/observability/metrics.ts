@@ -11,6 +11,7 @@ export class MetricsCollector {
   private metrics: PerformanceMetric[] = [];
   private timers = new Map<string, { startTime: bigint; tags: Record<string, string> }>();
   private logger: Logger;
+  private systemMetricsInterval?: NodeJS.Timeout;
 
   private constructor() {
     this.logger = Logger.getInstance();
@@ -49,7 +50,7 @@ export class MetricsCollector {
       metricName: name,
       metricValue: value,
       metricUnit: unit,
-      metricTags: tags
+      metricTags: metric.tags
     });
   }
 
@@ -285,14 +286,27 @@ export class MetricsCollector {
    * Setup system metrics collection
    */
   private setupSystemMetrics(): void {
-    // Collect system metrics every 30 seconds
-    setInterval(() => {
-      this.recordMemoryUsage('system');
-      this.recordCpuUsage('system');
-      
-      // Record uptime
-      this.record('system.uptime', process.uptime(), 'seconds', { type: 'process' });
-    }, 30000);
+    // Only set up interval if not in test environment
+    if (process.env.NODE_ENV !== 'test') {
+      // Collect system metrics every 30 seconds
+      this.systemMetricsInterval = setInterval(() => {
+        this.recordMemoryUsage('system');
+        this.recordCpuUsage('system');
+        
+        // Record uptime
+        this.record('system.uptime', process.uptime(), 'seconds', { type: 'process' });
+      }, 30000);
+    }
+  }
+
+  /**
+   * Stop system metrics collection (for testing)
+   */
+  stopSystemMetrics(): void {
+    if (this.systemMetricsInterval) {
+      clearInterval(this.systemMetricsInterval);
+      this.systemMetricsInterval = undefined;
+    }
   }
 }
 

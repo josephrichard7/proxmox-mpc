@@ -105,11 +105,13 @@ export class MCPServer extends EventEmitter {
 
       this.isServerRunning = true;
 
-      // Start session cleanup interval
-      this.sessionCleanupInterval = setInterval(
-        () => this.cleanupExpiredSessions(),
-        5 * 60 * 1000 // 5 minutes
-      );
+      // Start session cleanup interval (skip in test environment)
+      if (process.env.NODE_ENV !== 'test') {
+        this.sessionCleanupInterval = setInterval(
+          () => this.cleanupExpiredSessions(),
+          5 * 60 * 1000 // 5 minutes
+        );
+      }
 
       this.logger.info('MCP server started successfully', {
         resourcesAffected: ['mcp-server'],

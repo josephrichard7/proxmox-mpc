@@ -247,7 +247,7 @@ export class PlanCommand {
         
         // Format and display the plan output in real-time
         const lines = text.split('\n');
-        lines.forEach(line => {
+        lines.forEach((line: string) => {
           if (line.trim()) {
             // Highlight important information
             if (line.includes('Plan:')) {
@@ -331,7 +331,7 @@ export class PlanCommand {
         
         // Format and display the check output in real-time
         const lines = text.split('\n');
-        lines.forEach(line => {
+        lines.forEach((line: string) => {
           if (line.trim()) {
             // Highlight important information
             if (line.includes('PLAY [')) {

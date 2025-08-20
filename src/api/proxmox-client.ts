@@ -25,8 +25,14 @@ import {
   ContainerCreationResult,
   ContainerDeleteOptions
 } from '../types';
-// Note: Database imports commented out to avoid circular dependency issues during development
-// import { vmRepository, taskRepository, type CreateVMInput, type CreateTaskInput } from '../database/repositories';
+import { 
+  vmRepository, 
+  taskRepository, 
+  containerRepository,
+  type CreateVMInput, 
+  type CreateTaskInput,
+  type CreateContainerInput 
+} from '../database/repositories';
 
 export class ProxmoxClient {
   private config: ProxmoxConfig;
@@ -284,43 +290,41 @@ export class ProxmoxClient {
       // Get task info
       const task = await this.getTaskStatus(node, upid);
       
-      // TODO: Re-enable database integration once repository imports are fixed
       // Save task to database
-      // try {
-      //   await taskRepository.create({
-      //     upid: task.upid,
-      //     nodeId: node,
-      //     type: task.type,
-      //     status: task.status,
-      //     user: task.user,
-      //     startTime: new Date(task.starttime * 1000),
-      //     endTime: task.endtime ? new Date(task.endtime * 1000) : undefined,
-      //     exitStatus: task.exitstatus,
-      //     resourceId: config.vmid.toString(),
-      //     pid: task.pid
-      //   });
-      // } catch (dbError) {
-      //   console.warn('Failed to save task to database:', dbError);
-      //   // Continue execution - database error shouldn't fail VM creation
-      // }
+      try {
+        await taskRepository.create({
+          upid: task.upid,
+          nodeId: node,
+          type: task.type,
+          status: task.status,
+          user: task.user,
+          startTime: new Date(task.starttime * 1000),
+          endTime: task.endtime ? new Date(task.endtime * 1000) : undefined,
+          exitStatus: task.exitstatus,
+          resourceId: config.vmid.toString()
+        });
+      } catch (dbError) {
+        console.warn('Failed to save task to database:', dbError);
+        // Continue execution - database error shouldn't fail VM creation
+      }
 
       // Save VM to database (initial state)
-      // try {
-      //   const vmData: CreateVMInput = {
-      //     id: config.vmid,
-      //     nodeId: node,
-      //     name: config.name,
-      //     status: 'stopped', // Initial status for new VMs
-      //     template: false,
-      //     cpuCores: config.cores,
-      //     memoryBytes: config.memory ? BigInt(config.memory * 1024 * 1024) : undefined // Convert MB to bytes
-      //   };
+      try {
+        const vmData: CreateVMInput = {
+          id: config.vmid,
+          nodeId: node,
+          name: config.name,
+          status: 'stopped', // Initial status for new VMs
+          template: false,
+          cpuCores: config.cores,
+          memoryBytes: config.memory ? BigInt(config.memory * 1024 * 1024) : undefined // Convert MB to bytes
+        };
 
-      //   await vmRepository.create(vmData);
-      // } catch (dbError) {
-      //   console.warn('Failed to save VM to database:', dbError);
-      //   // Continue execution - database error shouldn't fail VM creation
-      // }
+        await vmRepository.create(vmData);
+      } catch (dbError) {
+        console.warn('Failed to save VM to database:', dbError);
+        // Continue execution - database error shouldn't fail VM creation
+      }
       
       return {
         upid,
@@ -552,43 +556,41 @@ export class ProxmoxClient {
       // Get task info
       const task = await this.getTaskStatus(node, upid);
       
-      // TODO: Re-enable database integration once repository imports are fixed
       // Save task to database
-      // try {
-      //   await taskRepository.create({
-      //     upid: task.upid,
-      //     nodeId: node,
-      //     type: task.type,
-      //     status: task.status,
-      //     user: task.user,
-      //     startTime: new Date(task.starttime * 1000),
-      //     endTime: task.endtime ? new Date(task.endtime * 1000) : undefined,
-      //     exitStatus: task.exitstatus,
-      //     resourceId: config.vmid.toString(),
-      //     pid: task.pid
-      //   });
-      // } catch (dbError) {
-      //   console.warn('Failed to save task to database:', dbError);
-      //   // Continue execution - database error shouldn't fail container creation
-      // }
+      try {
+        await taskRepository.create({
+          upid: task.upid,
+          nodeId: node,
+          type: task.type,
+          status: task.status,
+          user: task.user,
+          startTime: new Date(task.starttime * 1000),
+          endTime: task.endtime ? new Date(task.endtime * 1000) : undefined,
+          exitStatus: task.exitstatus,
+          resourceId: config.vmid.toString()
+        });
+      } catch (dbError) {
+        console.warn('Failed to save task to database:', dbError);
+        // Continue execution - database error shouldn't fail container creation
+      }
 
       // Save container to database (initial state)
-      // try {
-      //   const containerData: CreateContainerInput = {
-      //     id: config.vmid,
-      //     nodeId: node,
-      //     hostname: config.hostname,
-      //     status: 'stopped', // Initial status for new containers
-      //     template: false,
-      //     cpuCores: config.cores,
-      //     memoryBytes: config.memory ? BigInt(config.memory * 1024 * 1024) : undefined // Convert MB to bytes
-      //   };
+      try {
+        const containerData: CreateContainerInput = {
+          id: config.vmid,
+          nodeId: node,
+          hostname: config.hostname,
+          status: 'stopped', // Initial status for new containers
+          template: false,
+          cpuCores: config.cores,
+          memoryBytes: config.memory ? BigInt(config.memory * 1024 * 1024) : undefined // Convert MB to bytes
+        };
 
-      //   await containerRepository.create(containerData);
-      // } catch (dbError) {
-      //   console.warn('Failed to save container to database:', dbError);
-      //   // Continue execution - database error shouldn't fail container creation
-      // }
+        await containerRepository.create(containerData);
+      } catch (dbError) {
+        console.warn('Failed to save container to database:', dbError);
+        // Continue execution - database error shouldn't fail container creation
+      }
       
       return {
         upid,

@@ -68,7 +68,7 @@ export async function setupTestEnvironmentWithDB(port: number = 8006): Promise<T
   
   // Setup test database
   const dbClient = DatabaseClient.getInstance();
-  await dbClient.connect(':memory:'); // Use in-memory SQLite for tests
+  await dbClient.connect(); // Use in-memory SQLite for tests
   
   return {
     ...env,

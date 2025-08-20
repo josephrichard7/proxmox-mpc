@@ -102,7 +102,7 @@ export class SyncService {
       for (const nodeInfo of discoveredNodes) {
         try {
           // Check if node exists in database
-          const existingNode = await this.nodeRepo.findByName(nodeInfo.node);
+          const existingNode = await this.nodeRepo.findById(nodeInfo.node);
 
           if (existingNode) {
             // Update existing node  
@@ -194,38 +194,36 @@ export class SyncService {
                   name: vmStatus.name || `vm-${vmInfo.vmid}`,
                   status: vmStatus.status,
                   cpuUsage: vmStatus.cpu || 0,
-                  totalCpu: vmStatus.cpus || 1,
-                  memoryUsage: vmStatus.mem || 0,
-                  totalMemory: vmStatus.maxmem || 0,
-                  diskUsage: vmStatus.disk || 0,
-                  totalDisk: vmStatus.maxdisk || 0,
+                  cpuCores: vmStatus.cpus || 1,
+                  memoryUsage: BigInt(vmStatus.mem || 0),
+                  memoryBytes: BigInt(vmStatus.maxmem || 0),
+                  diskUsage: BigInt(vmStatus.disk || 0),
+                  diskSize: BigInt(vmStatus.maxdisk || 0),
                   uptime: vmStatus.uptime || 0,
-                  template: vmStatus.template || false,
-                  tags: vmStatus.tags || null
+                  template: vmStatus.template || false
                 });
                 result.updated++;
               } else {
                 // Create new VM
                 await this.vmRepo.create({
-                  vmid: vmInfo.vmid,
+                  id: vmInfo.vmid,
                   name: vmStatus.name || `vm-${vmInfo.vmid}`,
                   status: vmStatus.status,
                   nodeId: dbNode.id,
                   cpuUsage: vmStatus.cpu || 0,
-                  totalCpu: vmStatus.cpus || 1,
-                  memoryUsage: vmStatus.mem || 0,
-                  totalMemory: vmStatus.maxmem || 0,
-                  diskUsage: vmStatus.disk || 0,
-                  totalDisk: vmStatus.maxdisk || 0,
+                  cpuCores: vmStatus.cpus || 1,
+                  memoryUsage: BigInt(vmStatus.mem || 0),
+                  memoryBytes: BigInt(vmStatus.maxmem || 0),
+                  diskUsage: BigInt(vmStatus.disk || 0),
+                  diskSize: BigInt(vmStatus.maxdisk || 0),
                   uptime: vmStatus.uptime || 0,
-                  template: vmStatus.template || false,
-                  tags: vmStatus.tags || null
+                  template: vmStatus.template || false
                 });
                 result.created++;
               }
 
               // Create state snapshot
-              await this.stateSnapshotRepo.createSnapshot('vm', vmInfo.vmid.toString(), vmStatus);
+              await this.stateSnapshotRepo.createResourceSnapshot('vm', vmInfo.vmid.toString(), vmStatus);
             } catch (error) {
               result.errors.push(`VM ${vmInfo.vmid}: ${error instanceof Error ? error.message : 'Unknown error'}`);
               result.success = false;
@@ -294,38 +292,36 @@ export class SyncService {
                   name: containerStatus.name || `ct-${containerInfo.vmid}`,
                   status: containerStatus.status,
                   cpuUsage: containerStatus.cpu || 0,
-                  totalCpu: containerStatus.cpus || 1,
-                  memoryUsage: containerStatus.mem || 0,
-                  totalMemory: containerStatus.maxmem || 0,
-                  diskUsage: containerStatus.disk || 0,
-                  totalDisk: containerStatus.maxdisk || 0,
+                  cpuCores: containerStatus.cpus || 1,
+                  memoryUsage: BigInt(containerStatus.mem || 0),
+                  memoryBytes: BigInt(containerStatus.maxmem || 0),
+                  diskUsage: BigInt(containerStatus.disk || 0),
+                  diskSize: BigInt(containerStatus.maxdisk || 0),
                   uptime: containerStatus.uptime || 0,
-                  template: containerStatus.template || false,
-                  tags: containerStatus.tags || null
+                  template: containerStatus.template || false
                 });
                 result.updated++;
               } else {
                 // Create new container
                 await this.containerRepo.create({
-                  vmid: containerInfo.vmid,
+                  id: containerInfo.vmid,
                   name: containerStatus.name || `ct-${containerInfo.vmid}`,
                   status: containerStatus.status,
                   nodeId: dbNode.id,
                   cpuUsage: containerStatus.cpu || 0,
-                  totalCpu: containerStatus.cpus || 1,
-                  memoryUsage: containerStatus.mem || 0,
-                  totalMemory: containerStatus.maxmem || 0,
-                  diskUsage: containerStatus.disk || 0,
-                  totalDisk: containerStatus.maxdisk || 0,
+                  cpuCores: containerStatus.cpus || 1,
+                  memoryUsage: BigInt(containerStatus.mem || 0),
+                  memoryBytes: BigInt(containerStatus.maxmem || 0),
+                  diskUsage: BigInt(containerStatus.disk || 0),
+                  diskSize: BigInt(containerStatus.maxdisk || 0),
                   uptime: containerStatus.uptime || 0,
-                  template: containerStatus.template || false,
-                  tags: containerStatus.tags || null
+                  template: containerStatus.template || false
                 });
                 result.created++;
               }
 
               // Create state snapshot
-              await this.stateSnapshotRepo.createSnapshot('container', containerInfo.vmid.toString(), containerStatus);
+              await this.stateSnapshotRepo.createResourceSnapshot('container', containerInfo.vmid.toString(), containerStatus);
             } catch (error) {
               result.errors.push(`Container ${containerInfo.vmid}: ${error instanceof Error ? error.message : 'Unknown error'}`);
               result.success = false;
@@ -375,31 +371,31 @@ export class SyncService {
             // Update existing storage
             await this.storageRepo.update(existingStorage.id, {
               type: storageInfo.type,
-              content: storageInfo.content || '',
+              contentTypes: storageInfo.content || '',
               enabled: storageInfo.enabled || true,
               shared: storageInfo.shared || false,
-              totalSpace: storageInfo.total || 0,
-              usedSpace: storageInfo.used || 0,
-              availableSpace: storageInfo.avail || 0
+              totalBytes: BigInt(storageInfo.total || 0),
+              usedBytes: BigInt(storageInfo.used || 0),
+              availableBytes: BigInt(storageInfo.avail || 0)
             });
             result.updated++;
           } else {
             // Create new storage
             await this.storageRepo.create({
-              name: storageInfo.storage,
+              id: storageInfo.storage,
               type: storageInfo.type,
-              content: storageInfo.content || '',
+              contentTypes: storageInfo.content || '',
               enabled: storageInfo.enabled || true,
               shared: storageInfo.shared || false,
-              totalSpace: storageInfo.total || 0,
-              usedSpace: storageInfo.used || 0,
-              availableSpace: storageInfo.avail || 0
+              totalBytes: BigInt(storageInfo.total || 0),
+              usedBytes: BigInt(storageInfo.used || 0),
+              availableBytes: BigInt(storageInfo.avail || 0)
             });
             result.created++;
           }
 
           // Create state snapshot
-          await this.stateSnapshotRepo.createSnapshot('storage', storageInfo.storage, storageInfo);
+          await this.stateSnapshotRepo.createResourceSnapshot('storage', storageInfo.storage, storageInfo);
         } catch (error) {
           result.errors.push(`Storage ${storageInfo.storage}: ${error instanceof Error ? error.message : 'Unknown error'}`);
           result.success = false;
@@ -456,10 +452,10 @@ export class SyncService {
 
               if (existingTask) {
                 // Update existing task
-                await this.taskRepo.update(existingTask.id, {
+                await this.taskRepo.update(existingTask.upid, {
                   status: taskInfo.status,
-                  endTime: taskInfo.endtime ? new Date(taskInfo.endtime * 1000) : null,
-                  exitStatus: taskInfo.exitstatus || null
+                  endTime: taskInfo.endtime ? new Date(taskInfo.endtime * 1000) : undefined,
+                  exitStatus: taskInfo.exitstatus || undefined
                 });
                 result.updated++;
               } else {
@@ -470,15 +466,15 @@ export class SyncService {
                   type: taskInfo.type,
                   status: taskInfo.status,
                   startTime: new Date(taskInfo.starttime * 1000),
-                  endTime: taskInfo.endtime ? new Date(taskInfo.endtime * 1000) : null,
-                  exitStatus: taskInfo.exitstatus || null,
+                  endTime: taskInfo.endtime ? new Date(taskInfo.endtime * 1000) : undefined,
+                  exitStatus: taskInfo.exitstatus || undefined,
                   user: taskInfo.user
                 });
                 result.created++;
               }
 
               // Create state snapshot
-              await this.stateSnapshotRepo.createSnapshot('task', taskInfo.upid, taskInfo);
+              await this.stateSnapshotRepo.createResourceSnapshot('task', taskInfo.upid, taskInfo);
             } catch (error) {
               result.errors.push(`Task ${taskInfo.upid}: ${error instanceof Error ? error.message : 'Unknown error'}`);
               result.success = false;
@@ -523,7 +519,11 @@ export class SyncService {
   }> {
     try {
       // Get latest state snapshot to determine last sync time
-      const latestSnapshot = await this.stateSnapshotRepo.getLatestSnapshot();
+      const latestSnapshots = await this.stateSnapshotRepo.findMany({ 
+        orderBy: { snapshotTime: 'desc' },
+        limit: 1
+      });
+      const latestSnapshot = latestSnapshots.data[0] || null;
       
       // Get resource counts from database
       const [nodeCount, vmCount, containerCount, storageCount, taskCount] = await Promise.all([

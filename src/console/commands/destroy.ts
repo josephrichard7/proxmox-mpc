@@ -476,7 +476,7 @@ export class DestroyCommand {
         
         // Format and display the destroy plan
         const lines = text.split('\n');
-        lines.forEach(line => {
+        lines.forEach((line: string) => {
           if (line.trim()) {
             if (line.includes('Plan:')) {
               console.log(`   🎯 ${line}`);

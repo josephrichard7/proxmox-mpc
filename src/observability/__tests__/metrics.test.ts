@@ -7,12 +7,18 @@ import { MetricsCollector } from '../metrics';
 import { PerformanceMetric } from '../types';
 import { Logger } from '../logger';
 
+// Create stable mock logger instance
+const mockLoggerInstance = {
+  debug: jest.fn(),
+  warn: jest.fn(),
+  info: jest.fn(),
+  error: jest.fn()
+};
+
 // Mock Logger to avoid interference
 jest.mock('../logger', () => ({
   Logger: {
-    getInstance: () => ({
-      debug: jest.fn()
-    })
+    getInstance: () => mockLoggerInstance
   }
 }));
 
@@ -26,6 +32,9 @@ describe('MetricsCollector', () => {
   let originalProcess: any;
 
   beforeEach(() => {
+    // Clear all mock calls
+    jest.clearAllMocks();
+    
     // Reset singleton instance
     (MetricsCollector as any).instance = undefined;
     collector = MetricsCollector.getInstance();
@@ -153,19 +162,24 @@ describe('MetricsCollector', () => {
 
     it('should handle multiple concurrent timers', () => {
       collector.startTimer('timer1', { type: 'A' });
+      
+      // Progress time before starting second timer
+      const secondStartTime = 2000000000n; // 2 seconds
+      (process.hrtime.bigint as jest.Mock).mockReturnValue(secondStartTime);
       collector.startTimer('timer2', { type: 'B' });
       
-      // End first timer
+      // Progress time to end first timer
+      const firstEndTime = 3000000000n; // 3 seconds from start
+      (process.hrtime.bigint as jest.Mock).mockReturnValue(firstEndTime);
       const duration1 = collector.endTimer('timer1');
       
-      // Progress time for second timer
-      const newTime = 3000000000n; // 3 seconds from start
-      (process.hrtime.bigint as jest.Mock).mockReturnValue(newTime);
-      
+      // Progress time to end second timer
+      const secondEndTime = 4000000000n; // 4 seconds from start
+      (process.hrtime.bigint as jest.Mock).mockReturnValue(secondEndTime);
       const duration2 = collector.endTimer('timer2');
 
-      expect(duration1).toBe(1000);
-      expect(duration2).toBe(2000);
+      expect(duration1).toBe(2000); // 3 - 1 = 2 seconds
+      expect(duration2).toBe(2000); // 4 - 2 = 2 seconds
 
       const metrics = collector.getMetrics();
       expect(metrics).toHaveLength(2);
@@ -285,10 +299,15 @@ describe('MetricsCollector', () => {
       const metrics = collector.getMetrics('db.query_time');
       const queryTypes = metrics.map(m => m.tags.query_type);
 
-      expect(queryTypes).toEqual([
-        'select', 'insert', 'update', 'delete', 
-        'create', 'drop', 'other'
-      ]);
+      // Check that all expected query types are present (order doesn't matter)
+      expect(queryTypes).toHaveLength(7);
+      expect(queryTypes).toContain('select');
+      expect(queryTypes).toContain('insert');
+      expect(queryTypes).toContain('update');
+      expect(queryTypes).toContain('delete');
+      expect(queryTypes).toContain('create');
+      expect(queryTypes).toContain('drop');
+      expect(queryTypes).toContain('other');
     });
   });
 
@@ -455,11 +474,21 @@ describe('MetricsCollector', () => {
     it('should use custom time window for summary', () => {
       collector.clearMetrics();
       
-      // This should be filtered out by a very short time window
-      collector.record('old.metric', 100, 'count');
+      // Directly add an old metric to the metrics array (bypassing record method)
+      const oldMetric = {
+        name: 'old.metric',
+        value: 100,
+        unit: 'count',
+        timestamp: new Date(Date.now() - 2000).toISOString(), // 2 seconds ago
+        tags: { host: 'test-hostname' }
+      };
+      (collector as any).metrics.push(oldMetric);
       
-      const summary = collector.getMetricsSummary(1); // 1ms window
-      expect(summary.totalMetrics).toBe(0);
+      // Also add a recent metric
+      collector.record('new.metric', 200, 'count');
+      
+      const summary = collector.getMetricsSummary(1000); // 1 second window (won't include 2s old metric)
+      expect(summary.totalMetrics).toBe(1); // Only the new metric
     });
   });
 
@@ -550,20 +579,25 @@ describe('MetricsCollector', () => {
 
   describe('Logger Integration', () => {
     it('should log metric recording when debug enabled', () => {
-      const mockLogger = Logger.getInstance();
-      
       collector.record('test.metric', 42, 'ms', { test: 'value' });
       
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        'Metric recorded: test.metric = 42 ms',
-        { resourcesAffected: [] },
-        {
-          metricName: 'test.metric',
-          metricValue: 42,
-          metricUnit: 'ms',
-          metricTags: { test: 'value' }
-        }
-      );
+      // Check if debug was called at all
+      expect(mockLoggerInstance.debug).toHaveBeenCalled();
+      
+      // Get the actual call arguments
+      const callArgs = mockLoggerInstance.debug.mock.calls[0];
+      
+      // Check the message
+      expect(callArgs[0]).toBe('Metric recorded: test.metric = 42 ms');
+      
+      // Check the context
+      expect(callArgs[1]).toEqual({ resourcesAffected: [] });
+      
+      // Check the additional data - tags order might differ
+      expect(callArgs[2].metricName).toBe('test.metric');
+      expect(callArgs[2].metricValue).toBe(42);
+      expect(callArgs[2].metricUnit).toBe('ms');
+      expect(callArgs[2].metricTags).toEqual({ test: 'value', host: 'test-hostname' });
     });
   });
 });

@@ -670,7 +670,7 @@ Features:
       displayInfo(`Starting batch operation for ${vmidNums.length} VMs`);
       
       if (options.dryRun) {
-        vmidNums.forEach(vmid => {
+        vmidNums.forEach((vmid: number) => {
           displayDryRun('start', `VM ${vmid} on node ${targetNode}`);
         });
         return;
@@ -740,7 +740,7 @@ vmCommand
       displayInfo(`Stopping batch operation for ${vmidNums.length} VMs`);
       
       if (options.dryRun) {
-        vmidNums.forEach(vmid => {
+        vmidNums.forEach((vmid: number) => {
           displayDryRun(options.force ? 'force stop' : 'stop', `VM ${vmid} on node ${targetNode}`);
         });
         return;

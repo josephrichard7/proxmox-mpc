@@ -35,7 +35,7 @@ export class TestGenerator {
     await this.generateIntegrationTests(vms, containers);
     
     // Generate test configuration and runner
-    await this.generateTestConfig();
+    await this.generateTestConfig(vms, containers);
     
     console.log('   ✅ Generated comprehensive test suite');
     console.log(`      • ${vms.length + containers.length} resource tests`);
@@ -953,7 +953,7 @@ describe('Proxmox-MPC Integration Tests', () => {
   /**
    * Generate test configuration files
    */
-  private async generateTestConfig(): Promise<void> {
+  private async generateTestConfig(vms: VMInfo[] = [], containers: ContainerInfo[] = []): Promise<void> {
     // Generate Makefile for easy test execution
     const makefileContent = this.generateMakefile();
     await fs.writeFile(
@@ -972,7 +972,7 @@ describe('Proxmox-MPC Integration Tests', () => {
     await fs.chmod(path.join(this.workspace.rootPath, 'tests', 'run-tests.sh'), 0o755);
 
     // Generate README for tests
-    const testReadmeContent = this.generateTestReadme();
+    const testReadmeContent = this.generateTestReadme(vms, containers);
     await fs.writeFile(
       path.join(this.workspace.rootPath, 'tests', 'README.md'),
       testReadmeContent
@@ -1354,7 +1354,7 @@ esac
 `;
   }
 
-  private generateTestReadme(): string {
+  private generateTestReadme(vms: VMInfo[] = [], containers: ContainerInfo[] = []): string {
     return `# Proxmox-MPC Test Suite
 
 This directory contains comprehensive tests for the generated Infrastructure-as-Code configurations.

@@ -110,7 +110,7 @@ resource "proxmox_lxc" "${resourceName}" {
   # Container Configuration  
   cores        = ${container.cpus || 1}
   memory       = ${container.maxmem ? Math.floor(container.maxmem / 1024 / 1024) : 512}
-  swap         = ${container.maxswap ? Math.floor(container.maxswap / 1024 / 1024) : 512}
+  swap         = 512
   
   # Template and Distribution
   ostemplate   = "local:vztmpl/ubuntu-22.04-standard_22.04-1_amd64.tar.zst"  # TODO: Detect actual template
