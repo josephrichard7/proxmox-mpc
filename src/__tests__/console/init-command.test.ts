@@ -88,7 +88,7 @@ describe('InitCommand', () => {
         })  // token id
 
       // Mock password prompt separately (since it's handled differently)
-      const mockPasswordPrompt = jest.spyOn(initCommand as any, 'promptPassword')
+      const _mockPasswordPrompt = jest.spyOn(initCommand as any, 'promptPassword')
         .mockResolvedValue('test-secret');
 
       mockRl.question
@@ -146,7 +146,7 @@ describe('InitCommand', () => {
 
   describe('password input handling', () => {
     let mockStdin: any;
-    let originalIsRaw: boolean;
+    let _originalIsRaw: boolean;
 
     beforeEach(() => {
       mockStdin = {

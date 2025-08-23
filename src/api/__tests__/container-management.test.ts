@@ -4,7 +4,7 @@
 
 import axios from 'axios';
 import { ProxmoxClient } from '../proxmox-client';
-import { ProxmoxConfig, ContainerCreateConfig, ContainerCreationResult, TaskInfo } from '../../types';
+import { ProxmoxConfig, ContainerCreateConfig, ContainerCreationResult as _ContainerCreationResult, TaskInfo } from '../../types';
 
 // Mock axios
 jest.mock('axios');

@@ -441,7 +441,7 @@ export class MCPTools {
    * Run Diagnostics tool implementation
    */
   async executeRunDiagnostics(params: any): Promise<MCPToolResult> {
-    let diagnostics: any = {
+    const diagnostics: any = {
       timestamp: new Date().toISOString(),
       systemInfo: { platform: 'linux', memory: {}, uptime: 3600 },
       workspaceInfo: { path: this.config.workspacePath, config: {} }

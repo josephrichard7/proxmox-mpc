@@ -108,7 +108,12 @@ export class DiagnosticsCollector {
 
       // Tool availability
       const toolsHealth = await this.checkToolsAvailability();
-      checks.forEach(toolHealth => checks.push({...toolHealth, timestamp}));
+      toolsHealth.forEach(toolHealth => {
+        checks.push({
+          ...toolHealth,
+          timestamp // Override with current timestamp for consistency
+        });
+      });
 
       // Database health (if available)
       const dbHealth = await this.checkDatabaseHealth();
@@ -366,12 +371,16 @@ export class DiagnosticsCollector {
       try {
         const { stdout: tfOut } = await execAsync('terraform --version');
         terraformVersion = tfOut.split('\n')[0];
-      } catch {}
+      } catch (error) {
+        // Terraform not available, keep version as 'unknown'
+      }
 
       try {
         const { stdout: ansOut } = await execAsync('ansible --version');
         ansibleVersion = ansOut.split('\n')[0];
-      } catch {}
+      } catch (error) {
+        // Ansible not available, keep version as 'unknown'
+      }
 
       return {
         path: workspace,

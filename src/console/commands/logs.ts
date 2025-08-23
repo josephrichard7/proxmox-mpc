@@ -14,7 +14,10 @@ export class LogsCommand {
     try {
       const options = this.parseArguments(args);
       
-      console.log('📋 System Logs\\n');
+      // Only show header if not JSON mode
+      if (!options.json) {
+        console.log('📋 System Logs\\n');
+      }
 
       // Get logs based on filters
       let logs = logger.getRecentLogs(options.limit);
@@ -50,12 +53,18 @@ export class LogsCommand {
 
       // Display results
       if (logs.length === 0) {
-        console.log('📝 No logs found matching your criteria\\n');
-        this.showUsageHelp();
+        if (options.json) {
+          console.log('[]');
+        } else {
+          console.log('📝 No logs found matching your criteria\\n');
+          this.showUsageHelp();
+        }
         return;
       }
 
-      console.log(`📊 Found ${logs.length} log entries\\n`);
+      if (!options.json) {
+        console.log(`📊 Found ${logs.length} log entries\\n`);
+      }
 
       // Show summary if requested
       if (options.summary) {
@@ -70,8 +79,8 @@ export class LogsCommand {
         this.displayLogs(logs, options);
       }
 
-      // Show usage tip
-      if (!options.quiet) {
+      // Show usage tip (but not in JSON mode)
+      if (!options.quiet && !options.json) {
         console.log('\\n💡 Use /logs --help for more filtering options');
       }
 

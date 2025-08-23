@@ -393,10 +393,11 @@ describe('Observability Performance Tests', () => {
             });
             break;
 
-          case 1: // Tracing
+          case 1: { // Tracing
             const spanId = tracer.startTrace(`mixed-operation-${operations}`);
             tracer.finishSpan(spanId, { type: 'mixed-test' });
             break;
+          }
 
           case 2: // Metrics
             metrics.record('mixed.workload', operations, 'count', {
@@ -404,11 +405,12 @@ describe('Observability Performance Tests', () => {
             });
             break;
 
-          case 3: // Timer
+          case 3: { // Timer
             const timerName = `mixed-timer-${operations}`;
             metrics.startTimer(timerName);
             metrics.endTimer(timerName);
             break;
+          }
 
           case 4: // Query operations
             if (operations > 100) {

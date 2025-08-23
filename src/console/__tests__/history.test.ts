@@ -199,7 +199,7 @@ describe('CommandHistory', () => {
       const filter: HistoryFilter = {
         workspace: 'workspace1',
         exitCode: 0,
-        pattern: /create/,
+        pattern: /network/,
       };
       const results = history.search(filter);
       
@@ -278,9 +278,11 @@ describe('CommandHistory', () => {
     });
 
     it('should sort most used commands by count', () => {
-      // Add more of the same command
+      // Add more of the same command with different commands in between
       history.add('popular command');
+      history.add('other command');
       history.add('popular command');
+      history.add('another command');
       history.add('popular command');
       
       const stats = history.getStats();

@@ -3,7 +3,7 @@
  * Handles authentication, requests, and response processing
  */
 
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosError as _AxiosError } from 'axios';
 import * as https from 'https';
 import { 
   ProxmoxConfig, 

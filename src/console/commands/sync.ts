@@ -303,8 +303,8 @@ export class SyncCommand {
       
       // Collect all infrastructure data for test generation
       const nodes = await client.getNodes();
-      let allVMs: any[] = [];
-      let allContainers: any[] = [];
+      const allVMs: any[] = [];
+      const allContainers: any[] = [];
       let allStorage: any[] = [];
       
       // Gather all resources from all nodes

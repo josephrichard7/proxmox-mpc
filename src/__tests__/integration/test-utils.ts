@@ -184,7 +184,7 @@ export async function waitForCondition(
 /**
  * Generate unique test IDs
  */
-export function generateTestId(prefix: string = 'test'): number {
+export function generateTestId(_prefix: string = 'test'): number {
   const timestamp = Date.now();
   const random = Math.floor(Math.random() * 1000);
   return parseInt(`${timestamp.toString().slice(-6)}${random.toString().padStart(3, '0')}`);

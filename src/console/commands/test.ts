@@ -446,7 +446,7 @@ export class TestCommand {
       
       let testCommand;
       let testArgs: string[] = [];
-      let testCwd = testsDir;
+      const testCwd = testsDir;
       
       try {
         // Check if test runner script exists and is executable
