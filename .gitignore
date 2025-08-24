@@ -65,6 +65,12 @@ out/
 .npm/
 .yarn/
 
+# Test coverage
+coverage/
+
+# Claude Code configuration
+.claude/
+
 # Archives
 *.zip
 *.tar.gz
