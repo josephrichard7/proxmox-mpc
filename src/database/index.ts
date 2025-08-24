@@ -4,4 +4,4 @@
 
 export { PrismaClient } from '@prisma/client';
 export * from './client';
-export * from './repositories';
+export * from './repositories/index';

@@ -3,7 +3,7 @@
  */
 
 import { ProxmoxClient } from '../api/proxmox-client';
-import { RepositoryFactory } from '../database/repositories/index';
+import { RepositoryFactory } from '../database/repositories';
 import { SyncService } from './sync-service';
 import { ProxmoxConfig } from '../types';
 

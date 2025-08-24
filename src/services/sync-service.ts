@@ -4,12 +4,14 @@
  */
 
 import { ProxmoxClient } from '../api/proxmox-client';
-import { NodeRepository } from '../database/repositories/node-repository';
-import { VMRepository } from '../database/repositories/vm-repository';
-import { ContainerRepository } from '../database/repositories/container-repository';
-import { StorageRepository } from '../database/repositories/storage-repository';
-import { TaskRepository } from '../database/repositories/task-repository';
-import { StateSnapshotRepository } from '../database/repositories/state-snapshot-repository';
+import { 
+  NodeRepository,
+  VMRepository,
+  ContainerRepository,
+  StorageRepository,
+  TaskRepository,
+  StateSnapshotRepository
+} from '../database/repositories';
 import { VMInfo, ContainerInfo, StorageInfo, TaskInfo, NodeInfo } from '../types';
 
 export interface SyncResult {
