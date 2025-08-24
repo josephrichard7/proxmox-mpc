@@ -6,7 +6,3 @@
 export { InteractiveConsole } from './repl';
 export { SlashCommandRegistry } from './commands';
 export type { ConsoleSession } from './repl';
-
-// Re-export for convenience
-import { InteractiveConsole } from './repl';
-export default InteractiveConsole;

@@ -7,7 +7,11 @@ import { RepositoryFactory } from '../database/repositories';
 import { SyncService } from './sync-service';
 import { ProxmoxConfig } from '../types';
 
-export * from './sync-service';
+export { SyncService } from './sync-service';
+export type { 
+  SyncResult, 
+  SyncSummary
+} from './sync-service';
 
 /**
  * Create a fully configured SyncService with all dependencies

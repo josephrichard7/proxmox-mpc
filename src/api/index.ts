@@ -3,4 +3,8 @@
  */
 
 export { ProxmoxClient } from './proxmox-client';
-export * from './config';
+export { 
+  loadProxmoxConfig, 
+  validateConfig,
+  sanitizeConfig 
+} from './config';

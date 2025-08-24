@@ -3,7 +3,20 @@
  */
 
 // Export base repository interfaces and types
-export * from './base-repository';
+export type { 
+  BaseRepository, 
+  PaginationOptions, 
+  QueryOptions,
+  FindManyOptions,
+  FindManyResult
+} from './base-repository';
+export {
+  RepositoryError,
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+  Validator
+} from './base-repository';
 
 // Export individual repositories
 export { NodeRepository } from './node-repository';
