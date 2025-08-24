@@ -337,14 +337,317 @@ export class SyncCommand {
   }
 
   private async updateLocalDatabase(client: ProxmoxClient, session: ConsoleSession, parentTraceId: string): Promise<void> {
+    const spanId = this.tracer.startSpan('database-sync', parentTraceId, {
+      phase: 'database-synchronization'
+    });
+
     console.log('\n💽 Phase 5: Updating local database...');
 
     try {
-      // TODO: Implement database synchronization
-      // This would update the local SQLite database with current infrastructure state
-      console.log('   📊 Database synchronization (placeholder - to be implemented)');
+      // Get workspace-specific database client
+      const dbClient = await session.workspace!.getDatabaseClient();
+      
+      // Initialize repositories with workspace database
+      const { 
+        NodeRepository,
+        VMRepository,
+        ContainerRepository,
+        StorageRepository,
+        StateSnapshotRepository
+      } = await import('../../database/repositories');
+
+      const nodeRepo = new NodeRepository();
+      const vmRepo = new VMRepository();
+      const containerRepo = new ContainerRepository();
+      const storageRepo = new StorageRepository();
+      const stateSnapshotRepo = new StateSnapshotRepository();
+
+      // Start database transaction for consistency
+      console.log('   🔄 Starting database transaction...');
+
+      await dbClient.$transaction(async (tx: any) => {
+        let syncStats = {
+          nodes: { created: 0, updated: 0, errors: 0 },
+          vms: { created: 0, updated: 0, errors: 0 },
+          containers: { created: 0, updated: 0, errors: 0 },
+          storage: { created: 0, updated: 0, errors: 0 }
+        };
+
+        // Phase 5.1: Sync Nodes
+        console.log('   📍 Synchronizing nodes...');
+        const nodes = await client.getNodes();
+        
+        for (const nodeData of nodes) {
+          try {
+            const existingNode = await nodeRepo.findById(nodeData.node);
+            
+            const nodeInput = {
+              id: nodeData.node,
+              status: nodeData.status || 'unknown',
+              cpuUsage: nodeData.cpu || 0,
+              cpuMax: nodeData.maxcpu || 0,
+              memoryUsage: BigInt(nodeData.mem || 0),
+              memoryMax: BigInt(nodeData.maxmem || 0),
+              diskUsage: BigInt(0), // Node API doesn't provide disk info
+              diskMax: BigInt(0), // Node API doesn't provide disk info
+              uptime: nodeData.uptime || 0,
+              loadAverage: '0.0', // Node API doesn't provide load average
+              kernelVersion: '', // Node API doesn't provide kernel version
+              pveVersion: '' // Node API doesn't provide PVE version
+            };
+
+            if (existingNode) {
+              await nodeRepo.update(nodeData.node, nodeInput);
+              syncStats.nodes.updated++;
+            } else {
+              await nodeRepo.create(nodeInput);
+              syncStats.nodes.created++;
+            }
+
+            // Create state snapshot for node
+            await stateSnapshotRepo.create({
+              snapshotTime: new Date(),
+              resourceType: 'node',
+              resourceId: nodeData.node,
+              resourceData: JSON.stringify(nodeData),
+              changeType: existingNode ? 'updated' : 'discovered'
+            });
+
+          } catch (error) {
+            syncStats.nodes.errors++;
+            this.logger.error(`Node sync failed for ${nodeData.node}`, error as Error, {
+              workspace: session.workspace?.rootPath,
+              resourcesAffected: [nodeData.node]
+            });
+          }
+        }
+
+        // Phase 5.2: Sync VMs
+        console.log('   📦 Synchronizing VMs...');
+        let totalVMs = 0;
+        
+        for (const node of nodes) {
+          try {
+            const vms = await client.getVMs(node.node);
+            totalVMs += vms.length;
+            
+            for (const vmData of vms) {
+              try {
+                const existingVM = await vmRepo.findById(vmData.vmid);
+                
+                const vmInput = {
+                  id: vmData.vmid,
+                  nodeId: node.node,
+                  name: vmData.name || `vm-${vmData.vmid}`,
+                  status: vmData.status || 'unknown',
+                  template: vmData.template === true,
+                  cpuCores: vmData.cpus || 1,
+                  cpuUsage: vmData.cpu || 0,
+                  memoryBytes: BigInt(vmData.maxmem || 0),
+                  memoryUsage: BigInt(vmData.mem || 0),
+                  diskSize: BigInt(vmData.maxdisk || 0),
+                  diskUsage: BigInt(vmData.disk || 0),
+                  networkIn: BigInt(0), // VM API doesn't provide network in
+                  networkOut: BigInt(0), // VM API doesn't provide network out
+                  uptime: vmData.uptime || 0,
+                  pid: vmData.pid || 0,
+                  haManaged: vmData.ha_state ? true : false,
+                  lockStatus: vmData.lock || undefined,
+                  configDigest: undefined // VM API doesn't provide digest
+                };
+
+                if (existingVM) {
+                  await vmRepo.update(vmData.vmid, vmInput);
+                  syncStats.vms.updated++;
+                } else {
+                  await vmRepo.create(vmInput);
+                  syncStats.vms.created++;
+                }
+
+                // Create state snapshot for VM
+                await stateSnapshotRepo.create({
+                  snapshotTime: new Date(),
+                  resourceType: 'vm',
+                  resourceId: vmData.vmid.toString(),
+                  resourceData: JSON.stringify(vmData),
+                  changeType: existingVM ? 'updated' : 'discovered'
+                });
+
+              } catch (error) {
+                syncStats.vms.errors++;
+                this.logger.error(`VM sync failed for ${vmData.vmid}`, error as Error, {
+                  workspace: session.workspace?.rootPath,
+                  resourcesAffected: [`vm-${vmData.vmid}`]
+                });
+              }
+            }
+          } catch (error) {
+            this.logger.error(`VM discovery failed for node ${node.node}`, error as Error, {
+              workspace: session.workspace?.rootPath,
+              resourcesAffected: [node.node]
+            });
+          }
+        }
+
+        // Phase 5.3: Sync Containers
+        console.log('   📦 Synchronizing containers...');
+        let totalContainers = 0;
+        
+        for (const node of nodes) {
+          try {
+            const containers = await client.getContainers(node.node);
+            totalContainers += containers.length;
+            
+            for (const containerData of containers) {
+              try {
+                const existingContainer = await containerRepo.findById(containerData.vmid);
+                
+                const containerInput = {
+                  id: containerData.vmid,
+                  nodeId: node.node,
+                  name: containerData.name || `ct-${containerData.vmid}`,
+                  status: containerData.status || 'unknown',
+                  template: containerData.template === true,
+                  cpuCores: containerData.cpus || 1,
+                  cpuUsage: containerData.cpu || 0,
+                  memoryBytes: BigInt(containerData.maxmem || 0),
+                  memoryUsage: BigInt(containerData.mem || 0),
+                  diskSize: BigInt(containerData.maxdisk || 0),
+                  diskUsage: BigInt(containerData.disk || 0),
+                  networkIn: BigInt(0), // Container API doesn't provide network in
+                  networkOut: BigInt(0), // Container API doesn't provide network out
+                  uptime: containerData.uptime || 0,
+                  osType: 'unknown', // Container API doesn't provide ostype in list
+                  tags: containerData.tags || undefined,
+                  lockStatus: containerData.lock || undefined,
+                  configDigest: undefined // Container API doesn't provide digest
+                };
+
+                if (existingContainer) {
+                  await containerRepo.update(containerData.vmid, containerInput);
+                  syncStats.containers.updated++;
+                } else {
+                  await containerRepo.create(containerInput);
+                  syncStats.containers.created++;
+                }
+
+                // Create state snapshot for container
+                await stateSnapshotRepo.create({
+                  snapshotTime: new Date(),
+                  resourceType: 'container',
+                  resourceId: containerData.vmid.toString(),
+                  resourceData: JSON.stringify(containerData),
+                  changeType: existingContainer ? 'updated' : 'discovered'
+                });
+
+              } catch (error) {
+                syncStats.containers.errors++;
+                this.logger.error(`Container sync failed for ${containerData.vmid}`, error as Error, {
+                  workspace: session.workspace?.rootPath,
+                  resourcesAffected: [`container-${containerData.vmid}`]
+                });
+              }
+            }
+          } catch (error) {
+            this.logger.error(`Container discovery failed for node ${node.node}`, error as Error, {
+              workspace: session.workspace?.rootPath,
+              resourcesAffected: [node.node]
+            });
+          }
+        }
+
+        // Phase 5.4: Sync Storage
+        console.log('   💾 Synchronizing storage pools...');
+        try {
+          const storagePools = await client.getStoragePools();
+          
+          for (const storageData of storagePools) {
+            try {
+              const existingStorage = await storageRepo.findById(storageData.storage);
+              
+              const storageInput = {
+                id: storageData.storage,
+                type: storageData.type || 'unknown',
+                enabled: storageData.enabled === true,
+                shared: storageData.shared === true,
+                content: storageData.content || '',
+                totalBytes: BigInt(storageData.total || 0),
+                usedBytes: BigInt(storageData.used || 0),
+                availableBytes: BigInt(storageData.avail || 0)
+              };
+
+              if (existingStorage) {
+                await storageRepo.update(storageData.storage, storageInput);
+                syncStats.storage.updated++;
+              } else {
+                await storageRepo.create(storageInput);
+                syncStats.storage.created++;
+              }
+
+              // Create state snapshot for storage
+              await stateSnapshotRepo.create({
+                snapshotTime: new Date(),
+                resourceType: 'storage',
+                resourceId: storageData.storage,
+                resourceData: JSON.stringify(storageData),
+                changeType: existingStorage ? 'updated' : 'discovered'
+              });
+
+            } catch (error) {
+              syncStats.storage.errors++;
+              this.logger.error(`Storage sync failed for ${storageData.storage}`, error as Error, {
+                workspace: session.workspace?.rootPath,
+                resourcesAffected: [storageData.storage]
+              });
+            }
+          }
+        } catch (error) {
+          this.logger.error('Storage discovery failed', error as Error, {
+            workspace: session.workspace?.rootPath,
+            resourcesAffected: []
+          });
+        }
+
+        // Display sync results
+        console.log('   ✅ Database synchronization completed');
+        console.log(`   📊 Sync Statistics:`);
+        console.log(`      • Nodes: ${syncStats.nodes.created} created, ${syncStats.nodes.updated} updated, ${syncStats.nodes.errors} errors`);
+        console.log(`      • VMs: ${syncStats.vms.created} created, ${syncStats.vms.updated} updated, ${syncStats.vms.errors} errors`);
+        console.log(`      • Containers: ${syncStats.containers.created} created, ${syncStats.containers.updated} updated, ${syncStats.containers.errors} errors`);
+        console.log(`      • Storage: ${syncStats.storage.created} created, ${syncStats.storage.updated} updated, ${syncStats.storage.errors} errors`);
+
+        const totalResources = totalVMs + totalContainers + nodes.length;
+        console.log(`   📈 Total resources synchronized: ${totalResources}`);
+
+        // Log successful database sync
+        this.logger.info('Database synchronization completed', {
+          workspace: session.workspace?.rootPath,
+          resourcesAffected: [`${totalResources} resources`],
+          syncStats: syncStats
+        });
+
+      }, {
+        timeout: 60000 // 60 second timeout for database transaction
+      });
+
+      // Close workspace database connection
+      await dbClient.$disconnect();
+
+      this.tracer.finishSpan(spanId, {
+        success: 'true'
+      });
 
     } catch (error) {
+      this.logger.error('Database synchronization failed', error as Error, {
+        workspace: session.workspace?.rootPath,
+        resourcesAffected: []
+      }, [
+        'Check database connectivity and permissions',
+        'Verify workspace database schema is up to date',
+        'Use /logs --level error for detailed error information'
+      ]);
+
+      this.tracer.finishSpanWithError(spanId, error as Error);
       throw new Error(`Database update failed: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
