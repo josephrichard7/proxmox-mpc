@@ -5,6 +5,7 @@
 
 import { ConsoleSession } from '../repl';
 import { ProjectWorkspace } from '../../workspace';
+import { errorHandler } from '../error-handler';
 import * as readline from 'readline';
 
 export class InitCommand {
@@ -15,10 +16,23 @@ export class InitCommand {
     try {
       const existing = await ProjectWorkspace.detect(process.cwd());
       if (existing) {
-        console.log('❌ Already in a Proxmox workspace!');
-        console.log(`   Project: ${existing.name}`);
-        console.log(`   Config: ${existing.configPath}`);
-        console.log('\n💡 Navigate to a different directory to create a new workspace\n');
+        errorHandler.handleError({
+          code: 'WORKSPACE_EXISTS',
+          message: 'Already in a Proxmox workspace!',
+          severity: 'medium',
+          context: {
+            command: 'init',
+            workspace: existing.name,
+            suggestions: [
+              'Navigate to a different directory to create a new workspace',
+              'Use /status to view current workspace details'
+            ],
+            details: { 
+              project: existing.name,
+              configPath: existing.configPath
+            }
+          }
+        });
         return;
       }
     } catch (error) {
@@ -32,17 +46,36 @@ export class InitCommand {
       // Update session
       session.workspace = workspace;
       
-      console.log('\n✅ Project workspace initialized successfully!');
-      console.log(`   📁 Project: ${workspace.name}`);
-      console.log(`   🗄️  Database: ${workspace.databasePath}`);
-      console.log(`   ⚙️  Config: ${workspace.configPath}`);
-      console.log('\n🎯 Next steps:');
-      console.log('   • Use /status to check server connectivity');
-      console.log('   • Use /sync to import existing infrastructure');
-      console.log('   • Start creating resources with "create vm --name <name>"\n');
+      errorHandler.showSuccess(
+        'Project workspace initialized successfully!',
+        [
+          `📁 Project: ${workspace.name}`,
+          `🗄️  Database: ${workspace.databasePath}`,
+          `⚙️  Config: ${workspace.configPath}`,
+          '',
+          '🎯 Next steps:',
+          '• Use /status to check server connectivity',
+          '• Use /sync to import existing infrastructure',
+          '• Start creating resources with "create vm --name <name>"'
+        ]
+      );
       
     } catch (error) {
-      console.error(`❌ Failed to initialize workspace: ${error instanceof Error ? error.message : String(error)}\n`);
+      errorHandler.handleError({
+        code: 'WORKSPACE_INIT_FAILED',
+        message: 'Failed to initialize workspace',
+        severity: 'high',
+        originalError: error as Error,
+        context: {
+          command: 'init',
+          operation: 'workspace_creation',
+          suggestions: [
+            'Check directory permissions for write access',
+            'Ensure sufficient disk space is available',
+            'Verify the directory is not read-only'
+          ]
+        }
+      });
     }
   }
 
@@ -77,8 +110,13 @@ export class InitCommand {
       return workspace;
 
     } catch (error) {
-      console.error('\n❌ Failed to collect configuration interactively');
-      console.log('💡 You can manually edit .proxmox/config.yml after initialization\n');
+      errorHandler.showWarning(
+        'Failed to collect configuration interactively',
+        [
+          'You can manually edit .proxmox/config.yml after initialization',
+          'Using default configuration template for now'
+        ]
+      );
       
       // Fall back to basic configuration
       const config = {

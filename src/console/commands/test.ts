@@ -4,6 +4,7 @@
  */
 
 import { ConsoleSession } from '../repl';
+import { errorHandler } from '../error-handler';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
@@ -15,9 +16,7 @@ export class TestCommand {
     console.log('🧪 Testing Infrastructure-as-Code configurations...\n');
 
     // Check if we're in a workspace
-    if (!session.workspace) {
-      console.log('❌ No workspace detected');
-      console.log('   Use /init to create a workspace first');
+    if (!errorHandler.validateSession(session, 'test')) {
       return;
     }
 
@@ -26,42 +25,42 @@ export class TestCommand {
 
       // Phase 1: Validate workspace structure
       console.log('📁 Phase 1: Validating workspace structure...');
-      const structureValid = await this.validateWorkspaceStructure(session.workspace.rootPath);
+      const structureValid = await this.validateWorkspaceStructure(session.workspace!.rootPath);
       if (!structureValid) {
         allTestsPassed = false;
       }
 
       // Phase 2: Validate Terraform configurations
       console.log('\n🏗️  Phase 2: Validating Terraform configurations...');
-      const terraformValid = await this.validateTerraformConfigs(session.workspace.rootPath);
+      const terraformValid = await this.validateTerraformConfigs(session.workspace!.rootPath);
       if (!terraformValid) {
         allTestsPassed = false;
       }
 
       // Phase 3: Validate Ansible configurations
       console.log('\n🎵 Phase 3: Validating Ansible configurations...');
-      const ansibleValid = await this.validateAnsibleConfigs(session.workspace.rootPath);
+      const ansibleValid = await this.validateAnsibleConfigs(session.workspace!.rootPath);
       if (!ansibleValid) {
         allTestsPassed = false;
       }
 
       // Phase 4: Run Terraform plan (dry-run)
       console.log('\n🔍 Phase 4: Running Terraform plan (dry-run)...');
-      const planValid = await this.runTerraformPlan(session.workspace.rootPath);
+      const planValid = await this.runTerraformPlan(session.workspace!.rootPath);
       if (!planValid) {
         allTestsPassed = false;
       }
 
       // Phase 5: Validate Ansible syntax
       console.log('\n✅ Phase 5: Validating Ansible playbook syntax...');
-      const ansibleSyntaxValid = await this.validateAnsibleSyntax(session.workspace.rootPath);
+      const ansibleSyntaxValid = await this.validateAnsibleSyntax(session.workspace!.rootPath);
       if (!ansibleSyntaxValid) {
         allTestsPassed = false;
       }
 
       // Phase 6: Run generated TDD tests
       console.log('\n🧪 Phase 6: Running generated TDD tests...');
-      const tddTestsValid = await this.runGeneratedTDDTests(session.workspace.rootPath);
+      const tddTestsValid = await this.runGeneratedTDDTests(session.workspace!.rootPath);
       if (!tddTestsValid) {
         allTestsPassed = false;
       }
@@ -84,7 +83,21 @@ export class TestCommand {
       console.log('='.repeat(60));
 
     } catch (error) {
-      console.error(`❌ Test execution failed: ${error instanceof Error ? error.message : String(error)}`);
+      errorHandler.handleError({
+        code: 'TEST_EXECUTION_FAILED',
+        message: 'Test execution failed',
+        severity: 'high',
+        originalError: error as Error,
+        context: {
+          command: 'test',
+          workspace: session.workspace?.name,
+          suggestions: [
+            'Check the detailed error output above',
+            'Ensure all test dependencies are installed',
+            'Verify workspace structure and generated files'
+          ]
+        }
+      });
     }
   }
 

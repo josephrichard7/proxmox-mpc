@@ -4,6 +4,7 @@
  */
 
 import { ConsoleSession } from '../repl';
+import { errorHandler } from '../error-handler';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
@@ -15,13 +16,11 @@ export class ValidateCommand {
     console.log('🔍 Running comprehensive validation...\n');
 
     // Check if we're in a workspace
-    if (!session.workspace) {
-      console.log('❌ No workspace detected');
-      console.log('   Use /init to create a workspace first');
+    if (!errorHandler.validateSession(session, 'validate')) {
       return;
     }
 
-    const workspaceRoot = session.workspace.rootPath;
+    const workspaceRoot = session.workspace!.rootPath;
     let allValidationsPassed = true;
 
     try {
@@ -112,7 +111,21 @@ export class ValidateCommand {
       console.log('=' .repeat(60));
 
     } catch (error) {
-      console.error(`❌ Validation failed: ${error instanceof Error ? error.message : String(error)}`);
+      errorHandler.handleError({
+        code: 'VALIDATION_FAILED',
+        message: 'Validation process failed',
+        severity: 'high',
+        originalError: error as Error,
+        context: {
+          command: 'validate',
+          workspace: session.workspace?.name,
+          suggestions: [
+            'Check the detailed error output above',
+            'Ensure all required tools are installed',
+            'Verify workspace structure integrity'
+          ]
+        }
+      });
     }
   }
 

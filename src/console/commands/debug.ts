@@ -7,6 +7,7 @@ import { ConsoleSession } from '../repl';
 import { Logger } from '../../observability/logger';
 import { MetricsCollector } from '../../observability/metrics';
 import { Tracer } from '../../observability/tracer';
+import { errorHandler } from '../error-handler';
 
 export class DebugCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {
@@ -42,7 +43,18 @@ export class DebugCommand {
         await this.clearDebugData(args.slice(1), session);
         break;
       default:
-        console.log('❌ Unknown debug command. Use /help debug for available options.');
+        errorHandler.handleError({
+          code: 'UNKNOWN_DEBUG_COMMAND',
+          message: `Unknown debug command: ${command}`,
+          severity: 'low',
+          context: {
+            command: 'debug',
+            suggestions: [
+              'Use /help debug for available debug commands',
+              'Available commands: on, off, status, logs, metrics, traces, clear'
+            ]
+          }
+        });
     }
   }
 

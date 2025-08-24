@@ -11,6 +11,7 @@ import { TestGenerator } from '../../generators/tests';
 import { Logger } from '../../observability/logger';
 import { Tracer } from '../../observability/tracer';
 import { MetricsCollector } from '../../observability/metrics';
+import { errorHandler } from '../error-handler';
 
 export class SyncCommand {
   private logger = Logger.getInstance();
@@ -34,14 +35,7 @@ export class SyncCommand {
     console.log('🔄 Synchronizing Proxmox infrastructure...\n');
 
     // Check if we're in a workspace
-    if (!session.workspace) {
-      console.log('❌ No workspace detected');
-      console.log('   Use /init to create a workspace first');
-      
-      this.logger.error('Sync failed: No workspace detected', undefined, {
-        resourcesAffected: []
-      }, ['Use /init to create a workspace first']);
-      
+    if (!errorHandler.validateSession(session, 'sync')) {
       this.tracer.finishSpanWithError(traceId, new Error('No workspace detected'));
       return;
     }
@@ -49,11 +43,11 @@ export class SyncCommand {
     try {
       // Connect to Proxmox server
       const connectSpan = this.tracer.startSpan('connect', traceId, {
-        server: session.workspace.config.host,
-        port: session.workspace.config.port.toString()
+        server: session.workspace!.config.host,
+        port: session.workspace!.config.port.toString()
       });
 
-      const client = session.client || new ProxmoxClient(session.workspace.config);
+      const client = session.client || new ProxmoxClient(session.workspace!.config);
       const connectStartTime = Date.now();
       const connectionResult = await client.connect();
       const connectDuration = Date.now() - connectStartTime;
@@ -65,8 +59,8 @@ export class SyncCommand {
         console.log(`   Error: ${connectionResult.error}`);
         
         this.logger.error('Proxmox connection failed', new Error(connectionResult.error || 'Connection failed'), {
-          workspace: session.workspace.rootPath,
-          proxmoxServer: session.workspace.config.host,
+          workspace: session.workspace!.rootPath,
+          proxmoxServer: session.workspace!.config.host,
           resourcesAffected: []
         }, [
           'Check network connectivity to Proxmox server',
@@ -83,8 +77,8 @@ export class SyncCommand {
       session.client = client;
       
       this.logger.info('Proxmox connection established', {
-        workspace: session.workspace.rootPath,
-        proxmoxServer: session.workspace.config.host,
+        workspace: session.workspace!.rootPath,
+        proxmoxServer: session.workspace!.config.host,
         resourcesAffected: [],
         duration: connectDuration
       });
@@ -126,14 +120,14 @@ export class SyncCommand {
 
       // Record successful completion
       this.logger.operationSuccess('sync', 'completion', totalDuration, {
-        workspace: session.workspace.rootPath,
-        proxmoxServer: session.workspace.config.host,
+        workspace: session.workspace!.rootPath,
+        proxmoxServer: session.workspace!.config.host,
         resourcesAffected: []
       });
       
       this.metrics.recordDuration('sync', totalDuration, {
         success: 'true',
-        workspace: session.workspace.name
+        workspace: session.workspace!.name
       });
       
       this.tracer.finishSpan(traceId, {

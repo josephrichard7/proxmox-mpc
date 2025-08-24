@@ -4,6 +4,7 @@
  */
 
 import { ConsoleSession } from '../repl';
+import { errorHandler } from '../error-handler';
 import * as fs from 'fs/promises';
 import * as fsSync from 'fs';
 import * as path from 'path';
@@ -14,13 +15,11 @@ export class ApplyCommand {
     console.log('🚀 Applying infrastructure changes...\n');
 
     // Check if we're in a workspace
-    if (!session.workspace) {
-      console.log('❌ No workspace detected');
-      console.log('   Use /init to create a workspace first');
+    if (!errorHandler.validateSession(session, 'apply')) {
       return;
     }
 
-    const workspaceRoot = session.workspace.rootPath;
+    const workspaceRoot = session.workspace!.rootPath;
     const terraformDir = path.join(workspaceRoot, 'terraform');
     const ansibleDir = path.join(workspaceRoot, 'ansible');
 
@@ -60,14 +59,34 @@ export class ApplyCommand {
       console.log('\n✅ Phase 4: Post-deployment verification...');
       await this.runPostDeploymentVerification(session);
 
-      console.log('\n🎉 Infrastructure deployment completed successfully!');
-      console.log('\n📊 Next steps:');
-      console.log('   • Use /status to verify deployed infrastructure');
-      console.log('   • Use /sync to update local state');
-      console.log('   • Monitor your Proxmox server for the changes');
+      errorHandler.showSuccess(
+        'Infrastructure deployment completed successfully!',
+        [
+          '📊 Next steps:',
+          '• Use /status to verify deployed infrastructure',
+          '• Use /sync to update local state',
+          '• Monitor your Proxmox server for the changes'
+        ]
+      );
 
     } catch (error) {
-      console.error(`❌ Apply failed: ${error instanceof Error ? error.message : String(error)}`);
+      errorHandler.handleError({
+        code: 'APPLY_FAILED',
+        message: 'Apply operation failed',
+        severity: 'high',
+        originalError: error as Error,
+        context: {
+          command: 'apply',
+          operation: 'infrastructure_deployment',
+          workspace: session.workspace?.name,
+          suggestions: [
+            'Check the detailed error output above',
+            'Verify your Proxmox server connectivity',
+            'Use /validate to check configurations before applying',
+            'Review Terraform and Ansible logs for specific issues'
+          ]
+        }
+      });
     }
   }
 
@@ -293,9 +312,16 @@ export class ApplyCommand {
       });
 
       initProcess.on('error', (error) => {
-        console.log('     ❌ Failed to run terraform init');
-        console.log(`     💡 Error: ${error.message}`);
-        console.log('     💡 Ensure Terraform is installed and in your PATH');
+        errorHandler.handleProcessError(
+          'apply',
+          'terraform init',
+          -1,
+          error.message,
+          [
+            'Ensure Terraform is installed and in your PATH',
+            'Check Terraform installation with: terraform version'
+          ]
+        );
         resolve(false);
       });
     });
@@ -352,8 +378,13 @@ export class ApplyCommand {
       });
 
       planProcess.on('error', (error) => {
-        console.log('     ❌ Failed to run terraform plan');
-        console.log(`     💡 Error: ${error.message}`);
+        errorHandler.handleProcessError(
+          'apply', 
+          'terraform plan',
+          -1,
+          error.message,
+          ['Check Terraform configuration and connectivity to Proxmox']
+        );
         resolve(false);
       });
     });

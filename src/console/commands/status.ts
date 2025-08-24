@@ -5,6 +5,7 @@
 
 import { ConsoleSession } from '../repl';
 import { ProxmoxClient } from '../../api';
+import { errorHandler } from '../error-handler';
 
 export class StatusCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {
@@ -44,8 +45,11 @@ export class StatusCommand {
           console.log(`   Error: ${result.error}`);
         }
       } catch (error) {
-        console.log('   Status: ❌ Connection error');
-        console.log(`   Error: ${error instanceof Error ? error.message : String(error)}`);
+        errorHandler.handleConnectionError(
+          'status',
+          `${session.workspace.config.host}:${session.workspace.config.port}`,
+          error as Error
+        );
       }
 
       // Show infrastructure overview (if connected)
@@ -54,10 +58,18 @@ export class StatusCommand {
       }
 
     } else {
-      console.log('❌ No workspace detected');
-      console.log('   Current directory is not a Proxmox project');
-      console.log('\n💡 Use /init to create a new workspace');
-      console.log('   or navigate to an existing project directory');
+      errorHandler.handleError({
+        code: 'NO_WORKSPACE',
+        message: 'No workspace detected',
+        severity: 'medium',
+        context: {
+          command: 'status',
+          suggestions: [
+            'Use /init to create a new workspace',
+            'Navigate to an existing project directory'
+          ]
+        }
+      });
     }
 
     // Show session information
@@ -102,7 +114,10 @@ export class StatusCommand {
           runningContainers += containers.filter(c => c.status === 'running').length;
           
         } catch (error) {
-          console.log(`   ⚠️  Failed to get resources from node ${node.node}: ${error instanceof Error ? error.message : String(error)}`);
+          errorHandler.showWarning(
+            `Failed to get resources from node ${node.node}`,
+            [`Error: ${error instanceof Error ? error.message : String(error)}`]
+          );
         }
       }
 
