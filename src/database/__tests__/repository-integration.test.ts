@@ -226,7 +226,6 @@ describe('Repository Integration Tests', () => {
       expect(storageStats.totalStorages).toBe(2);
       expect(storageStats.enabledStorages).toBe(2);
 
-      console.log('✅ Complete cluster simulation successful');
     });
   });
 
@@ -331,7 +330,6 @@ describe('Repository Integration Tests', () => {
         cpuUsage: 1.5 // > 100%
       })).rejects.toThrow(ValidationError);
 
-      console.log('✅ Validation error handling working correctly');
     });
 
     it('should handle foreign key constraint violations', async () => {
@@ -351,7 +349,6 @@ describe('Repository Integration Tests', () => {
       });
       expect(vm.nodeId).toBe('valid-node');
 
-      console.log('✅ Foreign key constraint handling working correctly');
     });
 
     it('should handle not found errors', async () => {
@@ -359,7 +356,6 @@ describe('Repository Integration Tests', () => {
       await expect(nodeRepo.update('non-existent', { status: 'offline' })).rejects.toThrow(NotFoundError);
       await expect(nodeRepo.delete('non-existent')).rejects.toThrow(NotFoundError);
 
-      console.log('✅ Not found error handling working correctly');
     });
 
     it('should prevent cascading deletes when relationships exist', async () => {
@@ -374,7 +370,6 @@ describe('Repository Integration Tests', () => {
       await vmRepo.delete(100);
       await nodeRepo.delete('parent-node');
 
-      console.log('✅ Cascading delete protection working correctly');
     });
   });
 
@@ -423,7 +418,6 @@ describe('Repository Integration Tests', () => {
       expect(page2.hasMore).toBe(false);
 
       const endTime = Date.now();
-      console.log(`✅ Bulk operations completed in ${endTime - startTime}ms`);
     });
 
     it('should handle concurrent operations safely', async () => {
@@ -444,7 +438,6 @@ describe('Repository Integration Tests', () => {
       const count = await vmRepo.count({ nodeId: 'perf-node' });
       expect(count).toBe(10);
 
-      console.log('✅ Concurrent operations handled safely');
     });
   });
 
@@ -479,7 +472,6 @@ describe('Repository Integration Tests', () => {
       expect(runningVMs.data[0].id).toBe(100); // Higher CPU usage first
       expect(runningVMs.data[1].id).toBe(101);
 
-      console.log('✅ Complex queries working correctly');
     });
   });
 });

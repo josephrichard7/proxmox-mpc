@@ -31,6 +31,43 @@ export class ProjectWorkspace {
   }
 
   /**
+   * Get a database client connected to this workspace's database
+   */
+  async getDatabaseClient(): Promise<any> {
+    const { PrismaClient } = await import('@prisma/client');
+    
+    // Create client with workspace-specific database URL
+    const client = new PrismaClient({
+      datasources: {
+        db: {
+          url: `file:${this.databasePath}`
+        }
+      },
+      log: process.env.NODE_ENV === 'development' ? ['error'] : ['error']
+    });
+    
+    return client;
+  }
+
+  /**
+   * Test database connectivity for this workspace
+   */
+  async testDatabaseConnection(): Promise<boolean> {
+    try {
+      const client = await this.getDatabaseClient();
+      await client.$connect();
+      
+      // Simple health check
+      await client.node.count();
+      
+      await client.$disconnect();
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /**
    * Create a new project workspace
    */
   static async create(rootPath: string, config: Omit<WorkspaceConfig, 'name' | 'created' | 'version'>): Promise<ProjectWorkspace> {
@@ -107,10 +144,78 @@ export class ProjectWorkspace {
   }
 
   private static async initializeDatabase(rootPath: string): Promise<void> {
-    // TODO: Initialize SQLite database
-    // For now, just create an empty file
     const dbPath = path.join(rootPath, '.proxmox', 'state.db');
-    await fs.writeFile(dbPath, '');
+    
+    // Set DATABASE_URL environment variable for this workspace
+    const originalDatabaseUrl = process.env.DATABASE_URL;
+    process.env.DATABASE_URL = `file:${dbPath}`;
+    
+    try {
+      // Import Prisma client and create database schema
+      const { PrismaClient } = await import('@prisma/client');
+      const { exec } = await import('child_process');
+      const { promisify } = await import('util');
+      const execAsync = promisify(exec);
+      
+      // Find the project root directory (where schema.prisma is located)
+      const { findPackageRoot } = await import('../utils/find-package-root');
+      let projectRoot: string;
+      try {
+        projectRoot = findPackageRoot(__dirname);
+      } catch {
+        // Fallback - assume we're in the project
+        projectRoot = path.resolve(__dirname, '../..');
+      }
+      
+      const schemaPath = path.join(projectRoot, 'prisma', 'schema.prisma');
+      
+      // Run Prisma migration to create database schema
+      await execAsync(`npx prisma db push --accept-data-loss --schema="${schemaPath}"`, {
+        env: {
+          ...process.env,
+          DATABASE_URL: `file:${dbPath}`
+        },
+        cwd: projectRoot
+      });
+      
+      // Test database connection
+      const prisma = new PrismaClient();
+      await prisma.$connect();
+      
+      // Verify schema by counting tables (should not throw)
+      await prisma.node.count();
+      await prisma.vM.count();
+      await prisma.container.count();
+      await prisma.storage.count();
+      await prisma.task.count();
+      await prisma.stateSnapshot.count();
+      
+      await prisma.$disconnect();
+      
+    } catch (error) {
+      // Clean up database file on failure
+      try {
+        await fs.unlink(dbPath);
+      } catch (unlinkError) {
+        // Ignore cleanup errors
+      }
+      
+      // Restore original DATABASE_URL
+      if (originalDatabaseUrl) {
+        process.env.DATABASE_URL = originalDatabaseUrl;
+      } else {
+        delete process.env.DATABASE_URL;
+      }
+      
+      throw new Error(`Failed to initialize database: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+    
+    // Restore original DATABASE_URL
+    if (originalDatabaseUrl) {
+      process.env.DATABASE_URL = originalDatabaseUrl;
+    } else {
+      delete process.env.DATABASE_URL;
+    }
   }
 
   private static async createDocumentation(rootPath: string, config: WorkspaceConfig): Promise<void> {

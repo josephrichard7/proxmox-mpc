@@ -184,10 +184,6 @@ describe('VM Lifecycle Integration Tests', () => {
 
       // Performance assertions
       expect(totalDuration).toBeLessThan(60000); // Should complete within 1 minute
-      console.log(`Full VM lifecycle completed in ${totalDuration}ms`);
-      console.log(`  Create → Start: ${timer.getCheckpointInterval('verify-created', 'start-completed')}ms`);
-      console.log(`  Start → Stop: ${timer.getCheckpointInterval('start-completed', 'stop-completed')}ms`);
-      console.log(`  Stop → Delete: ${timer.getCheckpointInterval('stop-completed', 'delete-completed')}ms`);
     });
 
     it('should handle graceful VM shutdown', async () => {
@@ -380,7 +376,6 @@ describe('VM Lifecycle Integration Tests', () => {
       timer.checkpoint('all-deleted');
 
       const totalDuration = timer.end();
-      console.log(`Concurrent operations on ${vmCount} VMs completed in ${totalDuration}ms`);
 
       // Verify all VMs are deleted
       for (const vmid of vmids) {
@@ -444,11 +439,7 @@ describe('VM Lifecycle Integration Tests', () => {
       expect(stopDuration).toBeLessThan(2000);   // 2 seconds  
       expect(deleteDuration).toBeLessThan(3000); // 3 seconds
 
-      console.log('VM Operation Performance:');
-      console.log(`  Create: ${createDuration}ms`);
-      console.log(`  Start:  ${startDuration}ms`);
-      console.log(`  Stop:   ${stopDuration}ms`);
-      console.log(`  Delete: ${deleteDuration}ms`);
+      // Performance metrics captured for assertions
     });
   });
 });

@@ -61,7 +61,6 @@ describe('Repository Validation Tests', () => {
       expect(health.repositories.tasks.status).toBe('healthy');
       expect(health.repositories.stateSnapshots.status).toBe('healthy');
       
-      console.log('✅ All repository health checks passed');
     });
   });
 
@@ -112,7 +111,6 @@ describe('Repository Validation Tests', () => {
       const deleted = await nodeRepo.findById('test-node');
       expect(deleted).toBeNull();
 
-      console.log('✅ Node repository lifecycle complete');
     });
   });
 
@@ -154,7 +152,6 @@ describe('Repository Validation Tests', () => {
       expect(stats.totalVMs).toBe(1);
       expect(stats.runningVMs).toBe(1);
 
-      console.log('✅ VM repository with relationships working');
     });
 
     it('should prevent orphaned VMs', async () => {
@@ -164,7 +161,6 @@ describe('Repository Validation Tests', () => {
         status: 'running'
       })).rejects.toThrow(ValidationError);
 
-      console.log('✅ Foreign key constraints enforced');
     });
   });
 
@@ -206,7 +202,6 @@ describe('Repository Validation Tests', () => {
         'debian-11-standard': 1
       });
 
-      console.log('✅ Container repository operations complete');
     });
   });
 
@@ -252,7 +247,6 @@ describe('Repository Validation Tests', () => {
       expect(stats.totalTasks).toBe(1);
       expect(stats.completedTasks).toBe(1);
 
-      console.log('✅ Task tracking functionality complete');
     });
   });
 
@@ -315,7 +309,6 @@ describe('Repository Validation Tests', () => {
       expect(history.snapshots).toHaveLength(3);
       expect(history.totalChanges).toBe(1); // One 'updated' change
 
-      console.log('✅ State change detection working correctly');
     });
 
     it('should provide change statistics', async () => {
@@ -331,7 +324,6 @@ describe('Repository Validation Tests', () => {
       expect(stats.changesByResource.vm).toBe(2);
       expect(stats.changesByResource.container).toBe(1);
 
-      console.log('✅ Change statistics working correctly');
     });
   });
 
@@ -349,7 +341,6 @@ describe('Repository Validation Tests', () => {
         status: 'invalid-status'
       })).rejects.toThrow(ValidationError);
 
-      console.log('✅ Validation error handling working');
     });
 
     it('should handle not found errors', async () => {
@@ -359,7 +350,6 @@ describe('Repository Validation Tests', () => {
       await expect(nodeRepo.delete('non-existent'))
         .rejects.toThrow(NotFoundError);
 
-      console.log('✅ Not found error handling working');
     });
   });
 
@@ -400,13 +390,11 @@ describe('Repository Validation Tests', () => {
       expect(page1.hasMore).toBe(true);
 
       const endTime = Date.now();
-      console.log(`✅ Bulk operations completed in ${endTime - startTime}ms`);
     });
   });
 
   describe('Complete Proxmox Cluster Simulation', () => {
     it('should simulate a realistic Proxmox environment', async () => {
-      console.log('🏗️  Setting up complete Proxmox cluster simulation...');
 
       // 1. Create cluster node
       const node = await nodeRepo.create({
@@ -477,12 +465,7 @@ describe('Repository Validation Tests', () => {
       expect(vmStats.totalVMs).toBe(2);
       expect(vmStats.runningVMs).toBe(2);
 
-      console.log('✅ Complete Proxmox cluster simulation successful!');
-      console.log(`   - 1 Node (${node.id})`);
-      console.log(`   - 2 VMs (${vm1.name}, ${vm2.name})`);
-      console.log(`   - 1 Container (${container.name})`);
-      console.log(`   - 1 Task (${task.type})`);
-      console.log(`   - State tracking active`);
+      // Complex cluster simulation completed successfully
     });
   });
 });

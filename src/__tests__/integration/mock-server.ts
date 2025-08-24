@@ -567,7 +567,6 @@ export class MockProxmoxServer {
         if (err) {
           reject(err);
         } else {
-          console.log(`Mock Proxmox server running on port ${this.port}`);
           resolve();
         }
       });
