@@ -14,6 +14,7 @@ import {
   Validator,
   CommonValidators
 } from './base-repository';
+import { Logger } from '../../observability/logger';
 
 // Input types for VM operations
 export interface CreateVMInput {
@@ -64,6 +65,7 @@ export interface VMWithRelations extends VM {
 
 export class VMRepository implements BaseRepository<VM, CreateVMInput, UpdateVMInput, number> {
   private validator: Validator<CreateVMInput>;
+  private logger = Logger.getInstance();
 
   constructor() {
     this.validator = new Validator<CreateVMInput>()
@@ -223,7 +225,10 @@ export class VMRepository implements BaseRepository<VM, CreateVMInput, UpdateVMI
         results.push(created);
       } catch (error) {
         // Continue with others if one fails, but log the error
-        console.error(`Failed to create VM ${item.id}:`, error);
+        this.logger.error(`Failed to create VM ${item.id} in bulk operation`, error as Error, {
+          workspace: 'database',
+          resourcesAffected: [item.id.toString()]
+        }, ['Continue with remaining VMs', 'Check database connectivity']);
       }
     }
 

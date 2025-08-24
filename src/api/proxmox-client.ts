@@ -33,10 +33,12 @@ import {
   type CreateTaskInput,
   type CreateContainerInput 
 } from '../database/repositories';
+import { Logger } from '../observability/logger';
 
 export class ProxmoxClient {
   private config: ProxmoxConfig;
   private httpClient: AxiosInstance;
+  private logger = Logger.getInstance();
 
   constructor(config: ProxmoxConfig) {
     this.config = config;
@@ -304,7 +306,10 @@ export class ProxmoxClient {
           resourceId: config.vmid.toString()
         });
       } catch (dbError) {
-        console.warn('Failed to save task to database:', dbError);
+        this.logger.warn('Failed to save task to database after VM creation', {
+          workspace: 'vm-creation',
+          resourcesAffected: [config.vmid.toString()]
+        }, { error: dbError, operation: 'vm-creation', phase: 'task-save' });
         // Continue execution - database error shouldn't fail VM creation
       }
 
@@ -322,7 +327,10 @@ export class ProxmoxClient {
 
         await vmRepository.create(vmData);
       } catch (dbError) {
-        console.warn('Failed to save VM to database:', dbError);
+        this.logger.warn('Failed to save VM to database after creation', {
+          workspace: 'vm-creation',
+          resourcesAffected: [config.vmid.toString()]
+        }, { error: dbError, operation: 'vm-creation', phase: 'vm-save' });
         // Continue execution - database error shouldn't fail VM creation
       }
       
@@ -570,7 +578,10 @@ export class ProxmoxClient {
           resourceId: config.vmid.toString()
         });
       } catch (dbError) {
-        console.warn('Failed to save task to database:', dbError);
+        this.logger.warn('Failed to save task to database after container creation', {
+          workspace: 'container-creation',
+          resourcesAffected: [config.vmid.toString()]
+        }, { error: dbError, operation: 'container-creation', phase: 'task-save' });
         // Continue execution - database error shouldn't fail container creation
       }
 
@@ -588,7 +599,10 @@ export class ProxmoxClient {
 
         await containerRepository.create(containerData);
       } catch (dbError) {
-        console.warn('Failed to save container to database:', dbError);
+        this.logger.warn('Failed to save container to database after creation', {
+          workspace: 'container-creation',
+          resourcesAffected: [config.vmid.toString()]
+        }, { error: dbError, operation: 'container-creation', phase: 'container-save' });
         // Continue execution - database error shouldn't fail container creation
       }
       

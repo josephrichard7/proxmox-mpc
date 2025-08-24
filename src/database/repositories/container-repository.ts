@@ -14,6 +14,7 @@ import {
   Validator,
   CommonValidators
 } from './base-repository';
+import { Logger } from '../../observability/logger';
 
 // Input types for Container operations
 export interface CreateContainerInput {
@@ -72,6 +73,7 @@ export interface ContainerWithRelations extends Container {
 
 export class ContainerRepository implements BaseRepository<Container, CreateContainerInput, UpdateContainerInput, number> {
   private validator: Validator<CreateContainerInput>;
+  private logger = Logger.getInstance();
 
   constructor() {
     this.validator = new Validator<CreateContainerInput>()
@@ -231,7 +233,10 @@ export class ContainerRepository implements BaseRepository<Container, CreateCont
         results.push(created);
       } catch (error) {
         // Continue with others if one fails, but log the error
-        console.error(`Failed to create container ${item.id}:`, error);
+        this.logger.error(`Failed to create container ${item.id} in bulk operation`, error as Error, {
+          workspace: 'database',
+          resourcesAffected: [item.id.toString()]
+        }, ['Continue with remaining containers', 'Check database connectivity']);
       }
     }
 

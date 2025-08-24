@@ -14,6 +14,7 @@ import {
   Validator,
   CommonValidators
 } from './base-repository';
+import { Logger } from '../../observability/logger';
 
 // Input types for Task operations
 export interface CreateTaskInput {
@@ -50,6 +51,7 @@ export interface TaskWithRelations extends Task {
 
 export class TaskRepository implements BaseRepository<Task, CreateTaskInput, UpdateTaskInput, string> {
   private validator: Validator<CreateTaskInput>;
+  private logger = Logger.getInstance();
 
   constructor() {
     this.validator = new Validator<CreateTaskInput>()
@@ -203,7 +205,10 @@ export class TaskRepository implements BaseRepository<Task, CreateTaskInput, Upd
         results.push(created);
       } catch (error) {
         // Continue with others if one fails, but log the error
-        console.error(`Failed to create task ${item.upid}:`, error);
+        this.logger.error(`Failed to create task ${item.upid} in bulk operation`, error as Error, {
+          workspace: 'database',
+          resourcesAffected: [item.upid]
+        }, ['Continue with remaining tasks', 'Check database connectivity']);
       }
     }
 

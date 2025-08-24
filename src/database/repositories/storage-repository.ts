@@ -14,6 +14,7 @@ import {
   Validator,
   CommonValidators
 } from './base-repository';
+import { Logger } from '../../observability/logger';
 
 // Input types for Storage operations
 export interface CreateStorageInput {
@@ -45,6 +46,7 @@ export interface UpdateStorageInput {
 
 export class StorageRepository implements BaseRepository<Storage, CreateStorageInput, UpdateStorageInput, string> {
   private validator: Validator<CreateStorageInput>;
+  private logger = Logger.getInstance();
 
   constructor() {
     this.validator = new Validator<CreateStorageInput>()
@@ -183,7 +185,10 @@ export class StorageRepository implements BaseRepository<Storage, CreateStorageI
         results.push(created);
       } catch (error) {
         // Continue with others if one fails, but log the error
-        console.error(`Failed to create storage ${item.id}:`, error);
+        this.logger.error(`Failed to create storage ${item.id} in bulk operation`, error as Error, {
+          workspace: 'database',
+          resourcesAffected: [item.id]
+        }, ['Continue with remaining storages', 'Check database connectivity']);
       }
     }
 

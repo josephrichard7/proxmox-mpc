@@ -14,6 +14,7 @@ import {
   Validator,
   CommonValidators
 } from './base-repository';
+import { Logger } from '../../observability/logger';
 
 // Input types for StateSnapshot operations
 export interface CreateStateSnapshotInput {
@@ -57,6 +58,7 @@ export interface StateHistory {
 
 export class StateSnapshotRepository implements BaseRepository<StateSnapshot, CreateStateSnapshotInput, UpdateStateSnapshotInput, number> {
   private validator: Validator<CreateStateSnapshotInput>;
+  private logger = Logger.getInstance();
 
   constructor() {
     this.validator = new Validator<CreateStateSnapshotInput>()
@@ -179,7 +181,10 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
         results.push(created);
       } catch (error) {
         // Continue with others if one fails, but log the error
-        console.error(`Failed to create state snapshot for ${item.resourceType}:${item.resourceId}:`, error);
+        this.logger.error(`Failed to create state snapshot for ${item.resourceType}:${item.resourceId}`, error as Error, {
+          workspace: 'database',
+          resourcesAffected: [`${item.resourceType}:${item.resourceId}`]
+        }, ['Continue with remaining snapshots', 'Check database connectivity']);
       }
     }
 

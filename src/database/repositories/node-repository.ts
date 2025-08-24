@@ -14,6 +14,7 @@ import {
   Validator,
   CommonValidators
 } from './base-repository';
+import { Logger } from '../../observability/logger';
 
 // Input types for Node operations
 export interface CreateNodeInput {
@@ -60,6 +61,7 @@ export interface NodeWithRelations extends Node {
 
 export class NodeRepository implements BaseRepository<Node, CreateNodeInput, UpdateNodeInput, string> {
   private validator: Validator<CreateNodeInput>;
+  private logger = Logger.getInstance();
 
   constructor() {
     this.validator = new Validator<CreateNodeInput>()
@@ -195,7 +197,10 @@ export class NodeRepository implements BaseRepository<Node, CreateNodeInput, Upd
         results.push(created);
       } catch (error) {
         // Continue with others if one fails, but log the error
-        console.error(`Failed to create node ${item.id}:`, error);
+        this.logger.error(`Failed to create node ${item.id} in bulk operation`, error as Error, {
+          workspace: 'database',
+          resourcesAffected: [item.id]
+        }, ['Continue with remaining nodes', 'Check database connectivity']);
       }
     }
 
