@@ -7,6 +7,7 @@ import * as readline from 'readline';
 import { ProxmoxClient } from '../api';
 import { SlashCommandRegistry } from './commands';
 import { ProjectWorkspace } from '../workspace';
+import { ResourceCommand } from './commands/resource';
 
 export interface ConsoleSession {
   workspace?: ProjectWorkspace;
@@ -20,6 +21,7 @@ export class InteractiveConsole {
   private rl: readline.Interface;
   private session: ConsoleSession;
   private commandRegistry: SlashCommandRegistry;
+  private resourceCommand: ResourceCommand;
   private isRunning: boolean = false;
 
   constructor() {
@@ -37,6 +39,7 @@ export class InteractiveConsole {
     };
 
     this.commandRegistry = new SlashCommandRegistry();
+    this.resourceCommand = new ResourceCommand();
     this.setupEventHandlers();
   }
 
@@ -120,9 +123,7 @@ export class InteractiveConsole {
   }
 
   private async handleResourceCommand(input: string): Promise<void> {
-    // TODO: Implement resource command parsing and execution
-    console.log(`🚧 Resource commands not yet implemented: ${input}`);
-    console.log('   This will generate Terraform/Ansible configurations');
+    await this.resourceCommand.execute(input, this.session);
   }
 
   private async detectWorkspace(): Promise<void> {
@@ -159,11 +160,13 @@ export class InteractiveConsole {
     console.log('  /sync                 Import existing infrastructure as IaC');
     console.log('  /exit                 Exit the console\n');
     
-    console.log('🏗️  Resource Commands (Future):');
+    console.log('🏗️  Resource Commands:');
     console.log('  create vm --name <name>     Generate VM configuration');
     console.log('  create container --name <name>  Generate container configuration');
-    console.log('  list vms                    Show VMs');
-    console.log('  describe vm <id>            Show VM details\n');
+    console.log('  list vms                    Show VMs from workspace');
+    console.log('  list containers             Show containers from workspace');
+    console.log('  describe vm <id|name>       Show VM details');
+    console.log('  describe container <id|name> Show container details\n');
     
     console.log('⌨️  Shortcuts:');
     console.log('  help, exit, quit            Alternative commands');
