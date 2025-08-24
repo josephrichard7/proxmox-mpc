@@ -54,6 +54,7 @@ Thumbs.db
 
 # Build outputs
 dist/
+temp-dist/
 build/
 out/
 *.log
