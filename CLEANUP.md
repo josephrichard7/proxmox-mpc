@@ -66,12 +66,13 @@ Based on analysis of the entire codebase, the following areas need attention:
   - **Time**: 20 minutes
   - **Completed**: Removed unused Jest config and setup.js files from observability tests - main Jest config handles all tests
 
-- [ ] **CLEAN-007**: Remove unused shell scripts
+- [x] **CLEAN-007**: Remove unused shell scripts
   - **Impact**: Low - Minor cleanup
   - **Risk**: Low - Scripts appear to be one-off utilities
   - **Files**: `setup-test.sh`, `start-console.sh`
   - **Verification**: Check if referenced in package.json or docs
   - **Time**: 10 minutes
+  - **Completed**: Removed unused shell scripts - functionality replaced by proper npm scripts and binary setup
 
 ---
 
