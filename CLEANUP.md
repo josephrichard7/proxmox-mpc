@@ -80,19 +80,21 @@ Based on analysis of the entire codebase, the following areas need attention:
 
 ### High Priority Tasks
 
-- [ ] **CLEAN-008**: Consolidate REPL event handlers
+- [x] **CLEAN-008**: ~~Consolidate REPL event handlers~~ (N/A - already resolved)
   - **Impact**: High - Eliminates duplicate event handling logic
   - **Risk**: Medium - Need to preserve all functionality
   - **Files**: Similar event handlers in `repl.ts`, `simple-repl.ts`, `enhanced-repl.ts`
   - **Verification**: Test all console commands work correctly
   - **Time**: 45 minutes
+  - **Note**: Not applicable - simple-repl.ts and enhanced-repl.ts were already removed in CLEAN-001
 
-- [ ] **CLEAN-009**: Merge duplicate console test files
+- [x] **CLEAN-009**: Merge duplicate console test files ✅
   - **Impact**: Medium - Reduces test maintenance burden
   - **Risk**: Medium - Need to preserve test coverage
   - **Files**: `__tests__/console-integration.test.ts`, `__tests__/console/repl.test.ts`
   - **Verification**: Ensure test coverage remains >80%
   - **Time**: 30 minutes
+  - **Completed**: Removed duplicate `commands-simple.test.ts` file. The `console-integration.test.ts` was already removed in CLEAN-001. Main REPL tests in `repl.test.ts` are preserved with comprehensive coverage of InteractiveConsole functionality.
 
 - [ ] **CLEAN-010**: Consolidate repository export patterns
   - **Impact**: Medium - Standardizes export approach
