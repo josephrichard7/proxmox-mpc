@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import * as readline from 'readline';
-import { InteractiveConsole } from '../../console/repl';
+import { InteractiveConsole, ConsoleSession } from '../../console/repl';
 import { ProjectWorkspace } from '../../workspace';
 
 // Mock dependencies
@@ -111,7 +111,7 @@ describe('InteractiveConsole', () => {
       console = new InteractiveConsole();
       
       // Get the line handler that was registered
-      const onLineCalls = mockRl.on.mock.calls.filter(call => call[0] === 'line');
+      const onLineCalls = mockRl.on.mock.calls.filter((call: any) => call[0] === 'line');
       expect(onLineCalls).toHaveLength(1);
       lineHandler = onLineCalls[0][1] as any;
     });
@@ -134,7 +134,7 @@ describe('InteractiveConsole', () => {
     it('should handle slash commands', async () => {
       const mockCommandRegistry = {
         has: jest.fn().mockReturnValue(true),
-        execute: jest.fn().mockResolvedValue(undefined),
+        execute: jest.fn(() => Promise.resolve()) as any,
       };
       (console as any).commandRegistry = mockCommandRegistry;
 
@@ -191,7 +191,7 @@ describe('InteractiveConsole', () => {
     it('should handle command execution errors', async () => {
       const mockCommandRegistry = {
         has: jest.fn().mockReturnValue(true),
-        execute: jest.fn().mockRejectedValue(new Error('Command failed')),
+        execute: jest.fn(() => Promise.reject(new Error('Command failed'))) as any,
       };
       (console as any).commandRegistry = mockCommandRegistry;
 
@@ -207,7 +207,7 @@ describe('InteractiveConsole', () => {
     });
 
     it('should handle close event', () => {
-      const closeHandler = mockRl.on.mock.calls.find(call => call[0] === 'close')?.[1] as Function;
+      const closeHandler = mockRl.on.mock.calls.find((call: any) => call[0] === 'close')?.[1] as Function;
       expect(closeHandler).toBeDefined();
 
       closeHandler();
@@ -218,7 +218,7 @@ describe('InteractiveConsole', () => {
     });
 
     it('should handle SIGINT (Ctrl+C)', () => {
-      const sigintHandler = mockRl.on.mock.calls.find(call => call[0] === 'SIGINT')?.[1] as Function;
+      const sigintHandler = mockRl.on.mock.calls.find((call: any) => call[0] === 'SIGINT')?.[1] as Function;
       expect(sigintHandler).toBeDefined();
 
       sigintHandler();
