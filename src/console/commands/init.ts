@@ -3,14 +3,14 @@
  * Initializes a new Proxmox project workspace
  */
 
-import * as readline from 'readline';
 import * as path from 'path';
+import * as readline from 'readline';
 
-import { ProjectWorkspace } from '../../workspace';
-import { ConfigManager, WorkspaceConfig } from '../../config';
 import { BaseCommand, CommandMetadata } from './base-command';
 import { errorHandler } from '../error-handler';
 import { ConsoleSession } from '../repl';
+import { ConfigManager, WorkspaceConfig } from '../../config';
+import { ProjectWorkspace } from '../../workspace';
 
 export class InitCommand extends BaseCommand {
   getMetadata(): CommandMetadata {

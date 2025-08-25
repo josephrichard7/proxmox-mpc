@@ -5,8 +5,9 @@
 
 import * as fs from 'fs/promises';
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import * as yaml from 'js-yaml';
+
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 
 import { AnsibleGenerator } from '../../generators/ansible';
 import { VMInfo, ContainerInfo } from '../../types';

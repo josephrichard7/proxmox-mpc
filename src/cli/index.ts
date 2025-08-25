@@ -8,7 +8,6 @@ import { Command } from 'commander';
 
 import { ProxmoxClient, loadProxmoxConfig, validateConfig, sanitizeConfig } from '../api';
 import { VMCreateConfig, ContainerCreateConfig } from '../types';
-
 import {
   promptConfirmation,
   validateVM,

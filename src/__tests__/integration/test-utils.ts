@@ -3,6 +3,14 @@
  * Common helpers and setup functions for integration tests
  */
 
+import { spawn, ChildProcess } from 'child_process';
+import path from 'path';
+
+import { DatabaseClient } from '../../database/client';
+import { ProxmoxClient } from '../../api/proxmox-client';
+import { ProxmoxConfig } from '../../types';
+import { MockProxmoxServer } from './mock-server';
+
 // Empty test to prevent Jest "no tests found" error
 describe('Integration Test Utils', () => {
   it('should export test utilities', () => {
@@ -11,16 +19,6 @@ describe('Integration Test Utils', () => {
     expect(typeof executeCLICommand).toBe('function');
   });
 });
-
-import { spawn, ChildProcess } from 'child_process';
-import path from 'path';
-
-import { ProxmoxClient } from '../../api/proxmox-client';
-import { DatabaseClient } from '../../database/client';
-import { ProxmoxConfig } from '../../types';
-
-
-import { MockProxmoxServer } from './mock-server';
 
 export interface TestEnvironment {
   mockServer: MockProxmoxServer;

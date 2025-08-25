@@ -21,10 +21,11 @@
  * ```
  */
 
-import * as path from 'path';
 import * as fs from 'fs/promises';
-import * as yaml from 'js-yaml';
+import * as path from 'path';
+
 import * as dotenv from 'dotenv';
+import * as yaml from 'js-yaml';
 
 import { ProxmoxConfig } from '../types';
 
