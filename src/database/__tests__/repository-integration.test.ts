@@ -4,6 +4,7 @@
  */
 
 import { dbClient } from '../client';
+import { DatabaseTestHelper } from '../../__tests__/utils/database-test-helper';
 import {
   RepositoryFactory,
   NodeRepository,
@@ -25,6 +26,9 @@ describe('Repository Integration Tests', () => {
   let stateSnapshotRepo: StateSnapshotRepository;
 
   beforeAll(async () => {
+    // Ensure database connection
+    await DatabaseTestHelper.ensureConnection();
+    
     // Get repository instances from factory
     nodeRepo = RepositoryFactory.getNodeRepository();
     vmRepo = RepositoryFactory.getVMRepository();
@@ -32,23 +36,15 @@ describe('Repository Integration Tests', () => {
     storageRepo = RepositoryFactory.getStorageRepository();
     taskRepo = RepositoryFactory.getTaskRepository();
     stateSnapshotRepo = RepositoryFactory.getStateSnapshotRepository();
-
-    // Verify database connection
-    await dbClient.connect();
-  });
-
-  afterAll(async () => {
-    await dbClient.disconnect();
   });
 
   beforeEach(async () => {
-    // Clean up test data in correct order for foreign keys
-    await dbClient.client.stateSnapshot.deleteMany();
-    await dbClient.client.task.deleteMany();
-    await dbClient.client.vM.deleteMany();
-    await dbClient.client.container.deleteMany();
-    await dbClient.client.node.deleteMany();
-    await dbClient.client.storage.deleteMany();
+    // Clean database before each test to ensure isolation
+    await DatabaseTestHelper.cleanupDatabase();
+  });
+
+  afterAll(async () => {
+    await DatabaseTestHelper.closeConnection();
   });
 
   describe('Factory Pattern and Health Checks', () => {
@@ -231,7 +227,15 @@ describe('Repository Integration Tests', () => {
 
   describe('State Snapshot and Change Detection', () => {
     beforeEach(async () => {
-      await nodeRepo.create({ id: 'test-node', status: 'online' });
+      // Ensure test-node exists for state tracking tests
+      try {
+        await nodeRepo.create({ id: 'test-node', status: 'online' });
+      } catch (error) {
+        // Node might already exist in some test scenarios, ignore duplicate errors
+        if (!(error instanceof ValidationError && error.message.includes('already exists'))) {
+          throw error;
+        }
+      }
     });
 
     it('should track VM state changes over time', async () => {
@@ -250,11 +254,17 @@ describe('Repository Integration Tests', () => {
       const firstSnapshot = await stateSnapshotRepo.trackResourceChange('vm', vmId, initialState);
       expect(firstSnapshot.hasChanged).toBe(true);
       expect(firstSnapshot.snapshot.changeType).toBe('created');
+      
+      // Wait a small amount to ensure timestamps are different
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       // No changes - should detect no difference
       const noChangeSnapshot = await stateSnapshotRepo.trackResourceChange('vm', vmId, initialState);
       expect(noChangeSnapshot.hasChanged).toBe(false);
       expect(noChangeSnapshot.snapshot.changeType).toBe('discovered');
+      
+      // Wait a small amount to ensure timestamps are different
+      await new Promise(resolve => setTimeout(resolve, 10));
 
       // VM started with resource changes
       const updatedState = {

@@ -39,8 +39,8 @@ describe('TerraformGenerator', () => {
     mockFS = jest.mocked(fs);
     
     // Mock fs methods
-    mockFS.mkdir = jest.fn().mockResolvedValue(undefined);
-    mockFS.writeFile = jest.fn().mockResolvedValue(undefined);
+    mockFS.mkdir = jest.fn().mockResolvedValue(undefined) as any;
+    mockFS.writeFile = jest.fn().mockResolvedValue(undefined) as any;
   });
 
   afterEach(() => {
@@ -307,7 +307,7 @@ describe('TerraformGenerator', () => {
 
         await generator.generateVMResource(vm);
 
-        const fileName = path.basename((mockFS.writeFile as jest.Mock).mock.calls.slice(-1)[0][0]);
+        const fileName = path.basename((mockFS.writeFile as jest.Mock).mock.calls.slice(-1)[0][0] as string);
         expect(fileName).toBe(`${testCase.expected}.tf`);
 
         jest.clearAllMocks();

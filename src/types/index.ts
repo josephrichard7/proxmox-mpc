@@ -94,6 +94,12 @@ export interface VMInfo {
   tags?: string;
   ha_state?: string;
   lock?: string;
+  // Network statistics
+  netin?: number;
+  netout?: number;
+  // Disk statistics  
+  diskread?: number;
+  diskwrite?: number;
 }
 
 export interface VMConfig {
@@ -127,6 +133,9 @@ export interface ContainerInfo {
   tags?: string;
   ha_state?: string;
   lock?: string;
+  // Swap memory
+  maxswap?: number;
+  swap?: number;
 }
 
 export interface ContainerConfig {

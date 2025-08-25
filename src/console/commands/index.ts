@@ -17,7 +17,7 @@ import { PlanCommand } from './plan';
 import { ReportIssueCommand } from './report-issue';
 import { StatusCommand } from './status';
 import { SyncCommand } from './sync';
-import { TestCommand } from './test';
+import { TestCommand } from './test-command';
 import { ValidateCommand } from './validate';
 
 export type SlashCommandHandler = (args: string[], session: ConsoleSession) => Promise<void>;

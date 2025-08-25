@@ -3,6 +3,7 @@
  */
 
 import { dbClient } from '../client';
+import { DatabaseTestHelper } from '../../__tests__/utils/database-test-helper';
 import { NodeRepository } from '../repositories/node-repository';
 import { VMRepository } from '../repositories/vm-repository';
 
@@ -10,19 +11,19 @@ describe('Basic Repository Tests', () => {
   let nodeRepo: NodeRepository;
   let vmRepo: VMRepository;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    await DatabaseTestHelper.ensureConnection();
     nodeRepo = new NodeRepository();
     vmRepo = new VMRepository();
   });
 
-  afterAll(async () => {
-    await dbClient.disconnect();
+  beforeEach(async () => {
+    // Clean database before each test to ensure isolation
+    await DatabaseTestHelper.cleanupDatabase();
   });
 
-  beforeEach(async () => {
-    // Clean up test data
-    await dbClient.client.vM.deleteMany();
-    await dbClient.client.node.deleteMany();
+  afterAll(async () => {
+    await DatabaseTestHelper.closeConnection();
   });
 
   describe('Node Repository', () => {

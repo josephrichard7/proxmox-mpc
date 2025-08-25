@@ -130,25 +130,28 @@ describe('Tracer', () => {
   });
 
   describe('Span Lifecycle', () => {
-    it('should finish span successfully with duration calculation', () => {
+    it('should finish span successfully with duration calculation', async () => {
       const spanId = tracer.startTrace('test-operation');
       
       // Wait a small amount to ensure duration > 0
-      setTimeout(() => {
-        tracer.finishSpan(spanId, { result: 'success' });
-        
-        const span = tracer.getSpan(spanId);
-        expect(span).toBeUndefined(); // Should be moved to completed
-        
-        const completedSpans = tracer.getCompletedSpans();
-        expect(completedSpans).toHaveLength(1);
-        
-        const completedSpan = completedSpans[0];
-        expect(completedSpan.status).toBe('success');
-        expect(completedSpan.duration).toBeGreaterThan(0);
-        expect(completedSpan.endTime).toBeDefined();
-        expect(completedSpan.tags.result).toBe('success');
-      }, 10);
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
+      tracer.finishSpan(spanId, { result: 'success' });
+      
+      // Wait a tick to ensure the span is moved to completed
+      await new Promise(resolve => process.nextTick(resolve));
+      
+      const span = tracer.getSpan(spanId);
+      expect(span).toBeUndefined(); // Should be moved to completed
+      
+      const completedSpans = tracer.getCompletedSpans();
+      expect(completedSpans).toHaveLength(1);
+      
+      const completedSpan = completedSpans[0];
+      expect(completedSpan.status).toBe('success');
+      expect(completedSpan.duration).toBeGreaterThan(0);
+      expect(completedSpan.endTime).toBeDefined();
+      expect(completedSpan.tags.result).toBe('success');
     });
 
     it('should finish span with error and capture error details', () => {

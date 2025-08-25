@@ -17,6 +17,9 @@ describe('Database Integration Tests', () => {
     await dbClient.client.container.deleteMany();
     await dbClient.client.node.deleteMany();
     await dbClient.client.storage.deleteMany();
+    
+    // Ensure clean state
+    await new Promise(resolve => setTimeout(resolve, 10));
   });
 
   describe('Proxmox cluster simulation', () => {

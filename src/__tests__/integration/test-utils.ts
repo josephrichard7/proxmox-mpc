@@ -9,7 +9,7 @@ import path from 'path';
 import { DatabaseClient } from '../../database/client';
 import { ProxmoxClient } from '../../api/proxmox-client';
 import { ProxmoxConfig } from '../../types';
-import { MockProxmoxServer } from './mock-server';
+import { MockProxmoxServer } from '../utils/mock-server';
 
 // Empty test to prevent Jest "no tests found" error
 describe('Integration Test Utils', () => {

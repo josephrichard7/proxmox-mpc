@@ -341,7 +341,7 @@ export class StateSnapshotRepository implements BaseRepository<StateSnapshot, Cr
       const newValue = newData[key];
 
       // Skip certain fields that change frequently but aren't significant
-      if (['updatedAt', 'lastSeen', 'uptime'].includes(key)) {
+      if (['updatedAt', 'lastSeen', 'uptime', 'createdAt', 'id'].includes(key)) {
         continue;
       }
 

@@ -33,6 +33,20 @@ export class DatabaseClient {
     await this.prisma.$disconnect();
   }
 
+  async transaction<T>(fn: (prisma: any) => Promise<T>): Promise<T> {
+    return this.prisma.$transaction(fn);
+  }
+
+  async cleanupAll(): Promise<void> {
+    // Clean all tables in correct order for foreign keys
+    await this.prisma.stateSnapshot.deleteMany();
+    await this.prisma.task.deleteMany();
+    await this.prisma.vM.deleteMany();
+    await this.prisma.container.deleteMany();
+    await this.prisma.node.deleteMany();
+    await this.prisma.storage.deleteMany();
+  }
+
   async health(): Promise<{ status: string; timestamp: Date }> {
     try {
       // Simple query to test connection

@@ -4,6 +4,7 @@
  */
 
 import { dbClient } from '../client';
+import { DatabaseTestHelper } from '../../__tests__/utils/database-test-helper';
 import { NotFoundError, ValidationError } from '../repositories/base-repository';
 import { ContainerRepository } from '../repositories/container-repository';
 import { RepositoryFactory } from '../repositories/index';
@@ -20,28 +21,24 @@ describe('Repository Validation Tests', () => {
   let stateSnapshotRepo: StateSnapshotRepository;
 
   beforeAll(async () => {
+    // Ensure database connection
+    await DatabaseTestHelper.ensureConnection();
+    
     // Get repository instances
     nodeRepo = new NodeRepository();
     vmRepo = new VMRepository();
     containerRepo = new ContainerRepository();
     taskRepo = new TaskRepository();
     stateSnapshotRepo = new StateSnapshotRepository();
-
-    // Verify database connection
-    await dbClient.connect();
-  });
-
-  afterAll(async () => {
-    await dbClient.disconnect();
   });
 
   beforeEach(async () => {
-    // Clean up test data in correct order for foreign keys
-    await dbClient.client.stateSnapshot.deleteMany();
-    await dbClient.client.task.deleteMany();
-    await dbClient.client.vM.deleteMany();
-    await dbClient.client.container.deleteMany();
-    await dbClient.client.node.deleteMany();
+    // Clean database before each test to ensure isolation
+    await DatabaseTestHelper.cleanupDatabase();
+  });
+
+  afterAll(async () => {
+    await DatabaseTestHelper.closeConnection();
   });
 
   describe('Repository Factory Pattern', () => {

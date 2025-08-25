@@ -3,6 +3,7 @@
  */
 
 import { dbClient } from '../client';
+import { DatabaseTestHelper } from '../../__tests__/utils/database-test-helper';
 import {
   RepositoryFactory,
   NodeRepository,
@@ -24,7 +25,8 @@ describe('Repository Pattern Tests', () => {
   let taskRepo: TaskRepository;
   let stateSnapshotRepo: StateSnapshotRepository;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    await DatabaseTestHelper.ensureConnection();
     nodeRepo = RepositoryFactory.getNodeRepository();
     vmRepo = RepositoryFactory.getVMRepository();
     containerRepo = RepositoryFactory.getContainerRepository();
@@ -33,18 +35,13 @@ describe('Repository Pattern Tests', () => {
     stateSnapshotRepo = RepositoryFactory.getStateSnapshotRepository();
   });
 
-  afterAll(async () => {
-    await dbClient.disconnect();
+  beforeEach(async () => {
+    // Clean database before each test to ensure isolation
+    await DatabaseTestHelper.cleanupDatabase();
   });
 
-  beforeEach(async () => {
-    // Clean up test data - order matters for foreign keys
-    await dbClient.client.stateSnapshot.deleteMany();
-    await dbClient.client.task.deleteMany();
-    await dbClient.client.vM.deleteMany();
-    await dbClient.client.container.deleteMany();
-    await dbClient.client.node.deleteMany();
-    await dbClient.client.storage.deleteMany();
+  afterAll(async () => {
+    await DatabaseTestHelper.closeConnection();
   });
 
   describe('Repository Factory', () => {
