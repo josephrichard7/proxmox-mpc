@@ -10,6 +10,7 @@ export interface ProxmoxConfig {
   tokenId?: string;
   tokenSecret?: string;
   node: string;
+  protocol?: 'http' | 'https'; // Default to https for production
   rejectUnauthorized?: boolean; // false for homelab self-signed certs
 }
 

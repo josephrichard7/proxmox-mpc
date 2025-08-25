@@ -48,6 +48,7 @@ export async function setupTestEnvironment(port: number = 8006): Promise<TestEnv
     tokenId: 'test-token',
     tokenSecret: 'test-secret',
     node: 'pve-node1',
+    protocol: 'http', // Use HTTP for mock server
     rejectUnauthorized: false
   };
 

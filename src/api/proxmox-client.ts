@@ -100,21 +100,27 @@ export class ProxmoxClient {
    * Create configured HTTP client with authentication and SSL handling
    */
   private createHttpClient(): AxiosInstance {
-    const baseURL = `https://${this.config.host}:${this.config.port}/api2/json`;
+    const protocol = this.config.protocol ?? 'https';
+    const baseURL = `${protocol}://${this.config.host}:${this.config.port}/api2/json`;
     
-    // Create HTTPS agent for SSL certificate handling
-    const httpsAgent = new https.Agent({
-      rejectUnauthorized: this.config.rejectUnauthorized ?? false // Default to false for homelab
-    });
-
-    const client = axios.create({
+    // Create HTTPS agent for SSL certificate handling (only for HTTPS)
+    const clientConfig: any = {
       baseURL,
-      httpsAgent,
       timeout: 10000, // 10 second timeout
       headers: {
         'Content-Type': 'application/json',
       },
-    });
+    };
+
+    // Only add HTTPS agent for HTTPS connections
+    if (protocol === 'https') {
+      const httpsAgent = new https.Agent({
+        rejectUnauthorized: this.config.rejectUnauthorized ?? false // Default to false for homelab
+      });
+      clientConfig.httpsAgent = httpsAgent;
+    }
+
+    const client = axios.create(clientConfig);
 
     // Add authentication header if token is provided
     if (this.config.tokenId && this.config.tokenSecret) {
