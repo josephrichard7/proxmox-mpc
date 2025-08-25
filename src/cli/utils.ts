@@ -2,9 +2,10 @@
  * CLI utility functions for professional features and safety mechanisms
  */
 
-import { ProxmoxClient } from '../api';
 import { createReadStream } from 'fs';
 import { createInterface } from 'readline';
+
+import { ProxmoxClient } from '../api';
 
 // ANSI color codes for terminal formatting
 export const Colors = {

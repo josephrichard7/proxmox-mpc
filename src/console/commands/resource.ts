@@ -3,12 +3,12 @@
  * Handles resource management commands: create, delete, list, describe
  */
 
-import { ConsoleSession } from '../repl';
-import { TerraformGenerator } from '../../generators/terraform';
-import { AnsibleGenerator } from '../../generators/ansible';
-import { TestGenerator } from '../../generators/tests';
 import { ProxmoxClient } from '../../api';
+import { AnsibleGenerator } from '../../generators/ansible';
+import { TerraformGenerator } from '../../generators/terraform';
+import { TestGenerator } from '../../generators/tests';
 import { VMCreateConfig, ContainerCreateConfig, VMInfo, ContainerInfo } from '../../types';
+import { ConsoleSession } from '../repl';
 
 export interface ResourceCommandOptions {
   name?: string;

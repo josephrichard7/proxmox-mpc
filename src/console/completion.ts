@@ -3,8 +3,9 @@
  * Provides intelligent auto-completion for commands, resources, and parameters
  */
 
-import { SlashCommandRegistry } from './commands';
 import { ProjectWorkspace } from '../workspace';
+
+import { SlashCommandRegistry } from './commands';
 import { CommandHistory } from './history';
 
 export interface CompletionContext {

@@ -3,10 +3,11 @@
  * Safely removes infrastructure resources with comprehensive safety checks
  */
 
-import { ConsoleSession } from '../repl';
+import { spawn } from 'child_process';
 import * as fsSync from 'fs';
 import * as path from 'path';
-import { spawn } from 'child_process';
+
+import { ConsoleSession } from '../repl';
 
 export class DestroyCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {

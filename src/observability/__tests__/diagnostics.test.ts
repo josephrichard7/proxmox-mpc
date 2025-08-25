@@ -3,15 +3,16 @@
  * Comprehensive tests for system health monitoring and diagnostic reporting
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
 import { exec } from 'child_process';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
+
 import { DiagnosticsCollector } from '../diagnostics';
-import { DiagnosticSnapshot, HealthStatus } from '../types';
 import { Logger } from '../logger';
 import { MetricsCollector } from '../metrics';
 import { Tracer } from '../tracer';
+import { DiagnosticSnapshot, HealthStatus } from '../types';
 
 // Mock all dependencies
 jest.mock('../logger');

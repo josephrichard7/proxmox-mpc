@@ -3,8 +3,8 @@
  * Testing basic completion functionality that matches actual implementation
  */
 
-import { TabCompletion } from '../completion';
 import { SlashCommandRegistry } from '../commands';
+import { TabCompletion } from '../completion';
 import { CommandHistory } from '../history';
 
 describe('TabCompletion - Simplified', () => {

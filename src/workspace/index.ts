@@ -5,16 +5,39 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import * as yaml from 'js-yaml';
-import { ProxmoxConfig } from '../types';
 
-export interface WorkspaceConfig extends ProxmoxConfig {
-  name?: string;
-  description?: string;
-  created?: string;
-  version?: string;
-}
+import { ConfigManager, WorkspaceConfig } from '../config';
 
+/**
+ * Represents a Proxmox-MPC project workspace
+ * 
+ * A workspace is a directory containing project configuration, database,
+ * and generated Infrastructure-as-Code files. Each workspace is tied to
+ * a specific Proxmox server and contains all resources for that environment.
+ * 
+ * @example
+ * ```typescript
+ * // Create a new workspace
+ * const config = {
+ *   host: 'pve.example.com',
+ *   port: 8006,
+ *   username: 'root@pam',
+ *   tokenId: 'my-token',
+ *   tokenSecret: 'secret',
+ *   node: 'pve'
+ * };
+ * 
+ * const workspace = await ProjectWorkspace.create('/path/to/project', config);
+ * console.log(`Workspace created: ${workspace.name}`);
+ * 
+ * // Detect existing workspace
+ * const existing = await ProjectWorkspace.detect('/path/to/existing');
+ * if (existing) {
+ *   console.log(`Found workspace: ${existing.name}`);
+ *   console.log(`Server: ${existing.config.host}`);
+ * }
+ * ```
+ */
 export class ProjectWorkspace {
   public readonly rootPath: string;
   public readonly name: string;
@@ -81,12 +104,9 @@ export class ProjectWorkspace {
     // Create directory structure
     await this.createDirectoryStructure(rootPath);
 
-    // Save configuration
-    const configPath = path.join(rootPath, '.proxmox', 'config.yml');
-    await fs.writeFile(configPath, yaml.dump(workspaceConfig, { 
-      indent: 2,
-      lineWidth: -1 
-    }));
+    // Save configuration using unified config manager
+    const configPath = ConfigManager.getWorkspaceConfigPath(rootPath);
+    await ConfigManager.saveWorkspaceConfig(configPath, workspaceConfig);
 
     // Create initial database
     await this.initializeDatabase(rootPath);
@@ -101,17 +121,21 @@ export class ProjectWorkspace {
    * Detect existing workspace in directory
    */
   static async detect(searchPath: string): Promise<ProjectWorkspace | null> {
-    const configPath = path.join(searchPath, '.proxmox', 'config.yml');
+    const configPath = ConfigManager.getWorkspaceConfigPath(searchPath);
     
     try {
-      // Use synchronous version to avoid async issues in tsx subprocess
+      // Use synchronous version to maintain compatibility
       const fsSync = require('fs');
       const configContent = fsSync.readFileSync(configPath, 'utf8');
+      const yaml = require('js-yaml');
       const config = yaml.load(configContent) as WorkspaceConfig;
+      
+      // Validate the loaded configuration
+      ConfigManager.validateWorkspaceConfig(config);
       
       return new ProjectWorkspace(searchPath, config);
     } catch (error) {
-      // No workspace found
+      // No workspace found or invalid configuration
       return null;
     }
   }

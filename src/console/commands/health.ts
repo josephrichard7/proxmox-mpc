@@ -3,8 +3,8 @@
  * Display comprehensive system health and status information
  */
 
-import { ConsoleSession } from '../repl';
 import { observability } from '../../observability';
+import { ConsoleSession } from '../repl';
 
 export class HealthCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {

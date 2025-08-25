@@ -4,22 +4,26 @@
  */
 
 import * as readline from 'readline';
-import { ProxmoxClient } from '../api';
-import { SlashCommandRegistry } from './commands';
-import { ProjectWorkspace } from '../workspace';
-import { ResourceCommand } from './commands/resource';
 
+import { ProxmoxClient } from '../api';
+import { ProjectWorkspace } from '../workspace';
+
+import { SlashCommandRegistry } from './commands';
+import { ResourceCommand } from './commands/resource';
+import { SessionManager } from './session';
+
+// Interface expected by console commands
 export interface ConsoleSession {
   workspace?: ProjectWorkspace;
   client?: ProxmoxClient;
+  rl: readline.Interface;
   history: string[];
   startTime: Date;
-  rl: readline.Interface;
 }
 
 export class InteractiveConsole {
   private rl: readline.Interface;
-  private session: ConsoleSession;
+  private session: SessionManager;
   private commandRegistry: SlashCommandRegistry;
   private resourceCommand: ResourceCommand;
   private isRunning: boolean = false;
@@ -32,15 +36,24 @@ export class InteractiveConsole {
       historySize: 1000,
     });
 
-    this.session = {
-      history: [],
-      startTime: new Date(),
-      rl: this.rl,
-    };
+    this.session = new SessionManager();
 
     this.commandRegistry = new SlashCommandRegistry();
     this.resourceCommand = new ResourceCommand();
     this.setupEventHandlers();
+  }
+
+  /**
+   * Get the session interface expected by console commands
+   */
+  private getConsoleSession(): ConsoleSession {
+    return {
+      workspace: this.session.workspace || undefined,
+      client: undefined, // TODO: Set when client is connected
+      rl: this.rl,
+      history: this.session.history,
+      startTime: this.session.startTime,
+    };
   }
 
   /**
@@ -115,7 +128,7 @@ export class InteractiveConsole {
     const [command, ...args] = input.slice(1).split(' ');
     
     if (this.commandRegistry.has(command)) {
-      await this.commandRegistry.execute(command, args, this.session);
+      await this.commandRegistry.execute(command, args, this.getConsoleSession());
     } else {
       console.log(`❌ Unknown slash command: /${command}`);
       console.log('Available slash commands: /help, /init, /status, /exit');
@@ -123,14 +136,14 @@ export class InteractiveConsole {
   }
 
   private async handleResourceCommand(input: string): Promise<void> {
-    await this.resourceCommand.execute(input, this.session);
+    await this.resourceCommand.execute(input, this.getConsoleSession());
   }
 
   private async detectWorkspace(): Promise<void> {
     try {
       const workspace = await ProjectWorkspace.detect(process.cwd());
       if (workspace) {
-        this.session.workspace = workspace;
+        this.session.updateWorkspace(workspace);
         console.log(`📁 Workspace detected: ${workspace.name}`);
         console.log(`   Server: ${workspace.config.host}`);
         console.log(`   Node: ${workspace.config.node}`);
@@ -175,9 +188,8 @@ export class InteractiveConsole {
   }
 
   private displayGoodbye(): void {
-    const duration = Date.now() - this.session.startTime.getTime();
-    const seconds = Math.round(duration / 1000);
-    console.log(`\n👋 Session ended (${seconds}s)`);
+    const summary = this.session.getSessionSummary();
+    console.log(`\n👋 Session ended (${summary.duration}s)`);
     console.log('Thank you for using Proxmox-MPC!');
   }
 }

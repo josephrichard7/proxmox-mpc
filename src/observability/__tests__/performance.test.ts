@@ -3,10 +3,10 @@
  * Tests to ensure observability overhead is minimal and acceptable
  */
 
-import { Logger } from '../logger';
-import { Tracer } from '../tracer';
-import { MetricsCollector } from '../metrics';
 import { DiagnosticsCollector } from '../diagnostics';
+import { Logger } from '../logger';
+import { MetricsCollector } from '../metrics';
+import { Tracer } from '../tracer';
 
 // Mock fs to avoid actual file operations in performance tests
 jest.mock('fs', () => ({

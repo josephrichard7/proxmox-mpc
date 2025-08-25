@@ -2,8 +2,8 @@
  * Unit tests for configuration management
  */
 
-import { loadProxmoxConfig, validateConfig, sanitizeConfig } from '../config';
 import { ProxmoxConfig } from '../../types';
+import { loadProxmoxConfig, validateConfig, sanitizeConfig } from '../config';
 
 describe('Configuration Management', () => {
   const originalEnv = process.env;
@@ -98,9 +98,9 @@ describe('Configuration Management', () => {
       const invalidConfig = { ...validConfig, host: '', username: '', tokenId: '' };
       const errors = validateConfig(invalidConfig);
       
-      expect(errors).toContain('Host is required');
-      expect(errors).toContain('Username is required');
-      expect(errors).toContain('Token ID is required');
+      expect(errors).toContain('Host is required and cannot be empty');
+      expect(errors).toContain('Username is required and cannot be empty');
+      expect(errors).toContain('Token ID is required and cannot be empty');
     });
 
     it('should validate port range', () => {

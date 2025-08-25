@@ -3,12 +3,14 @@
  * Verifies Terraform HCL configuration generation
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
 import { TerraformGenerator } from '../../generators/terraform';
-import { ProjectWorkspace } from '../../workspace';
 import { VMInfo, ContainerInfo } from '../../types';
+import { ProjectWorkspace } from '../../workspace';
 
 // Mock fs module
 jest.mock('fs/promises');

@@ -3,13 +3,17 @@
  * Comprehensive validation of all configurations and infrastructure
  */
 
-import { ConsoleSession } from '../repl';
-import { errorHandler } from '../error-handler';
-import * as fs from 'fs/promises';
-import * as fsSync from 'fs';
-import * as path from 'path';
-import * as yaml from 'js-yaml';
 import { spawn } from 'child_process';
+import * as fsSync from 'fs';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+
+import * as yaml from 'js-yaml';
+
+import { errorHandler } from '../error-handler';
+import { ConsoleSession } from '../repl';
+
+
 
 export class ValidateCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {

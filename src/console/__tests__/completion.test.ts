@@ -3,10 +3,10 @@
  * Testing intelligent auto-completion for commands, resources, and parameters
  */
 
-import { TabCompletion, CompletionContext } from '../completion';
-import { SlashCommandRegistry } from '../commands';
-import { CommandHistory } from '../history';
 import { ProjectWorkspace } from '../../workspace';
+import { SlashCommandRegistry } from '../commands';
+import { TabCompletion, CompletionContext } from '../completion';
+import { CommandHistory } from '../history';
 
 // Mock dependencies
 jest.mock('../commands');

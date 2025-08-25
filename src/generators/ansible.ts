@@ -5,9 +5,11 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
+
 import * as yaml from 'js-yaml';
-import { ProjectWorkspace } from '../workspace';
+
 import { VMInfo, ContainerInfo } from '../types';
+import { ProjectWorkspace } from '../workspace';
 
 export class AnsibleGenerator {
   private workspace: ProjectWorkspace;

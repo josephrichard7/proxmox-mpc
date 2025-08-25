@@ -3,6 +3,8 @@
  * End-to-end testing of VM creation, start, stop, and deletion
  */
 
+import { VMCreateConfig } from '../../types';
+
 import { 
   setupTestEnvironment, 
   cleanupTestEnvironment, 
@@ -12,7 +14,6 @@ import {
   validateResource,
   PerformanceTimer
 } from './test-utils';
-import { VMCreateConfig } from '../../types';
 
 describe('VM Lifecycle Integration Tests', () => {
   let testEnv: TestEnvironment;

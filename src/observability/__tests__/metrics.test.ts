@@ -3,9 +3,9 @@
  * Comprehensive tests for performance metrics tracking and analysis
  */
 
+import { Logger } from '../logger';
 import { MetricsCollector } from '../metrics';
 import { PerformanceMetric } from '../types';
-import { Logger } from '../logger';
 
 // Create stable mock logger instance
 const mockLoggerInstance = {

@@ -3,8 +3,9 @@
  */
 
 import axios from 'axios';
-import { ProxmoxClient } from '../proxmox-client';
+
 import { ProxmoxConfig, ProxmoxResponse, VersionInfo, NodeInfo } from '../../types';
+import { ProxmoxClient } from '../proxmox-client';
 
 // Mock axios
 jest.mock('axios');

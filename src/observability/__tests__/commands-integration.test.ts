@@ -5,15 +5,16 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { DebugCommand } from '../../console/commands/debug';
 import { HealthCommand } from '../../console/commands/health';
 import { LogsCommand } from '../../console/commands/logs';
 import { ReportIssueCommand } from '../../console/commands/report-issue';
 import { ConsoleSession } from '../../console/repl';
+import { DiagnosticsCollector } from '../diagnostics';
 import { Logger } from '../logger';
 import { MetricsCollector } from '../metrics';
 import { Tracer } from '../tracer';
-import { DiagnosticsCollector } from '../diagnostics';
 
 // Mock file system operations
 jest.mock('fs');

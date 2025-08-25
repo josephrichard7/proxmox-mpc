@@ -5,9 +5,10 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { ProjectWorkspace } from '../workspace';
-import { VMInfo, ContainerInfo, StorageContent, StorageInfo } from '../types';
+
 import { ProxmoxClient } from '../api/proxmox-client';
+import { VMInfo, ContainerInfo, StorageContent, StorageInfo } from '../types';
+import { ProjectWorkspace } from '../workspace';
 
 interface TemplateInfo {
   vmTemplates: string[];

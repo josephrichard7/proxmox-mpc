@@ -4,20 +4,21 @@
  */
 
 import { ConsoleSession } from '../repl';
+
+import { ApplyCommand } from './apply';
+import { DebugCommand } from './debug';
+import { DestroyCommand } from './destroy';
+import { ExitCommand } from './exit';
+import { HealthCommand } from './health';
 import { HelpCommand } from './help';
 import { InitCommand } from './init';
+import { LogsCommand } from './logs';
+import { PlanCommand } from './plan';
+import { ReportIssueCommand } from './report-issue';
 import { StatusCommand } from './status';
 import { SyncCommand } from './sync';
 import { TestCommand } from './test';
-import { ApplyCommand } from './apply';
-import { PlanCommand } from './plan';
 import { ValidateCommand } from './validate';
-import { DestroyCommand } from './destroy';
-import { ExitCommand } from './exit';
-import { DebugCommand } from './debug';
-import { HealthCommand } from './health';
-import { LogsCommand } from './logs';
-import { ReportIssueCommand } from './report-issue';
 
 export type SlashCommandHandler = (args: string[], session: ConsoleSession) => Promise<void>;
 

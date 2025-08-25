@@ -4,6 +4,7 @@
  */
 
 import { spawn } from 'child_process';
+
 import { WorkspaceContext, ExecutionPlan, ClaudeCodeConfig, ClaudeCodeResponse } from '../types';
 
 export class ClaudeCodeIntegration {

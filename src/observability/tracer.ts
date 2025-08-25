@@ -4,8 +4,9 @@
  */
 
 import { v4 as uuidv4 } from 'uuid';
-import { TraceSpan, OperationLog } from './types';
+
 import { Logger } from './logger';
+import { TraceSpan, OperationLog } from './types';
 
 export class Tracer {
   private static instance: Tracer;

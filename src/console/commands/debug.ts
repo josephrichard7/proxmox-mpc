@@ -3,9 +3,9 @@
  * Control debug mode and verbose diagnostic output
  */
 
-import { ConsoleSession } from '../repl';
 import { observability } from '../../observability';
 import { errorHandler } from '../error-handler';
+import { ConsoleSession } from '../repl';
 
 export class DebugCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {

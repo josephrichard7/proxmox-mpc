@@ -3,13 +3,13 @@
  * Discovers existing Proxmox infrastructure and generates Infrastructure-as-Code
  */
 
-import { ConsoleSession } from '../repl';
 import { ProxmoxClient } from '../../api';
-import { TerraformGenerator } from '../../generators/terraform';
 import { AnsibleGenerator } from '../../generators/ansible';
+import { TerraformGenerator } from '../../generators/terraform';
 import { TestGenerator } from '../../generators/tests';
 import { observability } from '../../observability';
 import { errorHandler } from '../error-handler';
+import { ConsoleSession } from '../repl';
 
 export class SyncCommand {
   private logger = observability.logger;
@@ -368,7 +368,7 @@ export class SyncCommand {
       console.log('   🔄 Starting database transaction...');
 
       await dbClient.$transaction(async (tx: any) => {
-        let syncStats = {
+        const syncStats = {
           nodes: { created: 0, updated: 0, errors: 0 },
           vms: { created: 0, updated: 0, errors: 0 },
           containers: { created: 0, updated: 0, errors: 0 },

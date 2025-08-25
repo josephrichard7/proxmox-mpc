@@ -9,11 +9,11 @@
  * 4. Repeat for each feature
  */
 
-import { NaturalLanguageProcessor } from '../natural-language';
-import { ClaudeCodeIntegration } from '../claude-code-integration';
-import { WorkspaceContext } from '../../types';
 import { ProxmoxClient } from '../../../api/proxmox-client';
 import { Logger } from '../../../observability/logger';
+import { WorkspaceContext } from '../../types';
+import { ClaudeCodeIntegration } from '../claude-code-integration';
+import { NaturalLanguageProcessor } from '../natural-language';
 
 // Mock dependencies
 jest.mock('../claude-code-integration');

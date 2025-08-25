@@ -3,9 +3,9 @@
  * Query and display logs with filtering and search capabilities
  */
 
-import { ConsoleSession } from '../repl';
 import { observability } from '../../observability';
 import { LogLevel } from '../../observability/types';
+import { ConsoleSession } from '../repl';
 
 export class LogsCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {

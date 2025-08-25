@@ -6,6 +6,7 @@ module.exports = {
   },
   plugins: [
     '@typescript-eslint',
+    'import',
   ],
   extends: [
     'eslint:recommended',
@@ -39,6 +40,23 @@ module.exports = {
       varsIgnorePattern: '^_',
       // Allow unused variables in tests and type imports
       ignoreRestSiblings: true,
+    }],
+    
+    // Import ordering rules
+    'import/order': ['warn', {
+      'groups': [
+        'builtin',    // Node.js built-ins (fs, path, etc.)
+        'external',   // External packages
+        'internal',   // Internal project modules
+        'parent',     // Parent directory imports (../)
+        'sibling',    // Sibling files (./file)
+        'index'       // Index files (./index)
+      ],
+      'newlines-between': 'always',
+      'alphabetize': {
+        order: 'asc',
+        caseInsensitive: true
+      }
     }],
   },
 };

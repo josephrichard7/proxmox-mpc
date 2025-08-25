@@ -3,8 +3,10 @@
  * Verifies interactive input handling without readline conflicts
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import * as readline from 'readline';
+
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
 import { InitCommand } from '../../console/commands/init';
 import { ConsoleSession } from '../../console/repl';
 import { ProjectWorkspace } from '../../workspace';

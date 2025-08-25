@@ -3,12 +3,13 @@
  * Deploys infrastructure changes using Terraform and Ansible internally
  */
 
-import { ConsoleSession } from '../repl';
-import { errorHandler } from '../error-handler';
-import * as fs from 'fs/promises';
-import * as fsSync from 'fs';
-import * as path from 'path';
 import { spawn } from 'child_process';
+import * as fsSync from 'fs';
+import * as fs from 'fs/promises';
+import * as path from 'path';
+
+import { errorHandler } from '../error-handler';
+import { ConsoleSession } from '../repl';
 
 export class ApplyCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {

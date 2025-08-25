@@ -3,10 +3,11 @@
  * Shows what changes would be made to infrastructure without applying them
  */
 
-import { ConsoleSession } from '../repl';
+import { spawn } from 'child_process';
 import * as fsSync from 'fs';
 import * as path from 'path';
-import { spawn } from 'child_process';
+
+import { ConsoleSession } from '../repl';
 
 export class PlanCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {

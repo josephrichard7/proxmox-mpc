@@ -5,8 +5,9 @@
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { ProjectWorkspace } from '../workspace';
+
 import { VMInfo, ContainerInfo, StorageInfo } from '../types';
+import { ProjectWorkspace } from '../workspace';
 
 export class TestGenerator {
   constructor(private workspace: ProjectWorkspace) {}

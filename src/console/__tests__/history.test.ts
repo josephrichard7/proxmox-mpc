@@ -3,9 +3,10 @@
  * Testing persistent history, search, and statistics functionality
  */
 
-import { CommandHistory, HistoryEntry, HistoryFilter } from '../history';
 import * as fs from 'fs';
 import * as path from 'path';
+
+import { CommandHistory, HistoryEntry, HistoryFilter } from '../history';
 
 // Mock fs module
 jest.mock('fs');

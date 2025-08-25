@@ -1,10 +1,45 @@
 /**
  * Proxmox VE API Client
- * Handles authentication, requests, and response processing
+ * 
+ * A comprehensive client for interacting with the Proxmox VE REST API.
+ * Handles authentication, request/response processing, and provides
+ * high-level methods for managing virtual machines and containers.
+ * 
+ * @example
+ * ```typescript
+ * const config: ProxmoxConfig = {
+ *   host: 'pve.example.com',
+ *   port: 8006,
+ *   username: 'root@pam',
+ *   tokenId: 'my-token',
+ *   tokenSecret: 'secret-value',
+ *   node: 'pve',
+ *   rejectUnauthorized: true
+ * };
+ * 
+ * const client = new ProxmoxClient(config);
+ * const connection = await client.testConnection();
+ * 
+ * if (connection.success) {
+ *   const vms = await client.getVMs();
+ *   console.log('Available VMs:', vms);
+ * }
+ * ```
  */
 
-import axios, { AxiosInstance, AxiosError as _AxiosError } from 'axios';
 import * as https from 'https';
+
+import axios, { AxiosInstance, AxiosError as _AxiosError } from 'axios';
+
+import { 
+  vmRepository, 
+  taskRepository, 
+  containerRepository,
+  type CreateVMInput, 
+  type CreateTaskInput,
+  type CreateContainerInput 
+} from '../database/repositories';
+import { Logger } from '../observability/logger';
 import { 
   ProxmoxConfig, 
   ProxmoxResponse, 
@@ -25,21 +60,37 @@ import {
   ContainerCreationResult,
   ContainerDeleteOptions
 } from '../types';
-import { 
-  vmRepository, 
-  taskRepository, 
-  containerRepository,
-  type CreateVMInput, 
-  type CreateTaskInput,
-  type CreateContainerInput 
-} from '../database/repositories';
-import { Logger } from '../observability/logger';
 
+/**
+ * Main Proxmox VE API client class
+ * 
+ * Provides a high-level interface for interacting with Proxmox VE servers,
+ * including VM/container management, storage operations, and task monitoring.
+ */
 export class ProxmoxClient {
   private config: ProxmoxConfig;
   private httpClient: AxiosInstance;
   private logger = Logger.getInstance();
 
+  /**
+   * Create a new ProxmoxClient instance
+   * 
+   * @param config - Configuration object containing server details and authentication
+   * @throws {Error} When configuration is invalid or incomplete
+   * 
+   * @example
+   * ```typescript
+   * const client = new ProxmoxClient({
+   *   host: 'proxmox.example.com',
+   *   port: 8006,
+   *   username: 'admin@pve',
+   *   tokenId: 'my-app',
+   *   tokenSecret: 'secret-token',
+   *   node: 'pve-node1',
+   *   rejectUnauthorized: true
+   * });
+   * ```
+   */
   constructor(config: ProxmoxConfig) {
     this.config = config;
     this.httpClient = this.createHttpClient();
@@ -75,7 +126,25 @@ export class ProxmoxClient {
   }
 
   /**
-   * Test basic connectivity to Proxmox server
+   * Test connectivity and authenticate with the Proxmox server
+   * 
+   * Performs a basic connectivity test by retrieving server version
+   * and node information. This is typically the first method called
+   * to verify that the client configuration is correct.
+   * 
+   * @returns Promise resolving to connection result with server details
+   * @throws {ProxmoxApiError} When authentication fails or server is unreachable
+   * 
+   * @example
+   * ```typescript
+   * const result = await client.connect();
+   * if (result.success) {
+   *   console.log(`Connected to Proxmox ${result.version}`);
+   *   console.log(`Available nodes: ${result.details.nodes}`);
+   * } else {
+   *   console.error('Connection failed:', result.error);
+   * }
+   * ```
    */
   async connect(): Promise<ConnectionResult> {
     try {
@@ -99,6 +168,19 @@ export class ProxmoxClient {
 
   /**
    * Get Proxmox VE version information
+   * 
+   * Retrieves detailed version information about the Proxmox VE server,
+   * including version number, release information, and repository details.
+   * 
+   * @returns Promise resolving to version information object
+   * @throws {ProxmoxApiError} When API request fails or server is unreachable
+   * 
+   * @example
+   * ```typescript
+   * const version = await client.getVersion();
+   * console.log(`Proxmox VE ${version.version}`);
+   * console.log(`Release: ${version.release}`);
+   * ```
    */
   async getVersion(): Promise<VersionInfo> {
     try {
@@ -265,7 +347,35 @@ export class ProxmoxClient {
   // ===== VM MANAGEMENT METHODS =====
 
   /**
-   * Create a new VM
+   * Create a new virtual machine on the specified node
+   * 
+   * Creates a new VM with the provided configuration. The VM will be created
+   * but not automatically started. Use startVM() to power on the VM after creation.
+   * 
+   * @param node - Name of the Proxmox node where the VM should be created
+   * @param config - VM configuration including vmid, name, cores, memory, etc.
+   * @returns Promise resolving to creation result with task information
+   * @throws {ProxmoxApiError} When VM creation fails or configuration is invalid
+   * 
+   * @example
+   * ```typescript
+   * const vmConfig: VMCreateConfig = {
+   *   vmid: 100,
+   *   name: 'test-vm',
+   *   cores: 2,
+   *   memory: 2048,
+   *   sockets: 1,
+   *   ostype: 'l26',
+   *   net0: 'virtio,bridge=vmbr0'
+   * };
+   * 
+   * const result = await client.createVM('pve-node1', vmConfig);
+   * console.log(`VM creation started: ${result.task}`);
+   * 
+   * // Wait for creation to complete
+   * const vm = await client.waitForVMCreation('pve-node1', vmConfig.vmid);
+   * console.log(`VM ${vm.name} created successfully`);
+   * ```
    */
   async createVM(node: string, config: VMCreateConfig): Promise<VMCreationResult> {
     try {

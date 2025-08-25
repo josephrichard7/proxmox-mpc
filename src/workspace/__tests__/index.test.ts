@@ -3,10 +3,12 @@
  * Testing workspace creation, detection, and management
  */
 
-import { ProjectWorkspace, WorkspaceConfig } from '../index';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+
 import * as yaml from 'js-yaml';
+
+import { ProjectWorkspace, WorkspaceConfig } from '../index';
 
 // Mock fs operations
 jest.mock('fs/promises');

@@ -3,11 +3,23 @@
  * Shows project and server status information
  */
 
-import { ConsoleSession } from '../repl';
 import { ProxmoxClient } from '../../api';
+import { BaseCommand, CommandMetadata } from './base-command';
 import { errorHandler } from '../error-handler';
+import { ConsoleSession } from '../repl';
 
-export class StatusCommand {
+export class StatusCommand extends BaseCommand {
+  getMetadata(): CommandMetadata {
+    return {
+      name: 'status',
+      description: 'Show project and server status information',
+      usage: '/status',
+      examples: ['/status - Display current project and server status'],
+      requiresWorkspace: false,
+      requiresConnection: false
+    };
+  }
+
   async execute(args: string[], session: ConsoleSession): Promise<void> {
     console.log('📊 Project Status\n');
 

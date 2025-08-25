@@ -4,11 +4,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
+import { ProxmoxClient } from '../../api';
 import { SyncCommand } from '../../console/commands/sync';
 import { ConsoleSession } from '../../console/repl';
-import { ProxmoxClient } from '../../api';
-import { TerraformGenerator } from '../../generators/terraform';
 import { AnsibleGenerator } from '../../generators/ansible';
+import { TerraformGenerator } from '../../generators/terraform';
 import { ProjectWorkspace } from '../../workspace';
 
 // Mock dependencies

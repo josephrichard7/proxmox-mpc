@@ -2,8 +2,8 @@
  * Tests for Proxmox resource discovery endpoints
  */
 
-import { ProxmoxClient } from '../proxmox-client';
 import { ProxmoxConfig, VMInfo, ContainerInfo, StorageInfo, TaskInfo } from '../../types';
+import { ProxmoxClient } from '../proxmox-client';
 
 // Mock axios
 jest.mock('axios');

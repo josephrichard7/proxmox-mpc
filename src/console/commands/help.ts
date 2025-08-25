@@ -3,9 +3,25 @@
  * Displays available commands and usage information
  */
 
+import { BaseCommand, CommandMetadata } from './base-command';
 import { ConsoleSession } from '../repl';
 
-export class HelpCommand {
+export class HelpCommand extends BaseCommand {
+  getMetadata(): CommandMetadata {
+    return {
+      name: 'help',
+      description: 'Display available commands and usage information',
+      usage: '/help [command]',
+      examples: [
+        '/help - Show all available commands',
+        '/help init - Show help for init command'
+      ],
+      requiresWorkspace: false,
+      requiresConnection: false,
+      aliases: ['?', 'h']
+    };
+  }
+
   async execute(args: string[], session: ConsoleSession): Promise<void> {
     if (args.length > 0) {
       await this.showSpecificHelp(args[0], session);

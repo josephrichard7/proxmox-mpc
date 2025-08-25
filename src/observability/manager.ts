@@ -6,11 +6,13 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { v4 as uuidv4 } from 'uuid';
+
+import { DiagnosticsCollector } from './diagnostics';
 import { Logger } from './logger';
 import { MetricsCollector } from './metrics';
 import { Tracer } from './tracer';
-import { DiagnosticsCollector } from './diagnostics';
 import { LoggerConfig } from './types';
 
 export interface ObservabilityConfig {

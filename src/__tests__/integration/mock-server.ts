@@ -3,8 +3,9 @@
  * Provides realistic API responses for testing without requiring a real Proxmox server
  */
 
-import express, { Request, Response } from 'express';
 import { Server } from 'http';
+
+import express, { Request, Response } from 'express';
 
 export interface MockVMData {
   vmid: number;

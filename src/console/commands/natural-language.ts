@@ -3,8 +3,9 @@
  * Seamless Claude Code integration for natural language infrastructure commands
  */
 
-import { ClaudeCodeIntegration } from './claude-code-integration';
 import { WorkspaceContext, NaturalLanguageResult, ExecutionPlan, NaturalLanguageProcessorConfig } from '../types';
+
+import { ClaudeCodeIntegration } from './claude-code-integration';
 
 export class NaturalLanguageProcessor {
   private claudeCode: ClaudeCodeIntegration;

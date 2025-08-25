@@ -3,8 +3,10 @@
  * Verifies readline interface setup and command handling
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import * as readline from 'readline';
+
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
+
 import { InteractiveConsole, ConsoleSession } from '../../console/repl';
 import { ProjectWorkspace } from '../../workspace';
 

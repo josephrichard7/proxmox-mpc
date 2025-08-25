@@ -3,9 +3,9 @@
  * Comprehensive tests for operation tracing with parent-child relationships
  */
 
+import { Logger } from '../logger';
 import { Tracer } from '../tracer';
 import { TraceSpan } from '../types';
-import { Logger } from '../logger';
 
 // Create stable mock logger instance
 const mockLoggerInstance = {

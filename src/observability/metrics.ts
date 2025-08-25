@@ -3,8 +3,8 @@
  * Timing and resource usage tracking for all operations
  */
 
-import { PerformanceMetric } from './types';
 import { Logger } from './logger';
+import { PerformanceMetric } from './types';
 
 export class MetricsCollector {
   private static instance: MetricsCollector;

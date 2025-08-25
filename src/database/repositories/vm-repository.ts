@@ -3,7 +3,10 @@
  */
 
 import { VM, Node, Prisma } from '@prisma/client';
+
+import { Logger } from '../../observability/logger';
 import { dbClient } from '../client';
+
 import {
   BaseRepository,
   FindManyOptions,
@@ -14,7 +17,6 @@ import {
   Validator,
   CommonValidators
 } from './base-repository';
-import { Logger } from '../../observability/logger';
 
 // Input types for VM operations
 export interface CreateVMInput {

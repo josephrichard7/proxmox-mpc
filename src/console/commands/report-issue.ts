@@ -5,8 +5,9 @@
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { ConsoleSession } from '../repl';
+
 import { observability } from '../../observability';
+import { ConsoleSession } from '../repl';
 
 export class ReportIssueCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {

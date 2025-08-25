@@ -3,12 +3,29 @@
  * Initializes a new Proxmox project workspace
  */
 
-import { ConsoleSession } from '../repl';
-import { ProjectWorkspace } from '../../workspace';
-import { errorHandler } from '../error-handler';
 import * as readline from 'readline';
+import * as path from 'path';
 
-export class InitCommand {
+import { ProjectWorkspace } from '../../workspace';
+import { ConfigManager, WorkspaceConfig } from '../../config';
+import { BaseCommand, CommandMetadata } from './base-command';
+import { errorHandler } from '../error-handler';
+import { ConsoleSession } from '../repl';
+
+export class InitCommand extends BaseCommand {
+  getMetadata(): CommandMetadata {
+    return {
+      name: 'init',
+      description: 'Initialize a new Proxmox project workspace',
+      usage: '/init',
+      examples: [
+        '/init - Initialize workspace with interactive setup',
+      ],
+      requiresWorkspace: false,
+      requiresConnection: false
+    };
+  }
+
   async execute(args: string[], session: ConsoleSession): Promise<void> {
     console.log('🏗️  Initializing new Proxmox project workspace...\n');
 
@@ -96,7 +113,7 @@ export class InitCommand {
 
       console.log('\n🔧 Creating project structure...');
 
-      const config = {
+      const config: Omit<WorkspaceConfig, 'name' | 'created' | 'version'> = {
         host: host.trim(),
         port: parseInt(port.trim()),
         username: username.trim(),
@@ -105,6 +122,13 @@ export class InitCommand {
         node: node.trim(),
         rejectUnauthorized: skipTLS.toLowerCase().trim() !== 'y'
       };
+
+      // Validate configuration before creating workspace
+      try {
+        ConfigManager.validateProxmoxConfig(config);
+      } catch (error) {
+        throw new Error(`Configuration validation failed: ${error}`);
+      }
 
       const workspace = await ProjectWorkspace.create(process.cwd(), config);
       return workspace;
@@ -118,16 +142,9 @@ export class InitCommand {
         ]
       );
       
-      // Fall back to basic configuration
-      const config = {
-        host: 'your-proxmox-server.local',
-        port: 8006,
-        username: 'root@pam',
-        tokenId: 'proxmox-mpc',
-        tokenSecret: 'your-token-secret',
-        node: 'pve',
-        rejectUnauthorized: false
-      };
+      // Fall back to default configuration template
+      const projectName = path.basename(process.cwd());
+      const config = ConfigManager.createDefaultWorkspaceConfig(projectName);
 
       const workspace = await ProjectWorkspace.create(process.cwd(), config);
       return workspace;

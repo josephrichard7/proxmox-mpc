@@ -3,7 +3,10 @@
  */
 
 import { Task, Node, Prisma } from '@prisma/client';
+
+import { Logger } from '../../observability/logger';
 import { dbClient } from '../client';
+
 import {
   BaseRepository,
   FindManyOptions,
@@ -14,7 +17,6 @@ import {
   Validator,
   CommonValidators
 } from './base-repository';
-import { Logger } from '../../observability/logger';
 
 // Input types for Task operations
 export interface CreateTaskInput {

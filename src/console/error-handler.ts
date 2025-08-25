@@ -3,8 +3,9 @@
  * Provides consistent error handling, validation, and user messaging
  */
 
-import { ConsoleSession } from './repl';
 import { Logger } from '../observability/logger';
+
+import { ConsoleSession } from './repl';
 
 export interface ErrorContext {
   command: string;

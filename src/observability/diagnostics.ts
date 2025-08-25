@@ -3,16 +3,18 @@
  * Simple diagnostic data collection and health monitoring
  */
 
-import * as fs from 'fs';
-import * as path from 'path';
-import * as os from 'os';
-import { v4 as uuidv4 } from 'uuid';
 import { exec } from 'child_process';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { promisify } from 'util';
-import { DiagnosticSnapshot, HealthStatus } from './types';
+
+import { v4 as uuidv4 } from 'uuid';
+
 import { Logger } from './logger';
 import { MetricsCollector } from './metrics';
 import { Tracer } from './tracer';
+import { DiagnosticSnapshot, HealthStatus } from './types';
 
 const execAsync = promisify(exec);
 

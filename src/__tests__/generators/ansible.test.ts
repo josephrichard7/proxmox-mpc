@@ -3,12 +3,14 @@
  * Verifies Ansible inventory and playbook generation
  */
 
-import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import * as fs from 'fs/promises';
+
+import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals';
 import * as yaml from 'js-yaml';
+
 import { AnsibleGenerator } from '../../generators/ansible';
-import { ProjectWorkspace } from '../../workspace';
 import { VMInfo, ContainerInfo } from '../../types';
+import { ProjectWorkspace } from '../../workspace';
 
 // Mock dependencies
 jest.mock('fs/promises');
