@@ -511,7 +511,7 @@ describe('Observability Commands Integration', () => {
 
       const output = consoleOutput.join('\n');
       expect(output).toContain('Unknown debug command');
-      expect(output).toContain('Use /help debug for available options');
+      expect(output).toContain('Use /help debug for available debug commands');
     });
   });
 

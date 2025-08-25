@@ -98,7 +98,7 @@ describe('SyncCommand', () => {
 
       // Mock infrastructure discovery
       mockClient.getNodes.mockResolvedValue([
-        { node: 'proxmox', status: 'online', cpu: 0.1, maxcpu: 8, mem: 1000000000, maxmem: 8000000000 }
+        { node: 'proxmox', status: 'online', cpu: 0.1, maxcpu: 8, mem: 1000000000, maxmem: 8000000000, uptime: 86400 }
       ]);
 
       mockClient.getVMs.mockResolvedValue([
@@ -126,7 +126,7 @@ describe('SyncCommand', () => {
       ]);
 
       mockClient.getStoragePools.mockResolvedValue([
-        { storage: 'local-lvm', type: 'lvm', content: 'images', shared: 0 }
+        { storage: 'local-lvm', type: 'lvm', content: 'images', shared: false }
       ]);
 
       // Mock generators
@@ -195,7 +195,7 @@ describe('SyncCommand', () => {
       existingClient.getContainers.mockResolvedValue([]);
       existingClient.getStoragePools.mockResolvedValue([]);
 
-      mockSession.client = existingClient;
+      mockSession.client = existingClient as any;
 
       const mockTerraformGenerator = {
         generateProviderConfig: jest.fn(),
@@ -219,8 +219,8 @@ describe('SyncCommand', () => {
     it('should discover multiple nodes', async () => {
       mockClient.connect.mockResolvedValue({ success: true });
       mockClient.getNodes.mockResolvedValue([
-        { node: 'proxmox-1', status: 'online' },
-        { node: 'proxmox-2', status: 'online' }
+        { node: 'proxmox-1', status: 'online', cpu: 0.1, maxcpu: 8, mem: 1000000000, maxmem: 8000000000, uptime: 86400 },
+        { node: 'proxmox-2', status: 'online', cpu: 0.2, maxcpu: 8, mem: 2000000000, maxmem: 8000000000, uptime: 43200 }
       ]);
       mockClient.getVMs.mockResolvedValue([]);
       mockClient.getContainers.mockResolvedValue([]);
@@ -244,8 +244,8 @@ describe('SyncCommand', () => {
     it('should handle node-specific errors gracefully', async () => {
       mockClient.connect.mockResolvedValue({ success: true });
       mockClient.getNodes.mockResolvedValue([
-        { node: 'proxmox-1', status: 'online' },
-        { node: 'proxmox-2', status: 'offline' }
+        { node: 'proxmox-1', status: 'online', cpu: 0.1, maxcpu: 8, mem: 1000000000, maxmem: 8000000000, uptime: 86400 },
+        { node: 'proxmox-2', status: 'offline', cpu: 0, maxcpu: 8, mem: 0, maxmem: 8000000000, uptime: 0 }
       ]);
       
       mockClient.getVMs

@@ -8,6 +8,9 @@ import * as path from 'path';
 
 import { ConfigManager, WorkspaceConfig } from '../config';
 
+// Re-export WorkspaceConfig for convenience
+export { WorkspaceConfig } from '../config';
+
 /**
  * Represents a Proxmox-MPC project workspace
  * 

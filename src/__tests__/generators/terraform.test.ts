@@ -39,8 +39,8 @@ describe('TerraformGenerator', () => {
     mockFS = jest.mocked(fs);
     
     // Mock fs methods
-    mockFS.mkdir = jest.fn().mockResolvedValue(undefined) as any;
-    mockFS.writeFile = jest.fn().mockResolvedValue(undefined) as any;
+    (mockFS.mkdir as jest.Mock) = jest.fn().mockResolvedValue(undefined as never);
+    (mockFS.writeFile as jest.Mock) = jest.fn().mockResolvedValue(undefined as never);
   });
 
   afterEach(() => {
@@ -57,10 +57,6 @@ describe('TerraformGenerator', () => {
         cpus: 4,
         maxmem: 4294967296, // 4GB in bytes
         maxdisk: 42949672960, // 40GB in bytes
-        netin: 0,
-        netout: 0,
-        diskread: 0,
-        diskwrite: 0,
         cpu: 0.1,
         mem: 1000000000,
         uptime: 3600
@@ -96,10 +92,6 @@ describe('TerraformGenerator', () => {
         cpus: 2,
         maxmem: 2147483648, // 2GB
         maxdisk: 21474836480, // 20GB
-        netin: 0,
-        netout: 0,
-        diskread: 0,
-        diskwrite: 0,
         cpu: 0,
         mem: 0,
         uptime: 0
@@ -121,10 +113,6 @@ describe('TerraformGenerator', () => {
         cpus: 1,
         maxmem: 1073741824,
         maxdisk: 10737418240,
-        netin: 0,
-        netout: 0,
-        diskread: 0,
-        diskwrite: 0,
         cpu: 0.05,
         mem: 500000000,
         uptime: 1800
@@ -145,10 +133,6 @@ describe('TerraformGenerator', () => {
         status: 'running',
         node: 'proxmox',
         // Missing cpus, maxmem, maxdisk
-        netin: 0,
-        netout: 0,
-        diskread: 0,
-        diskwrite: 0,
         cpu: 0,
         mem: 0,
         uptime: 0
@@ -174,10 +158,6 @@ describe('TerraformGenerator', () => {
         maxmem: 1073741824, // 1GB
         maxswap: 1073741824, // 1GB
         maxdisk: 8589934592, // 8GB
-        netin: 0,
-        netout: 0,
-        diskread: 0,
-        diskwrite: 0,
         cpu: 0.05,
         mem: 500000000,
         uptime: 7200
@@ -215,10 +195,6 @@ describe('TerraformGenerator', () => {
         maxmem: 536870912, // 512MB
         maxswap: 536870912,
         maxdisk: 4294967296, // 4GB
-        netin: 0,
-        netout: 0,
-        diskread: 0,
-        diskwrite: 0,
         cpu: 0,
         mem: 0,
         uptime: 0

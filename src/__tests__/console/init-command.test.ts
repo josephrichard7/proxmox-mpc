@@ -158,7 +158,7 @@ describe('InitCommand', () => {
         removeListener: jest.fn(),
       };
       
-      originalIsRaw = process.stdin.isRaw;
+      _originalIsRaw = process.stdin.isRaw;
       Object.defineProperty(process, 'stdin', { value: mockStdin, writable: true });
     });
 

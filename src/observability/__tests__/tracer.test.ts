@@ -142,7 +142,8 @@ describe('Tracer', () => {
       await new Promise(resolve => process.nextTick(resolve));
       
       const span = tracer.getSpan(spanId);
-      expect(span).toBeUndefined(); // Should be moved to completed
+      expect(span).toBeDefined(); // Should still be accessible after completion
+      expect(tracer.isSpanActive(spanId)).toBe(false); // But no longer active
       
       const completedSpans = tracer.getCompletedSpans();
       expect(completedSpans).toHaveLength(1);

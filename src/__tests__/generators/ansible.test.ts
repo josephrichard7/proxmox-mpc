@@ -43,8 +43,8 @@ describe('AnsibleGenerator', () => {
     mockYaml = jest.mocked(yaml);
     
     // Mock fs methods
-    mockFS.mkdir = jest.fn().mockResolvedValue(undefined);
-    mockFS.writeFile = jest.fn().mockResolvedValue(undefined);
+    (mockFS.mkdir as jest.Mock) = jest.fn().mockResolvedValue(undefined as never);
+    (mockFS.writeFile as jest.Mock) = jest.fn().mockResolvedValue(undefined as never);
     
     // Mock yaml.dump
     mockYaml.dump = jest.fn().mockReturnValue('mocked-yaml-content');
