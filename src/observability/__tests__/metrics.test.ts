@@ -553,27 +553,28 @@ describe('MetricsCollector', () => {
       expect(metrics.some(m => m.value === -Infinity)).toBe(true);
     });
 
-    it('should handle concurrent metric recording', () => {
+    it('should handle concurrent metric recording', async () => {
       const promises = [];
       
       // Simulate concurrent metric recording
       for (let i = 0; i < 100; i++) {
         promises.push(
-          Promise.resolve().then(() => 
-            collector.record(`concurrent.${i}`, i, 'count')
-          )
+          (async () => {
+            await Promise.resolve();
+            collector.record(`concurrent.${i}`, i, 'count');
+          })()
         );
       }
 
-      return Promise.all(promises).then(() => {
-        const metrics = collector.getMetrics();
-        expect(metrics.length).toBe(100);
-        
-        // All metrics should be unique
-        const names = metrics.map(m => m.name);
-        const uniqueNames = new Set(names);
-        expect(uniqueNames.size).toBe(100);
-      });
+      await Promise.all(promises);
+      
+      const metrics = collector.getMetrics();
+      expect(metrics.length).toBe(100);
+      
+      // All metrics should be unique
+      const names = metrics.map(m => m.name);
+      const uniqueNames = new Set(names);
+      expect(uniqueNames.size).toBe(100);
     });
   });
 

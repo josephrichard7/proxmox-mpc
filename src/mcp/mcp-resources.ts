@@ -115,8 +115,8 @@ export class MCPResourceProvider {
       const nodeNames = nodes.map(n => n.node);
       
       const [vms, containers] = await Promise.allSettled([
-        Promise.all(nodeNames.map(node => this.proxmoxClient.getVMs(node).catch(() => []))).then(results => results.flat()),
-        Promise.all(nodeNames.map(node => this.proxmoxClient.getContainers(node).catch(() => []))).then(results => results.flat())
+        this.getAllVMsFromNodes(nodeNames),
+        this.getAllContainersFromNodes(nodeNames)
       ]);
 
       return {
@@ -130,6 +130,46 @@ export class MCPResourceProvider {
         resourcesAffected: ['infrastructure-state']
       });
       return { nodes: 0, vms: 0, containers: 0, lastUpdated: new Date().toISOString() };
+    }
+  }
+
+  /**
+   * Get all VMs from multiple nodes
+   */
+  private async getAllVMsFromNodes(nodeNames: string[]): Promise<any[]> {
+    try {
+      const vmArrays = await Promise.all(
+        nodeNames.map(async node => {
+          try {
+            return await this.proxmoxClient.getVMs(node);
+          } catch {
+            return [];
+          }
+        })
+      );
+      return vmArrays.flat();
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Get all containers from multiple nodes
+   */
+  private async getAllContainersFromNodes(nodeNames: string[]): Promise<any[]> {
+    try {
+      const containerArrays = await Promise.all(
+        nodeNames.map(async node => {
+          try {
+            return await this.proxmoxClient.getContainers(node);
+          } catch {
+            return [];
+          }
+        })
+      );
+      return containerArrays.flat();
+    } catch {
+      return [];
     }
   }
 
@@ -174,9 +214,7 @@ export class MCPResourceProvider {
     try {
       // Get VMs from all nodes
       const nodes = await this.proxmoxClient.getNodes();
-      const vms = await Promise.all(
-        nodes.map(node => this.proxmoxClient.getVMs(node.node).catch(() => []))
-      ).then(results => results.flat());
+      const vms = await this.getAllVMsFromNodes(nodes.map(node => node.node));
       for (const vm of vms) {
         resources.push({
           type: 'vm',
@@ -202,9 +240,7 @@ export class MCPResourceProvider {
     try {
       // Get containers from all nodes
       const nodes = await this.proxmoxClient.getNodes();
-      const containers = await Promise.all(
-        nodes.map((node: any) => this.proxmoxClient.getContainers(node.node).catch(() => []))
-      ).then(results => results.flat());
+      const containers = await this.getAllContainersFromNodes(nodes.map((node: any) => node.node));
       for (const container of containers) {
         resources.push({
           type: 'container',
