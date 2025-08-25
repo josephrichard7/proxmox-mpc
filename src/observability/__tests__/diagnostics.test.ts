@@ -86,12 +86,13 @@ describe('DiagnosticsCollector', () => {
     jest.clearAllMocks();
   });
 
-  describe('Singleton Pattern', () => {
-    it('should return the same instance when called multiple times', () => {
+  describe('Instance Creation', () => {
+    it('should create new instances without caching', () => {
       const collector1 = DiagnosticsCollector.getInstance();
       const collector2 = DiagnosticsCollector.getInstance();
       
-      expect(collector1).toBe(collector2);
+      // Since we simplified to remove singleton caching, these will be different instances
+      expect(collector1).not.toBe(collector2);
     });
   });
 
@@ -431,20 +432,21 @@ describe('DiagnosticsCollector', () => {
     });
   });
 
-  describe('Latest Health Status', () => {
-    it('should return latest health status', async () => {
-      await collector.performHealthChecks();
+  describe('Health Status', () => {
+    it('should perform health checks on demand', async () => {
+      const healthStatus = await collector.performHealthChecks();
       
-      const latestStatus = collector.getLatestHealthStatus();
-      
-      expect(Array.isArray(latestStatus)).toBe(true);
-      expect(latestStatus.length).toBeGreaterThan(0);
+      expect(Array.isArray(healthStatus)).toBe(true);
+      expect(healthStatus.length).toBeGreaterThan(0);
     }, 20000);
 
-    it('should return empty array if no health checks performed', () => {
-      const latestStatus = collector.getLatestHealthStatus();
+    it('should include all expected health components', async () => {
+      const healthStatus = await collector.performHealthChecks();
       
-      expect(latestStatus).toEqual([]);
+      const components = healthStatus.map(h => h.component);
+      expect(components).toContain('system');
+      expect(components).toContain('memory');
+      expect(components).toContain('database');
     });
   });
 
@@ -512,32 +514,21 @@ describe('DiagnosticsCollector', () => {
       expect(formatBytes(1536)).toBe('1.5 KB');
     });
 
-    it('should get last successful operation from logs', () => {
-      const mockLogs = [
-        { level: 'error', message: 'Failed operation', operation: 'failed' },
-        { level: 'info', message: 'Completed sync', operation: 'sync' },
-        { level: 'info', message: 'Completed apply', operation: 'apply' }
-      ] as any;
-
-      const lastSuccess = (collector as any).getLastSuccessfulOperation(mockLogs);
-      expect(lastSuccess).toBe('apply');
-    });
-
-    it('should handle no successful operations in logs', () => {
-      const mockLogs = [
-        { level: 'error', message: 'Failed', operation: 'failed' }
-      ] as any;
-
-      const lastSuccess = (collector as any).getLastSuccessfulOperation(mockLogs);
-      expect(lastSuccess).toBe('Unknown');
+    it('should handle error serialization correctly', () => {
+      const testError = new Error('Test error');
+      testError.stack = 'Test stack trace';
+      
+      // Test that our error handling is working in generateSnapshot
+      expect(() => collector.generateSnapshot('test', 'test', testError)).not.toThrow();
     });
   });
 
-  describe('Health Monitoring Setup', () => {
-    it('should setup continuous health monitoring', () => {
-      // Verify that the collector sets up periodic health checks
-      // This is implicitly tested by the constructor behavior
+  describe('Simplified Design', () => {
+    it('should work without continuous monitoring', () => {
+      // The simplified design no longer has continuous monitoring
+      // Health checks are performed on-demand only
       expect(collector).toBeDefined();
+      expect(typeof collector.performHealthChecks).toBe('function');
     });
   });
 });
