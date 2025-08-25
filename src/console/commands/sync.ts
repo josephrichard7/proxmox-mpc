@@ -231,6 +231,10 @@ export class SyncCommand {
     try {
       const generator = new TerraformGenerator(session.workspace!);
       
+      // Initialize generator with template detection
+      console.log('🔍 Detecting Proxmox templates and configurations...');
+      await generator.initialize();
+      
       // Get all nodes for resource discovery
       const nodes = await client.getNodes();
       

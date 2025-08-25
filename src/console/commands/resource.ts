@@ -205,6 +205,7 @@ export class ResourceCommand {
 
       // Generate Terraform configuration
       const terraformGen = new TerraformGenerator(session.workspace!);
+      await terraformGen.initialize();
       await terraformGen.generateVMResource(vmInfo);
       console.log(`📝 Generated terraform/vms/${this.sanitizeName(options.name!)}.tf`);
 
@@ -261,6 +262,7 @@ export class ResourceCommand {
 
       // Generate Terraform configuration
       const terraformGen = new TerraformGenerator(session.workspace!);
+      await terraformGen.initialize();
       await terraformGen.generateContainerResource(containerInfo);
       console.log(`📝 Generated terraform/containers/${this.sanitizeName(options.name!)}.tf`);
 
