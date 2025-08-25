@@ -17,18 +17,22 @@ import { Tracer } from './tracer';
 const execAsync = promisify(exec);
 
 export class DiagnosticsCollector {
+  private static instance: DiagnosticsCollector;
   private logger: Logger;
   private metrics: MetricsCollector;
   private tracer: Tracer;
 
-  constructor() {
+  private constructor() {
     this.logger = Logger.getInstance();
     this.metrics = MetricsCollector.getInstance();
     this.tracer = Tracer.getInstance();
   }
 
   static getInstance(): DiagnosticsCollector {
-    return new DiagnosticsCollector();
+    if (!DiagnosticsCollector.instance) {
+      DiagnosticsCollector.instance = new DiagnosticsCollector();
+    }
+    return DiagnosticsCollector.instance;
   }
 
   /**

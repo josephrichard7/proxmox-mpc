@@ -4,12 +4,12 @@
  */
 
 import { ConsoleSession } from '../repl';
-import { Logger } from '../../observability/logger';
+import { observability } from '../../observability';
 import { LogLevel } from '../../observability/types';
 
 export class LogsCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {
-    const logger = Logger.getInstance();
+    const logger = observability.logger;
 
     try {
       const options = this.parseArguments(args);

@@ -4,14 +4,12 @@
  */
 
 import { ConsoleSession } from '../repl';
-import { Logger } from '../../observability/logger';
-import { MetricsCollector } from '../../observability/metrics';
-import { Tracer } from '../../observability/tracer';
+import { observability } from '../../observability';
 import { errorHandler } from '../error-handler';
 
 export class DebugCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {
-    const logger = Logger.getInstance();
+    const logger = observability.logger;
 
     if (args.length === 0) {
       await this.showDebugStatus(session);
@@ -59,7 +57,7 @@ export class DebugCommand {
   }
 
   private async enableDebug(session: ConsoleSession): Promise<void> {
-    const logger = Logger.getInstance();
+    const logger = observability.logger;
     
     logger.updateConfig({
       level: 'debug',
@@ -84,7 +82,7 @@ export class DebugCommand {
   }
 
   private async disableDebug(session: ConsoleSession): Promise<void> {
-    const logger = Logger.getInstance();
+    const logger = observability.logger;
     
     logger.updateConfig({
       level: 'info',
@@ -102,9 +100,9 @@ export class DebugCommand {
   }
 
   private async showDebugStatus(session: ConsoleSession): Promise<void> {
-    const logger = Logger.getInstance();
-    const metrics = MetricsCollector.getInstance();
-    const tracer = Tracer.getInstance();
+    const logger = observability.logger;
+    const metrics = observability.metrics;
+    const tracer = observability.tracer;
     const config = logger.getConfig();
 
     console.log('🐛 Debug Status\\n');
@@ -154,7 +152,7 @@ export class DebugCommand {
   }
 
   private async showRecentLogs(args: string[], session: ConsoleSession): Promise<void> {
-    const logger = Logger.getInstance();
+    const logger = observability.logger;
     const limit = args.length > 0 ? parseInt(args[0]) || 20 : 20;
     const level = args.length > 1 ? args[1] as any : undefined;
 
@@ -195,7 +193,7 @@ export class DebugCommand {
   }
 
   private async showMetrics(args: string[], session: ConsoleSession): Promise<void> {
-    const metrics = MetricsCollector.getInstance();
+    const metrics = observability.metrics;
     const metricName = args.length > 0 ? args[0] : undefined;
     const limit = args.length > 1 ? parseInt(args[1]) || 20 : 20;
 
@@ -241,7 +239,7 @@ export class DebugCommand {
   }
 
   private async showTraces(args: string[], session: ConsoleSession): Promise<void> {
-    const tracer = Tracer.getInstance();
+    const tracer = observability.tracer;
     const limit = args.length > 0 ? parseInt(args[0]) || 10 : 10;
 
     console.log(`\\n🔍 Operation Traces\\n`);
@@ -281,9 +279,9 @@ export class DebugCommand {
   }
 
   private async clearDebugData(args: string[], session: ConsoleSession): Promise<void> {
-    const logger = Logger.getInstance();
-    const metrics = MetricsCollector.getInstance();
-    const tracer = Tracer.getInstance();
+    const logger = observability.logger;
+    const metrics = observability.metrics;
+    const tracer = observability.tracer;
     
     const type = args.length > 0 ? args[0].toLowerCase() : 'all';
 

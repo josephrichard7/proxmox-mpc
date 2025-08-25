@@ -4,15 +4,13 @@
  */
 
 import { ConsoleSession } from '../repl';
-import { DiagnosticsCollector } from '../../observability/diagnostics';
-import { Logger } from '../../observability/logger';
-import { MetricsCollector } from '../../observability/metrics';
+import { observability } from '../../observability';
 
 export class HealthCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {
-    const diagnostics = DiagnosticsCollector.getInstance();
-    const logger = Logger.getInstance();
-    const metrics = MetricsCollector.getInstance();
+    const diagnostics = observability.diagnostics;
+    const logger = observability.logger;
+    const metrics = observability.metrics;
 
     console.log('🏥 System Health Check\\n');
 
@@ -235,7 +233,7 @@ export class HealthCommand {
     console.log('');
   }
 
-  private async showPerformanceMetrics(metrics: MetricsCollector): Promise<void> {
+  private async showPerformanceMetrics(metrics: any): Promise<void> {
     console.log('⚡ Performance Metrics:');
 
     const summary = metrics.getMetricsSummary();
@@ -249,7 +247,7 @@ export class HealthCommand {
     // Recent performance trends
     const recentMetrics = metrics.getMetrics('operation.duration', 10);
     if (recentMetrics.length > 0) {
-      const avgRecent = recentMetrics.reduce((sum, m) => sum + m.value, 0) / recentMetrics.length;
+      const avgRecent = recentMetrics.reduce((sum: number, m: any) => sum + m.value, 0) / recentMetrics.length;
       console.log(`  🔄 Recent Avg Response: ${avgRecent.toFixed(2)}ms`);
     }
 

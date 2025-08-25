@@ -3,6 +3,11 @@
  * Comprehensive logging, tracing, and diagnostics for AI-assisted troubleshooting
  */
 
+// Unified manager - preferred interface
+export { ObservabilityManager, observability } from './manager';
+export type { ObservabilityConfig } from './manager';
+
+// Individual components - for backwards compatibility and direct access
 export { Logger } from './logger';
 export { Tracer } from './tracer';
 export { MetricsCollector, metrics } from './metrics';

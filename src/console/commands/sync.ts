@@ -8,15 +8,13 @@ import { ProxmoxClient } from '../../api';
 import { TerraformGenerator } from '../../generators/terraform';
 import { AnsibleGenerator } from '../../generators/ansible';
 import { TestGenerator } from '../../generators/tests';
-import { Logger } from '../../observability/logger';
-import { Tracer } from '../../observability/tracer';
-import { MetricsCollector } from '../../observability/metrics';
+import { observability } from '../../observability';
 import { errorHandler } from '../error-handler';
 
 export class SyncCommand {
-  private logger = Logger.getInstance();
-  private tracer = Tracer.getInstance();
-  private metrics = MetricsCollector.getInstance();
+  private logger = observability.logger;
+  private tracer = observability.tracer;
+  private metrics = observability.metrics;
 
   async execute(args: string[], session: ConsoleSession): Promise<void> {
     // Start tracing for the entire sync operation

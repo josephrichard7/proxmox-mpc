@@ -6,13 +6,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { ConsoleSession } from '../repl';
-import { DiagnosticsCollector } from '../../observability/diagnostics';
-import { Logger } from '../../observability/logger';
+import { observability } from '../../observability';
 
 export class ReportIssueCommand {
   async execute(args: string[], session: ConsoleSession): Promise<void> {
-    const diagnostics = DiagnosticsCollector.getInstance();
-    const logger = Logger.getInstance();
+    const diagnostics = observability.diagnostics;
+    const logger = observability.logger;
 
     console.log('🔍 Collecting diagnostic information...\n');
 
