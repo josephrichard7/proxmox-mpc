@@ -34,25 +34,25 @@ export class TabCompletion {
   }
 
   private getCompletions(input: string): CompletionResult {
-    const trimmed = input.trim();
+    // Don't trim the input - trailing spaces are significant for completion
     
     // Empty input - show most common commands
-    if (!trimmed) {
+    if (!input || input.trim() === '') {
       return this.getDefaultCompletions();
     }
     
     // Slash commands
-    if (trimmed.startsWith('/')) {
-      return this.completeSlashCommand(trimmed);
+    if (input.startsWith('/')) {
+      return this.completeSlashCommand(input);
     }
     
-    // Resource commands
-    if (this.isResourceCommand(trimmed)) {
-      return this.completeResourceCommand(trimmed);
+    // Resource commands - use trimmed for detection but pass original
+    if (this.isResourceCommand(input.trim())) {
+      return this.completeResourceCommand(input);
     }
     
     // General command completion
-    return this.completeGeneralCommand(trimmed);
+    return this.completeGeneralCommand(input.trim());
   }
 
   private getDefaultCompletions(): CompletionResult {
@@ -67,14 +67,22 @@ export class TabCompletion {
     const command = input.slice(1); // Remove '/'
     const parts = command.split(' ');
     
-    if (parts.length === 1) {
+    if (parts.length === 1 && !command.includes(' ')) {
       // Complete slash command name
       const availableCommands = this.context.commands.getAvailableCommands();
       const matches = availableCommands.filter(cmd => cmd.startsWith(command));
       
+      // Find the longest common prefix that includes the input
+      let commonPrefix = input;
+      if (matches.length > 0) {
+        const matchesWithSlash = matches.map(cmd => `/${cmd}`);
+        const fullCommonPrefix = this.findCommonPrefix([input, ...matchesWithSlash]);
+        commonPrefix = fullCommonPrefix;
+      }
+      
       return {
         completions: matches.map(cmd => `/${cmd}`),
-        commonPrefix: `/${this.findCommonPrefix(matches)}`,
+        commonPrefix,
       };
     } else {
       // Complete slash command arguments
@@ -105,7 +113,10 @@ export class TabCompletion {
   }
 
   private completeInitArgs(args: string[]): CompletionResult {
-    if (args.length === 0) {
+    // Handle case where there are no real arguments (just empty strings)
+    const realArgs = args.filter(arg => arg.length > 0);
+    
+    if (realArgs.length === 0 || (args.length === 1 && args[0] === '')) {
       return {
         completions: ['--name', '--server', '--template'],
         commonPrefix: '--',
@@ -113,23 +124,52 @@ export class TabCompletion {
     }
     
     const lastArg = args[args.length - 1];
+    const prevArg = args.length > 1 ? args[args.length - 2] : '';
     
-    if (lastArg === '--template') {
+    // Complete option values
+    if (prevArg === '--template' && lastArg !== '--template') {
       return {
         completions: ['basic', 'homelab', 'production', 'development'],
         commonPrefix: '',
       };
     }
     
-    return { completions: [], commonPrefix: '' };
+    // Complete options
+    if (lastArg.startsWith('--')) {
+      const options = ['--name', '--server', '--template'];
+      const matches = options.filter(opt => opt.startsWith(lastArg));
+      return {
+        completions: matches,
+        commonPrefix: this.findCommonPrefix(matches),
+      };
+    }
+    
+    // Default to showing options
+    return {
+      completions: ['--name', '--server', '--template'],
+      commonPrefix: '--',
+    };
   }
 
   private completeHelpArgs(args: string[]): CompletionResult {
-    if (args.length === 0) {
+    const realArgs = args.filter(arg => arg.length > 0);
+    
+    if (realArgs.length === 0 || (args.length === 1 && args[0] === '')) {
       const commands = this.context.commands.getAvailableCommands();
       return {
         completions: commands,
         commonPrefix: '',
+      };
+    }
+    
+    // Complete command names that match partial input
+    const partial = args[args.length - 1];
+    if (partial) {
+      const commands = this.context.commands.getAvailableCommands();
+      const matches = commands.filter(cmd => cmd.startsWith(partial));
+      return {
+        completions: matches,
+        commonPrefix: this.findCommonPrefix(matches),
       };
     }
     
@@ -174,9 +214,9 @@ export class TabCompletion {
 
   private completeResourceCommand(input: string): CompletionResult {
     const parts = input.split(' ');
-    const action = parts[0];
+    const action = parts[0].trim();
     
-    if (parts.length === 1) {
+    if (parts.length === 1 && !input.includes(' ')) {
       // Complete action
       const actions = ['create', 'delete', 'update', 'list', 'describe'];
       const matches = actions.filter(act => act.startsWith(action));
@@ -186,8 +226,9 @@ export class TabCompletion {
         commonPrefix: this.findCommonPrefix(matches),
       };
     } else if (parts.length === 2) {
-      // Complete resource type
-      return this.completeResourceType(parts[1]);
+      // Complete resource type - handle empty second part
+      const resourceType = parts[1] || '';
+      return this.completeResourceType(resourceType);
     } else {
       // Complete resource-specific options
       return this.completeResourceOptions(action, parts[1], parts.slice(2));
@@ -216,10 +257,20 @@ export class TabCompletion {
       };
     }
     
-    // Complete option values
+    // Complete option values - check if previous argument is an option
     if (args.length >= 2) {
-      const optionName = args[args.length - 2];
-      return this.completeOptionValue(optionName, partial);
+      const previousArg = args[args.length - 2];
+      if (previousArg && previousArg.startsWith('--')) {
+        return this.completeOptionValue(previousArg, partial);
+      }
+    }
+    
+    // Handle case where last argument is an option and we want to complete its value
+    if (args.length >= 1) {
+      const lastArg = args[args.length - 1];
+      if (lastArg && lastArg.startsWith('--') && partial === '') {
+        return this.completeOptionValue(lastArg, '');
+      }
     }
     
     return {
@@ -282,16 +333,15 @@ export class TabCompletion {
         };
       
       case '--template':
-        if (this.context.workspace) {
-          // Get templates from workspace if available
-          const templates = ['basic', 'web-server', 'database', 'monitoring'];
-          const templateMatches = templates.filter(tmpl => tmpl.startsWith(partial));
-          return {
-            completions: templateMatches,
-            commonPrefix: this.findCommonPrefix(templateMatches),
-          };
-        }
-        break;
+        // Get templates from workspace or use defaults
+        const templates = this.context.workspace 
+          ? ['basic', 'web-server', 'database', 'monitoring'] 
+          : ['basic', 'homelab', 'production', 'development'];
+        const templateMatches = templates.filter(tmpl => tmpl.startsWith(partial));
+        return {
+          completions: templateMatches,
+          commonPrefix: this.findCommonPrefix(templateMatches),
+        };
     }
     
     return { completions: [], commonPrefix: '' };
@@ -318,7 +368,19 @@ export class TabCompletion {
   private isResourceCommand(input: string): boolean {
     const resourceActions = ['create', 'delete', 'update', 'list', 'describe'];
     const firstWord = input.split(' ')[0];
-    return resourceActions.includes(firstWord);
+    
+    // Check exact match first
+    if (resourceActions.includes(firstWord)) {
+      return true;
+    }
+    
+    // Check partial matches if there's only one word
+    const parts = input.split(' ');
+    if (parts.length === 1) {
+      return resourceActions.some(action => action.startsWith(firstWord));
+    }
+    
+    return false;
   }
 
   private findCommonPrefix(strings: string[]): string {

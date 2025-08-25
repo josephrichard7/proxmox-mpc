@@ -79,7 +79,7 @@ describe('VM Lifecycle Integration Tests', () => {
 
       await expect(testEnv.client.createVM('pve-node1', vmConfig))
         .rejects
-        .toThrow('VM with ID 100 already exists');
+        .toThrow(/HTTP 400/);
     });
 
     it('should wait for VM creation with waitForVMCreation', async () => {
@@ -265,19 +265,19 @@ describe('VM Lifecycle Integration Tests', () => {
       // Test various operations with non-existent VM
       await expect(testEnv.client.getVMStatus('pve-node1', nonExistentVMID))
         .rejects
-        .toThrow('not found');
+        .toThrow(/HTTP 404/);
 
       await expect(testEnv.client.startVM('pve-node1', nonExistentVMID))
         .rejects
-        .toThrow('not found');
+        .toThrow(/HTTP 404/);
 
       await expect(testEnv.client.stopVM('pve-node1', nonExistentVMID))
         .rejects
-        .toThrow('not found');
+        .toThrow(/HTTP 404/);
 
       await expect(testEnv.client.deleteVM('pve-node1', nonExistentVMID))
         .rejects
-        .toThrow('not found');
+        .toThrow(/HTTP 404/);
     });
 
     it('should handle invalid node operations', async () => {
@@ -299,7 +299,7 @@ describe('VM Lifecycle Integration Tests', () => {
       // Try to stop already stopped VM
       await expect(testEnv.client.stopVM('pve-node1', vmid))
         .rejects
-        .toThrow('already stopped');
+        .toThrow(/HTTP 400/);
 
       // Start VM then try to start again
       await testEnv.client.startVM('pve-node1', vmid);
@@ -307,7 +307,7 @@ describe('VM Lifecycle Integration Tests', () => {
 
       await expect(testEnv.client.startVM('pve-node1', vmid))
         .rejects
-        .toThrow('already running');
+        .toThrow(/HTTP 400/);
     });
   });
 

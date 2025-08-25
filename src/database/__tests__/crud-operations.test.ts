@@ -3,23 +3,20 @@
  */
 
 import { dbClient } from '../client';
+import { DatabaseTestHelper } from '../../__tests__/utils/database-test-helper';
 
 describe('Database CRUD Operations', () => {
-  afterAll(async () => {
-    await dbClient.disconnect();
+  beforeAll(async () => {
+    await DatabaseTestHelper.ensureConnection();
   });
 
   beforeEach(async () => {
-    // Clean up test data before each test - order matters for foreign keys
-    await dbClient.client.stateSnapshot.deleteMany();
-    await dbClient.client.task.deleteMany();
-    await dbClient.client.vM.deleteMany();
-    await dbClient.client.container.deleteMany();
-    await dbClient.client.node.deleteMany();
-    await dbClient.client.storage.deleteMany();
-    
-    // Ensure clean state
-    await new Promise(resolve => setTimeout(resolve, 10));
+    // Clean database before each test to ensure isolation
+    await DatabaseTestHelper.cleanupDatabase();
+  });
+
+  afterAll(async () => {
+    await DatabaseTestHelper.closeConnection();
   });
 
   describe('Node operations', () => {

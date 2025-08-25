@@ -10,13 +10,38 @@ import * as yaml from 'js-yaml';
 
 import { ProjectWorkspace, WorkspaceConfig } from '../index';
 
-// Mock fs operations
+// Mock fs operations (both async and sync)
 jest.mock('fs/promises');
 const mockFs = fs as jest.Mocked<typeof fs>;
+
+// Mock synchronous fs operations used by detect method
+jest.mock('fs', () => ({
+  readFileSync: jest.fn(),
+  existsSync: jest.fn(),
+}));
 
 // Mock yaml
 jest.mock('js-yaml');
 const mockYaml = yaml as jest.Mocked<typeof yaml>;
+
+// Mock child_process for database initialization
+jest.mock('child_process', () => ({
+  exec: jest.fn((cmd, callback) => {
+    if (typeof callback === 'function') {
+      // Simulate successful execution immediately
+      callback(null, 'mocked exec output', '');
+    }
+    return { stdout: null, stderr: null };
+  }),
+}));
+
+// Mock Prisma client
+jest.mock('@prisma/client', () => ({
+  PrismaClient: jest.fn().mockImplementation(() => ({
+    $connect: jest.fn().mockResolvedValue(undefined),
+    $disconnect: jest.fn().mockResolvedValue(undefined),
+  })),
+}));
 
 describe('ProjectWorkspace', () => {
   const testRootPath = '/test/workspace';
@@ -32,6 +57,21 @@ describe('ProjectWorkspace', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    
+    // Setup fs async mock implementations
+    mockFs.mkdir.mockResolvedValue(undefined as any);
+    mockFs.writeFile.mockResolvedValue(undefined as any);
+    mockFs.readFile.mockResolvedValue('mocked file content');
+    mockFs.access.mockResolvedValue(undefined as any);
+    
+    // Setup fs sync mock implementations
+    const fsSync = require('fs');
+    fsSync.readFileSync.mockReturnValue('mocked yaml content');
+    fsSync.existsSync.mockReturnValue(true);
+    
+    // Setup yaml mock
+    mockYaml.dump.mockReturnValue('mocked yaml content');
+    mockYaml.load.mockReturnValue(testConfig);
   });
 
   describe('constructor', () => {
@@ -167,7 +207,8 @@ describe('ProjectWorkspace', () => {
 
       const workspace = await ProjectWorkspace.detect(testRootPath);
 
-      expect(mockFs.readFile).toHaveBeenCalledWith(
+      const fsSync = require('fs');
+      expect(fsSync.readFileSync).toHaveBeenCalledWith(
         path.join(testRootPath, '.proxmox', 'config.yml'),
         'utf8'
       );
@@ -177,7 +218,13 @@ describe('ProjectWorkspace', () => {
     });
 
     it('should return null when config does not exist', async () => {
-      mockFs.readFile.mockRejectedValue(new Error('File not found'));
+      // Override mock to simulate file not found
+      const fsSync = require('fs');
+      fsSync.readFileSync.mockImplementation(() => {
+        const error = new Error('ENOENT: no such file or directory') as any;
+        error.code = 'ENOENT';
+        throw error;
+      });
 
       const workspace = await ProjectWorkspace.detect(testRootPath);
 

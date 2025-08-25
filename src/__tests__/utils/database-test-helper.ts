@@ -12,12 +12,15 @@ export class DatabaseTestHelper {
   static async cleanupDatabase(): Promise<void> {
     const client = dbClient.client;
     
-    // Delete in reverse dependency order to avoid FK constraint violations
+    // Delete in correct dependency order to avoid FK constraint violations
+    // First delete entities that reference other tables
     await client.stateSnapshot.deleteMany({});
-    await client.task.deleteMany({});
-    await client.container.deleteMany({});
-    await client.vM.deleteMany({});
+    await client.task.deleteMany({});  // References Node
+    await client.container.deleteMany({});  // References Node  
+    await client.vM.deleteMany({});  // References Node
+    // Storage has no FK constraints, can be deleted independently
     await client.storage.deleteMany({});
+    // Delete nodes last since other tables reference it
     await client.node.deleteMany({});
   }
 

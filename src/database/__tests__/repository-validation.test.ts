@@ -112,11 +112,9 @@ describe('Repository Validation Tests', () => {
   });
 
   describe('VM Repository with Relationships', () => {
-    beforeEach(async () => {
-      await nodeRepo.create({ id: 'vm-node', status: 'online' });
-    });
-
     it('should handle VM operations with foreign key validation', async () => {
+      // Create node for this test
+      await nodeRepo.create({ id: 'vm-node', status: 'online' });
       // Create VM
       const vm = await vmRepo.create({
         id: 100,
@@ -152,21 +150,19 @@ describe('Repository Validation Tests', () => {
     });
 
     it('should prevent orphaned VMs', async () => {
+      // No need to create a node for this test - testing invalid reference
       await expect(vmRepo.create({
         id: 101,
         nodeId: 'non-existent-node',
         status: 'running'
       })).rejects.toThrow(ValidationError);
-
     });
   });
 
   describe('Container Repository Operations', () => {
-    beforeEach(async () => {
-      await nodeRepo.create({ id: 'container-node', status: 'online' });
-    });
-
     it('should manage containers effectively', async () => {
+      // Create node for this test
+      await nodeRepo.create({ id: 'container-node', status: 'online' });
       // Create containers with different templates
       const container1 = await containerRepo.create({
         id: 200,
@@ -203,11 +199,9 @@ describe('Repository Validation Tests', () => {
   });
 
   describe('Task Repository and Tracking', () => {
-    beforeEach(async () => {
-      await nodeRepo.create({ id: 'task-node', status: 'online' });
-    });
-
     it('should track Proxmox operations', async () => {
+      // Create node for this test
+      await nodeRepo.create({ id: 'task-node', status: 'online' });
       // Create a running task
       const task = await taskRepo.create({
         upid: 'UPID:task-node:00001234:000ABCDE:67890123:vmstart:100:root@pam:',
@@ -351,11 +345,9 @@ describe('Repository Validation Tests', () => {
   });
 
   describe('Bulk Operations and Performance', () => {
-    beforeEach(async () => {
-      await nodeRepo.create({ id: 'bulk-node', status: 'online' });
-    });
-
     it('should handle bulk operations efficiently', async () => {
+      // Create node for this test
+      await nodeRepo.create({ id: 'bulk-node', status: 'online' });
       const startTime = Date.now();
 
       // Create multiple VMs

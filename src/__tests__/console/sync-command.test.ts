@@ -10,13 +10,40 @@ import { SyncCommand } from '../../console/commands/sync';
 import { ConsoleSession } from '../../console/repl';
 import { AnsibleGenerator } from '../../generators/ansible';
 import { TerraformGenerator } from '../../generators/terraform';
+import { TestGenerator } from '../../generators/tests';
 import { ProjectWorkspace } from '../../workspace';
 
 // Mock dependencies
 jest.mock('../../api');
 jest.mock('../../generators/terraform');
 jest.mock('../../generators/ansible');
+jest.mock('../../generators/tests');
 jest.mock('../../workspace');
+jest.mock('../../database/repositories', () => ({
+  NodeRepository: jest.fn().mockImplementation(() => ({
+    findById: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  })),
+  VMRepository: jest.fn().mockImplementation(() => ({
+    findById: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  })),
+  ContainerRepository: jest.fn().mockImplementation(() => ({
+    findById: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  })),
+  StorageRepository: jest.fn().mockImplementation(() => ({
+    findById: jest.fn(),
+    create: jest.fn(),
+    update: jest.fn(),
+  })),
+  StateSnapshotRepository: jest.fn().mockImplementation(() => ({
+    create: jest.fn(),
+  })),
+}));
 
 describe('SyncCommand', () => {
   let syncCommand: SyncCommand;
@@ -28,6 +55,11 @@ describe('SyncCommand', () => {
     syncCommand = new SyncCommand();
     
     // Create mock workspace
+    const mockDbClient = {
+      $transaction: jest.fn((callback: any) => callback({})),
+      $disconnect: jest.fn(),
+    };
+
     mockWorkspace = {
       name: 'test-workspace',
       rootPath: '/test/workspace',
@@ -38,7 +70,8 @@ describe('SyncCommand', () => {
         tokenId: 'test-token',
         tokenSecret: 'test-secret',
         node: 'proxmox'
-      }
+      },
+      getDatabaseClient: () => Promise.resolve(mockDbClient)
     } as any;
 
     // Create mock client
@@ -75,7 +108,8 @@ describe('SyncCommand', () => {
       await syncCommand.execute([], sessionWithoutWorkspace);
 
       expect(console.log).toHaveBeenCalledWith('❌ No workspace detected');
-      expect(console.log).toHaveBeenCalledWith('   Use /init to create a workspace first');
+      expect(console.log).toHaveBeenCalledWith('\n💡 Suggestions:');
+      expect(console.log).toHaveBeenCalledWith('   • Use /init to create a workspace first');
     });
 
     it('should fail when connection to Proxmox fails', async () => {
@@ -131,6 +165,7 @@ describe('SyncCommand', () => {
 
       // Mock generators
       const mockTerraformGenerator = {
+        initialize: jest.fn(),
         generateVMResource: jest.fn(),
         generateContainerResource: jest.fn(),
         generateProviderConfig: jest.fn(),
@@ -139,9 +174,13 @@ describe('SyncCommand', () => {
         generateInventory: jest.fn(),
         generatePlaybooks: jest.fn(),
       };
+      const mockTestGenerator = {
+        generateTestSuite: jest.fn(),
+      };
 
       jest.mocked(TerraformGenerator).mockImplementation(() => mockTerraformGenerator as any);
       jest.mocked(AnsibleGenerator).mockImplementation(() => mockAnsibleGenerator as any);
+      jest.mocked(TestGenerator).mockImplementation(() => mockTestGenerator as any);
       jest.mocked(ProxmoxClient).mockImplementation(() => mockClient);
 
       await syncCommand.execute([], mockSession);
@@ -172,7 +211,7 @@ describe('SyncCommand', () => {
       expect(mockAnsibleGenerator.generatePlaybooks).toHaveBeenCalled();
 
       // Verify success message
-      expect(console.log).toHaveBeenCalledWith('\\n✅ Infrastructure synchronization complete!');
+      expect(console.log).toHaveBeenCalledWith('\n✅ Infrastructure synchronization complete!');
     });
 
     it('should handle errors during sync gracefully', async () => {
@@ -260,19 +299,24 @@ describe('SyncCommand', () => {
 
       jest.mocked(ProxmoxClient).mockImplementation(() => mockClient);
       jest.mocked(TerraformGenerator).mockImplementation(() => ({ 
+        initialize: jest.fn(),
         generateVMResource: jest.fn(),
+        generateContainerResource: jest.fn(),
         generateProviderConfig: jest.fn() 
       } as any));
       jest.mocked(AnsibleGenerator).mockImplementation(() => ({ 
         generateInventory: jest.fn(), 
         generatePlaybooks: jest.fn() 
       } as any));
+      jest.mocked(TestGenerator).mockImplementation(() => ({
+        generateTestSuite: jest.fn(),
+      } as any));
 
       await syncCommand.execute([], mockSession);
 
       // Should continue despite errors on one node
       expect(console.log).toHaveBeenCalledWith('✅ Connected to Proxmox server');
-      expect(console.log).toHaveBeenCalledWith('\\n✅ Infrastructure synchronization complete!');
+      expect(console.log).toHaveBeenCalledWith('\n✅ Infrastructure synchronization complete!');
     });
   });
 });

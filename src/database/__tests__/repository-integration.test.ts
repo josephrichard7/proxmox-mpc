@@ -384,11 +384,9 @@ describe('Repository Integration Tests', () => {
   });
 
   describe('Performance and Bulk Operations', () => {
-    beforeEach(async () => {
-      await nodeRepo.create({ id: 'perf-node', status: 'online' });
-    });
-
     it('should handle bulk operations efficiently', async () => {
+      // Create node for this test
+      await nodeRepo.create({ id: 'perf-node', status: 'online' });
       const startTime = Date.now();
 
       // Create 20 VMs
@@ -431,6 +429,9 @@ describe('Repository Integration Tests', () => {
     });
 
     it('should handle concurrent operations safely', async () => {
+      // Ensure node exists for this test
+      await nodeRepo.create({ id: 'perf-node', status: 'online' });
+
       // Create multiple VMs concurrently
       const concurrentOps = Array.from({ length: 10 }, (_, i) =>
         vmRepo.create({
@@ -447,16 +448,14 @@ describe('Repository Integration Tests', () => {
       // Verify all created successfully
       const count = await vmRepo.count({ nodeId: 'perf-node' });
       expect(count).toBe(10);
-
     });
   });
 
   describe('Advanced Query Features', () => {
-    beforeEach(async () => {
-      await nodeRepo.create({ id: 'query-node', status: 'online' });
-    });
-
     it('should support complex filtering and sorting', async () => {
+      // Create node for this test
+      await nodeRepo.create({ id: 'query-node', status: 'online' });
+
       // Create test data with various statuses and resources
       await vmRepo.create({ id: 100, nodeId: 'query-node', status: 'running', cpuUsage: 0.8 });
       await vmRepo.create({ id: 101, nodeId: 'query-node', status: 'running', cpuUsage: 0.3 });
