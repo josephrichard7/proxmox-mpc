@@ -1,0 +1,18 @@
+{
+  "proxmox": {
+    "host": "192.168.0.19",
+    "port": 8006,
+    "username": "root@pam",
+    "token_id": "test-token",
+    "token_secret": "test-secret-key",
+    "verify_ssl": false
+  },
+  "database": {
+    "type": "sqlite",
+    "path": ".proxmox/state.db"
+  },
+  "project": {
+    "name": "test-db-validation",
+    "description": "Database validation test project"
+  }
+}
