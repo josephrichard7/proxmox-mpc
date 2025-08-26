@@ -1,0 +1,210 @@
+/* Custom styles for Proxmox-MPC documentation */
+
+/* Header customization */
+.md-header {
+  background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%);
+}
+
+/* Improve code block styling */
+.highlight {
+  margin: 1em 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+/* Custom admonition styles for production readiness */
+.md-typeset .admonition.production-ready {
+  border-color: #4caf50;
+}
+
+.md-typeset .admonition.production-ready > .admonition-title {
+  background-color: #4caf50;
+}
+
+/* Console command styling */
+.console-command {
+  background-color: var(--md-code-bg-color);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 4px;
+  font-family: var(--md-code-font);
+  padding: 0.5em 1em;
+  margin: 1em 0;
+}
+
+/* Status indicators */
+.status-badge {
+  display: inline-block;
+  padding: 0.2em 0.5em;
+  border-radius: 3px;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: white;
+}
+
+.status-badge.completed {
+  background-color: #4caf50;
+}
+
+.status-badge.in-progress {
+  background-color: #ff9800;
+}
+
+.status-badge.planned {
+  background-color: #2196f3;
+}
+
+/* Grid cards enhancement */
+.md-typeset .grid.cards > .card {
+  transition: transform 0.2s ease-in-out;
+}
+
+.md-typeset .grid.cards > .card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+/* Command reference table styling */
+.command-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+.command-table th,
+.command-table td {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  padding: 0.8em;
+  text-align: left;
+}
+
+.command-table th {
+  background-color: var(--md-default-bg-color--light);
+  font-weight: 600;
+}
+
+.command-table code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Mermaid diagram styling */
+.mermaid {
+  text-align: center;
+  margin: 2em 0;
+}
+
+/* Terminal output styling */
+.terminal-output {
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  padding: 1em;
+  border-radius: 6px;
+  font-family: 'Roboto Mono', monospace;
+  font-size: 0.9em;
+  line-height: 1.4;
+  overflow-x: auto;
+  margin: 1em 0;
+}
+
+.terminal-output .prompt {
+  color: #569cd6;
+  font-weight: bold;
+}
+
+.terminal-output .success {
+  color: #4ec9b0;
+}
+
+.terminal-output .error {
+  color: #f44747;
+}
+
+.terminal-output .warning {
+  color: #ffcc02;
+}
+
+/* Progress indicators */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: var(--md-default-fg-color--lightest);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.5em 0;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #1976d2, #42a5f5);
+  transition: width 0.3s ease;
+}
+
+/* Architecture diagram enhancements */
+.architecture-section {
+  background: var(--md-default-bg-color--light);
+  padding: 2em;
+  border-radius: 8px;
+  margin: 2em 0;
+}
+
+/* Feature showcase grid */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5em;
+  margin: 2em 0;
+}
+
+.feature-card {
+  background: var(--md-default-bg-color--light);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  padding: 1.5em;
+  transition: all 0.2s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.feature-card h3 {
+  margin-top: 0;
+  color: var(--md-primary-fg-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .terminal-output {
+    font-size: 0.8em;
+    padding: 0.8em;
+  }
+  
+  .command-table {
+    font-size: 0.9em;
+  }
+}
+
+/* Print styles */
+@media print {
+  .md-header,
+  .md-tabs,
+  .md-sidebar,
+  .md-footer {
+    display: none !important;
+  }
+  
+  .md-content {
+    margin: 0;
+  }
+  
+  .terminal-output {
+    background-color: #f5f5f5 !important;
+    color: #333 !important;
+    border: 1px solid #ccc;
+  }
+}

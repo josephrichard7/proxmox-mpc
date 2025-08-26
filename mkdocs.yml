@@ -1,0 +1,185 @@
+site_name: Proxmox-MPC Documentation
+site_description: Interactive Infrastructure-as-Code Console for Proxmox Virtual Environment
+site_author: Proxmox-MPC Team
+site_url: https://proxmox-mpc.github.io/
+
+# Repository
+repo_name: proxmox-mpc/proxmox-mpc
+repo_url: https://github.com/proxmox-mpc/proxmox-mpc
+
+# Copyright
+copyright: Copyright &copy; 2025 Proxmox-MPC Project
+
+# Configuration
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.tracking
+    - navigation.indexes
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+    - toc.integrate
+    - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+  palette:
+    # Palette toggle for automatic mode
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    # Palette toggle for light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  font:
+    text: Roboto
+    code: Roboto Mono
+  icon:
+    logo: material/server-network
+    repo: fontawesome/brands/github
+
+# Plugins
+plugins:
+  - search:
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+  - mermaid2
+
+# Customization
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/proxmox-mpc/proxmox-mpc
+    - icon: fontawesome/solid/globe
+      link: https://proxmox-mpc.github.io/
+
+# Extensions
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - toc:
+      permalink: true
+      title: On this page
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      normalize_issue_symbols: true
+      repo_url_shorthand: true
+      user: proxmox-mpc
+      repo: proxmox-mpc
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+
+# Navigation
+nav:
+  - Home:
+    - Overview: index.md
+    - What is Proxmox-MPC?: overview/what-is-proxmox-mpc.md
+    - Key Features: overview/key-features.md
+    - Architecture: overview/architecture.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+    - First Project: getting-started/first-project.md
+    - Authentication: getting-started/authentication.md
+    - System Requirements: getting-started/requirements.md
+  - User Guide:
+    - Interactive Console: user-guide/interactive-console.md
+    - CLI Commands: user-guide/cli-commands.md
+    - Project Workspaces: user-guide/project-workspaces.md
+    - Resource Management: user-guide/resource-management.md
+    - Common Workflows: user-guide/workflows.md
+  - Features:
+    - Infrastructure as Code: features/infrastructure-as-code.md
+    - State Synchronization: features/state-synchronization.md
+    - Testing Framework: features/testing-framework.md
+    - Observability: features/observability.md
+    - Multi-Server Support: features/multi-server.md
+  - Reference:
+    - Console Commands: reference/console-commands.md
+    - CLI Reference: reference/cli-reference.md
+    - Configuration: reference/configuration.md
+    - API Reference: reference/api-reference.md
+    - Error Codes: reference/error-codes.md
+  - Tutorials:
+    - Basic VM Management: tutorials/basic-vm-management.md
+    - Container Workflows: tutorials/container-workflows.md
+    - IaC Deployment: tutorials/iac-deployment.md
+    - Testing Infrastructure: tutorials/testing-infrastructure.md
+    - Advanced Scenarios: tutorials/advanced-scenarios.md
+  - Troubleshooting:
+    - Common Issues: troubleshooting/common-issues.md
+    - FAQ: troubleshooting/faq.md
+    - Debugging Guide: troubleshooting/debugging.md
+    - Performance: troubleshooting/performance.md
+  - Development:
+    - Architecture Details: development/architecture.md
+    - Contributing: development/contributing.md
+    - Testing: development/testing.md
+    - Deployment: development/deployment.md
+  - Examples:
+    - Real-World Use Cases: examples/use-cases.md
+    - Integration Patterns: examples/integration-patterns.md
+    - Configuration Examples: examples/configuration-examples.md
+
+# Watch extra directories (commented out until created)
+# watch:
+#   - includes
+#   - overrides
+
+# Additional files to include
+extra_css:
+  - stylesheets/extra.css
+
+extra_javascript:
+  - javascripts/extra.js
