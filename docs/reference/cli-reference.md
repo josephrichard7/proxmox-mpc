@@ -558,7 +558,7 @@ npm run cli version -v
 
 **Output Example:**
 ```
-🚀 Proxmox-MPC CLI v0.1.2
+🚀 Proxmox-MPC CLI v0.1.3
 
 📦 Environment:
   • Node.js: v20.10.0
@@ -575,6 +575,11 @@ npm run cli version -v
   • Startup time: 234ms
   • Memory usage: 45.2MB
   • Test success rate: 91.4% (445/487)
+  
+🔧 Version Management:
+  • Dynamic version loading: Enabled
+  • Version source: package.json
+  • Build environment: production
 ```
 
 ### help

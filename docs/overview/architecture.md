@@ -275,7 +275,46 @@ class TerraformGenerator implements IaCGenerator {
 }
 ```
 
-### 7. Observability System
+### 7. Version Management System
+
+**Location**: `src/utils/version.ts`
+
+Professional version management system that ensures consistent version display across all interfaces.
+
+```typescript
+// Version Management Architecture
+interface VersionInfo {
+  version: string;
+  buildDate: string;
+  gitCommit?: string;
+  environment: 'development' | 'production';
+}
+
+class VersionManager {
+  private static instance: VersionManager;
+  private versionInfo: VersionInfo;
+  
+  constructor() {
+    this.versionInfo = this.loadVersionFromPackage();
+  }
+  
+  public getVersion(): string {
+    return this.versionInfo.version;
+  }
+  
+  public getFullVersionInfo(): VersionInfo {
+    return { ...this.versionInfo };
+  }
+}
+```
+
+**Key Features:**
+- **Dynamic Loading**: Version loaded from package.json at runtime
+- **Consistent Display**: All interfaces (CLI, console, web) show the same version
+- **Build Information**: Includes build date and git commit when available
+- **Environment Awareness**: Distinguishes between development and production builds
+
+### 8. Observability System
 
 **Location**: `src/observability/`
 

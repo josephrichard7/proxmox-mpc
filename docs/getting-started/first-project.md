@@ -33,7 +33,7 @@ proxmox-mpc
 
 You'll see the welcome message:
 ```
-🚀 Proxmox-MPC Interactive Console v0.1.2
+🚀 Proxmox-MPC Interactive Console v0.1.3
 📁 Workspace: ~/my-proxmox-datacenter
 🔧 Type /help for available commands or /exit to quit.
 

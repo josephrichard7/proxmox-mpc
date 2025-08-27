@@ -27,7 +27,7 @@ proxmox-mpc
 ### Console Startup
 When you launch the console, you'll see:
 ```
-Proxmox-MPC Interactive Console v0.1.2
+Proxmox-MPC Interactive Console v0.1.3
 
 🔍 Workspace Detection:
    📁 Project: my-datacenter

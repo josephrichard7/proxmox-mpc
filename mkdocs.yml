@@ -171,6 +171,7 @@ nav:
     - Architecture Details: development/architecture.md
     - Contributing: development/contributing.md
     - Testing: development/testing.md
+    - Version Management: development/version-management.md
     - Deployment: development/deployment.md
   - Examples:
     - Real-World Use Cases: examples/use-cases.md

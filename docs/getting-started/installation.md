@@ -95,7 +95,7 @@ proxmox-mpc
 
 You should see output similar to:
 ```
-Proxmox-MPC Interactive Console v0.1.2
+Proxmox-MPC Interactive Console v0.1.3
 Type /help for available commands or /exit to quit.
 
 proxmox-mpc> 

@@ -511,6 +511,70 @@ describe node proxmox-01 --include-stats
 
 ### Utility and Management Commands
 
+#### `/version` - Display Version Information
+
+Show current version and build information for Proxmox-MPC.
+
+**Syntax:**
+```bash
+/version [--detailed] [--json]
+```
+
+**Options:**
+- `--detailed`: Show comprehensive version and build information
+- `--json`: Output in JSON format
+
+**Examples:**
+```bash
+# Basic version
+/version
+
+# Detailed version info
+/version --detailed
+
+# JSON format for scripting
+/version --json
+```
+
+**Output Example:**
+```
+📦 Proxmox-MPC v0.1.3
+
+🔧 Version Information:
+  • Version: 0.1.3
+  • Built: 2025-01-15 14:30:15
+  • Environment: production
+  • Node.js: v20.10.0
+
+💡 Dynamic version loading enabled - version stays current automatically
+```
+
+**Detailed Output:**
+```
+🚀 Proxmox-MPC Interactive Console v0.1.3
+
+📦 Build Information:
+  • Version: 0.1.3
+  • Build Date: 2025-01-15T14:30:15.123Z
+  • Git Commit: a1b2c3d4
+  • Git Branch: main
+  • Environment: production
+  • Build Number: 1234
+
+🛠️ Runtime Environment:
+  • Node.js: v20.10.0
+  • Platform: linux x64
+  • Memory Usage: 45.2MB
+  • Uptime: 2h 34m 12s
+
+🔧 Version Management:
+  • Dynamic Loading: Enabled
+  • Source: package.json
+  • Auto-Update: Available
+```
+
+---
+
 #### `/help` - Show Help Information
 
 Display help information for commands and general usage.
