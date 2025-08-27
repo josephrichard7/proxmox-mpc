@@ -70,7 +70,7 @@ fi
 # Check required tools
 command -v npm >/dev/null 2>&1 || error "npm not found"
 command -v git >/dev/null 2>&1 || error "git not found"
-command -v standard-version >/dev/null 2>&1 || error "standard-version not found. Run: npm install"
+npx standard-version --version >/dev/null 2>&1 || error "standard-version not found. Run: npm install"
 
 success "Prerequisites check passed"
 
@@ -176,7 +176,7 @@ log "Test 7: Release workflow (dry run)"
 git checkout -- package.json CHANGELOG.md 2>/dev/null || true
 
 # Test standard-version dry run
-standard-version --dry-run > release-test-output.log 2>&1
+npx standard-version --dry-run > release-test-output.log 2>&1
 
 # Check if dry run would work
 grep -q "bumping version" release-test-output.log || warn "No version bump detected (expected for clean repo)"
