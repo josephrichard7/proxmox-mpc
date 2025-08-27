@@ -27,10 +27,12 @@ const mockYaml = yaml as jest.Mocked<typeof yaml>;
 
 // Mock child_process for database initialization
 jest.mock('child_process', () => ({
-  exec: jest.fn((cmd, callback) => {
-    if (typeof callback === 'function') {
+  exec: jest.fn((cmd, options, callback) => {
+    // Handle both (cmd, callback) and (cmd, options, callback) signatures
+    const cb = typeof options === 'function' ? options : callback;
+    if (typeof cb === 'function') {
       // Simulate successful execution immediately
-      callback(null, 'mocked exec output', '');
+      setTimeout(() => cb(null, 'mocked exec output', ''), 0);
     }
     return { stdout: null, stderr: null };
   }),
@@ -41,7 +43,18 @@ jest.mock('@prisma/client', () => ({
   PrismaClient: jest.fn().mockImplementation(() => ({
     $connect: jest.fn().mockResolvedValue(undefined),
     $disconnect: jest.fn().mockResolvedValue(undefined),
+    node: { count: jest.fn().mockResolvedValue(0) },
+    vM: { count: jest.fn().mockResolvedValue(0) },
+    container: { count: jest.fn().mockResolvedValue(0) },
+    storage: { count: jest.fn().mockResolvedValue(0) },
+    task: { count: jest.fn().mockResolvedValue(0) },
+    stateSnapshot: { count: jest.fn().mockResolvedValue(0) },
   })),
+}));
+
+// Mock find-package-root utility
+jest.mock('../../utils/find-package-root', () => ({
+  findPackageRoot: jest.fn().mockReturnValue('/mocked/project/root'),
 }));
 
 describe('ProjectWorkspace', () => {
@@ -67,7 +80,14 @@ describe('ProjectWorkspace', () => {
     
     // Setup fs sync mock implementations
     const fsSync = require('fs');
-    fsSync.readFileSync.mockReturnValue('mocked yaml content');
+    fsSync.readFileSync.mockImplementation((filePath: string) => {
+      // For package.json, return valid JSON
+      if (filePath.includes('package.json')) {
+        return JSON.stringify({ version: '1.0.0' });
+      }
+      // For other files (like config.yml), return yaml content
+      return 'mocked yaml content';
+    });
     fsSync.existsSync.mockReturnValue(true);
     
     // Setup yaml mock
@@ -153,22 +173,25 @@ describe('ProjectWorkspace', () => {
           created: expect.any(String),
           version: getVersion()
         }),
-        { indent: 2, lineWidth: -1 }
+        { indent: 2, lineWidth: -1, sortKeys: true }
       );
 
       expect(mockFs.writeFile).toHaveBeenCalledWith(
         path.join(testRootPath, '.proxmox', 'config.yml'),
-        'config: yaml'
+        'config: yaml',
+        'utf-8'
       );
     });
 
     it('should create database file', async () => {
+      const { PrismaClient } = require('@prisma/client');
       await ProjectWorkspace.create(testRootPath, testConfig);
 
-      expect(mockFs.writeFile).toHaveBeenCalledWith(
-        path.join(testRootPath, '.proxmox', 'state.db'),
-        ''
-      );
+      // Verify that Prisma client was instantiated and connected
+      expect(PrismaClient).toHaveBeenCalled();
+      const prismaInstance = PrismaClient.mock.results[0].value;
+      expect(prismaInstance.$connect).toHaveBeenCalled();
+      expect(prismaInstance.$disconnect).toHaveBeenCalled();
     });
 
     it('should create documentation files', async () => {
@@ -213,7 +236,7 @@ describe('ProjectWorkspace', () => {
         path.join(testRootPath, '.proxmox', 'config.yml'),
         'utf8'
       );
-      expect(mockYaml.load).toHaveBeenCalledWith('config content');
+      expect(mockYaml.load).toHaveBeenCalledWith('mocked yaml content');
       expect(workspace).toBeInstanceOf(ProjectWorkspace);
       expect(workspace?.config).toEqual(mockConfig);
     });

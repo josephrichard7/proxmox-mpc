@@ -177,17 +177,25 @@ export class SyncCommand {
         console.log(`\n   🖥️  Scanning node: ${node.node}`);
         
         // Get VMs
-        const vms = await client.getVMs(node.node);
-        if (vms.length > 0) {
-          console.log(`   📦 VMs found: ${vms.map(vm => `${vm.vmid}:${vm.name}(${vm.status})`).join(', ')}`);
-          totalVMs += vms.length;
+        try {
+          const vms = await client.getVMs(node.node);
+          if (vms.length > 0) {
+            console.log(`   📦 VMs found: ${vms.map(vm => `${vm.vmid}:${vm.name}(${vm.status})`).join(', ')}`);
+            totalVMs += vms.length;
+          }
+        } catch (error) {
+          console.log(`   📦 VMs: Unable to retrieve from node ${node.node}`);
         }
 
         // Get containers
-        const containers = await client.getContainers(node.node);
-        if (containers.length > 0) {
-          console.log(`   📦 Containers found: ${containers.map(c => `${c.vmid}:${c.name}(${c.status})`).join(', ')}`);
-          totalContainers += containers.length;
+        try {
+          const containers = await client.getContainers(node.node);
+          if (containers.length > 0) {
+            console.log(`   📦 Containers found: ${containers.map(c => `${c.vmid}:${c.name}(${c.status})`).join(', ')}`);
+            totalContainers += containers.length;
+          }
+        } catch (error) {
+          console.log(`   📦 Containers: Unable to retrieve from node ${node.node}`);
         }
 
         // Get storage
@@ -238,17 +246,25 @@ export class SyncCommand {
       
       for (const node of nodes) {
         // Generate VM configurations
-        const vms = await client.getVMs(node.node);
-        for (const vm of vms) {
-          await generator.generateVMResource(vm);
-          console.log(`   📝 Generated terraform/vms/${vm.name || vm.vmid}.tf`);
+        try {
+          const vms = await client.getVMs(node.node);
+          for (const vm of vms) {
+            await generator.generateVMResource(vm);
+            console.log(`   📝 Generated terraform/vms/${vm.name || vm.vmid}.tf`);
+          }
+        } catch (error) {
+          console.log(`   ⚠️  Could not generate VM configurations for node ${node.node}`);
         }
 
         // Generate container configurations
-        const containers = await client.getContainers(node.node);
-        for (const container of containers) {
-          await generator.generateContainerResource(container);
-          console.log(`   📝 Generated terraform/containers/${container.name || container.vmid}.tf`);
+        try {
+          const containers = await client.getContainers(node.node);
+          for (const container of containers) {
+            await generator.generateContainerResource(container);
+            console.log(`   📝 Generated terraform/containers/${container.name || container.vmid}.tf`);
+          }
+        } catch (error) {
+          console.log(`   ⚠️  Could not generate container configurations for node ${node.node}`);
         }
       }
 
@@ -273,10 +289,19 @@ export class SyncCommand {
       const allContainers = [];
 
       for (const node of nodes) {
-        const vms = await client.getVMs(node.node);
-        const containers = await client.getContainers(node.node);
-        allVMs.push(...vms);
-        allContainers.push(...containers);
+        try {
+          const vms = await client.getVMs(node.node);
+          allVMs.push(...vms);
+        } catch (error) {
+          console.log(`   ⚠️  Could not retrieve VMs for node ${node.node}`);
+        }
+        
+        try {
+          const containers = await client.getContainers(node.node);
+          allContainers.push(...containers);
+        } catch (error) {
+          console.log(`   ⚠️  Could not retrieve containers for node ${node.node}`);
+        }
       }
 
       await generator.generateInventory(allVMs, allContainers);

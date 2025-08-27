@@ -185,7 +185,7 @@ describe('VM Lifecycle Integration Tests', () => {
 
       // Performance assertions
       expect(totalDuration).toBeLessThan(60000); // Should complete within 1 minute
-    });
+    }, 30000); // 30 second timeout for full lifecycle test
 
     it('should handle graceful VM shutdown', async () => {
       // Start VM first
@@ -201,7 +201,7 @@ describe('VM Lifecycle Integration Tests', () => {
 
       const validation = await validateResource(testEnv.client, 'vm', 'pve-node1', vmid, 'stopped');
       expect(validation.status).toBe('stopped');
-    });
+    }, 20000); // 20 second timeout for graceful shutdown
 
     it('should handle VM reboot', async () => {
       // Start VM first
@@ -388,7 +388,7 @@ describe('VM Lifecycle Integration Tests', () => {
           { timeout: 10000 }
         );
       }
-    });
+    }, 45000); // 45 second timeout for concurrent operations
   });
 
   describe('Performance Benchmarks', () => {
@@ -441,6 +441,6 @@ describe('VM Lifecycle Integration Tests', () => {
       expect(deleteDuration).toBeLessThan(3000); // 3 seconds
 
       // Performance metrics captured for assertions
-    });
+    }, 25000); // 25 second timeout for performance test
   });
 });

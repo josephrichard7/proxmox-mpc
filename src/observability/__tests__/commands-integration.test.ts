@@ -14,7 +14,19 @@ import { ConsoleSession } from '../../console/repl';
 import { DiagnosticsCollector } from '../diagnostics';
 import { Logger } from '../logger';
 import { MetricsCollector } from '../metrics';
+import { ObservabilityManager } from '../manager';
 import { Tracer } from '../tracer';
+
+// Mock the observability singleton to use fresh instances
+jest.mock('../../observability', () => {
+  const originalModule = jest.requireActual('../../observability');
+  return {
+    ...originalModule,
+    get observability() {
+      return require('../manager').ObservabilityManager.getInstance();
+    }
+  };
+});
 
 // Mock file system operations
 jest.mock('fs');
@@ -34,6 +46,9 @@ describe('Observability Commands Integration', () => {
     (MetricsCollector as any).instance = undefined;
     (Tracer as any).instance = undefined;
     (DiagnosticsCollector as any).instance = undefined;
+    
+    // Reset observability manager to ensure fresh logger instances
+    (ObservabilityManager as any).instance = undefined;
 
     // Setup test workspace
     testWorkspace = '/test/workspace';

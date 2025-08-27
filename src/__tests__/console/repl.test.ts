@@ -61,11 +61,14 @@ describe('InteractiveConsole', () => {
       console = new InteractiveConsole();
 
       const session = (console as any).session;
+      const rl = (console as any).rl;
+      
       expect(session).toMatchObject({
         history: [],
         startTime: expect.any(Date),
-        rl: mockRl,
       });
+      
+      expect(rl).toBe(mockRl);
     });
 
     it('should setup event handlers', () => {
@@ -180,7 +183,7 @@ describe('InteractiveConsole', () => {
       await lineHandler('create vm --name test');
 
       expect(global.console.log).toHaveBeenCalledWith(
-        expect.stringContaining('🚧 Resource commands not yet implemented')
+        expect.stringContaining('❌ No workspace detected. Use /init to create a workspace first.')
       );
     });
 
