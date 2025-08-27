@@ -1,0 +1,84 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+tsconfig.json
+jest.config.js
+jest.setup.js
+
+# Development files
+.env*
+.vscode/
+.idea/
+docs/
+test-results/
+coverage/
+archive/
+scripts/
+
+# Build artifacts
+*.log
+*.tmp
+.cache/
+
+# Git
+.git/
+.gitignore
+
+# GitHub
+.github/
+
+# Documentation site
+site/
+mkdocs.yml
+
+# Test databases
+*.db
+*.sqlite
+*.sqlite3
+prisma/dev.db*
+prisma/test*
+
+# Version management
+.versionrc.json
+commitlint.config.js
+CHANGELOG.md
+
+# Node modules and locks
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+.cache/
+
+# Archives and backups
+*.zip
+*.tar.gz
+*.rar
+*.bak
+*.backup
+*.old
+
+# Chrome Remote Desktop (specific to dev environment)
+chrome-remote-desktop_current_amd64.deb

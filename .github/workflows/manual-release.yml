@@ -1,0 +1,233 @@
+name: Manual Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: 'Release Type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - prerelease
+      prerelease_id:
+        description: 'Prerelease ID (alpha, beta, rc)'
+        required: false
+        default: 'alpha'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+      dry_run:
+        description: 'Dry Run (preview changes without publishing)'
+        type: boolean
+        default: false
+      skip_tests:
+        description: 'Skip Tests (not recommended for production releases)'
+        type: boolean
+        default: false
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  manual-release:
+    name: Manual Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run pre-release checks
+        if: ${{ !inputs.skip_tests }}
+        run: |
+          echo "Running pre-release checks..."
+          npm run typecheck
+          npm run lint
+          npm run test
+          npm run build
+
+      - name: Preview release changes (Dry Run)
+        if: ${{ inputs.dry_run }}
+        run: |
+          echo "=== DRY RUN MODE ==="
+          echo "This is a preview of changes that would be made:"
+          echo ""
+          
+          if [ "${{ inputs.release_type }}" = "prerelease" ]; then
+            echo "Running: npm run release -- --dry-run --prerelease ${{ inputs.prerelease_id }}"
+            npm run release -- --dry-run --prerelease ${{ inputs.prerelease_id }}
+          else
+            echo "Running: npm run release:${{ inputs.release_type }} -- --dry-run"
+            npm run release:${{ inputs.release_type }} -- --dry-run
+          fi
+          
+          echo ""
+          echo "=== END DRY RUN ==="
+          echo "No changes were actually made. To perform the release, run again with 'Dry Run' unchecked."
+
+      - name: Create release
+        if: ${{ !inputs.dry_run }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Creating release..."
+          
+          if [ "${{ inputs.release_type }}" = "prerelease" ]; then
+            echo "Creating prerelease with ID: ${{ inputs.prerelease_id }}"
+            npm run release -- --prerelease ${{ inputs.prerelease_id }}
+          else
+            echo "Creating ${{ inputs.release_type }} release"
+            npm run release:${{ inputs.release_type }}
+          fi
+          
+          # Get the new version and tag
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}"
+          
+          echo "Created version: ${VERSION}"
+          echo "Created tag: ${TAG}"
+          
+          # Push the changes and tags
+          git push --follow-tags origin main
+          
+          # Output for subsequent steps
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+          echo "TAG=${TAG}" >> $GITHUB_ENV
+
+      - name: Build package
+        if: ${{ !inputs.dry_run }}
+        run: |
+          echo "Building package for version: ${VERSION}"
+          npm run build
+
+      - name: Create GitHub Release
+        if: ${{ !inputs.dry_run }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ env.TAG }}
+          name: "Release ${{ env.VERSION }}"
+          body: |
+            # Release ${{ env.VERSION }}
+            
+            This is a manual release created via GitHub Actions workflow.
+            
+            **Release Type**: ${{ inputs.release_type }}
+            ${{ inputs.release_type == 'prerelease' && format('**Prerelease ID**: {0}', inputs.prerelease_id) || '' }}
+            
+            ## Installation
+            
+            ```bash
+            npm install -g proxmox-mpc@${{ env.VERSION }}
+            ```
+            
+            ## Changes
+            
+            See the [CHANGELOG.md](./CHANGELOG.md) for detailed changes in this release.
+            
+            ## Documentation
+            
+            - [Getting Started](https://proxmox-mpc.dev/getting-started/)
+            - [User Guide](https://proxmox-mpc.dev/user-guide/)
+            - [API Reference](https://proxmox-mpc.dev/reference/)
+          files: |
+            dist/**/*
+          generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(env.VERSION, '-') }}
+
+      - name: Publish to npm
+        if: ${{ !inputs.dry_run }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Publishing version ${VERSION} to npm..."
+          
+          # Check if version already exists on npm
+          if npm view proxmox-mpc@${VERSION} version 2>/dev/null; then
+            echo "❌ Version ${VERSION} already exists on npm!"
+            echo "Please choose a different version or check if the release was already published."
+            exit 1
+          else
+            echo "✅ Publishing version ${VERSION} to npm..."
+            npm publish --access public
+            echo "✅ Successfully published to npm!"
+          fi
+
+      - name: Publish to GitHub Packages
+        if: ${{ !inputs.dry_run }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Publishing version ${VERSION} to GitHub Packages..."
+          
+          # Switch registry to GitHub Packages
+          echo "@proxmox-mpc:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+          
+          # Create a copy of package.json with scoped name
+          cp package.json package.json.bak
+          node -e "
+            const pkg = require('./package.json');
+            pkg.name = '@proxmox-mpc/proxmox-mpc';
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+          
+          npm publish
+          
+          # Restore original package.json
+          mv package.json.bak package.json
+          
+          echo "✅ Successfully published to GitHub Packages!"
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            echo "**Mode**: Dry Run (Preview Only)" >> $GITHUB_STEP_SUMMARY
+            echo "**Status**: No changes were made" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Mode**: Actual Release" >> $GITHUB_STEP_SUMMARY
+            echo "**Version**: ${VERSION:-'Not created'}" >> $GITHUB_STEP_SUMMARY
+            echo "**Tag**: ${TAG:-'Not created'}" >> $GITHUB_STEP_SUMMARY
+            echo "**Release Type**: ${{ inputs.release_type }}" >> $GITHUB_STEP_SUMMARY
+            
+            if [ "${{ inputs.release_type }}" = "prerelease" ]; then
+              echo "**Prerelease ID**: ${{ inputs.prerelease_id }}" >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Inputs Used" >> $GITHUB_STEP_SUMMARY
+          echo "- **Release Type**: ${{ inputs.release_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Prerelease ID**: ${{ inputs.prerelease_id }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dry Run**: ${{ inputs.dry_run }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Skip Tests**: ${{ inputs.skip_tests }}" >> $GITHUB_STEP_SUMMARY

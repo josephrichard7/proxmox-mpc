@@ -1,0 +1,212 @@
+name: Release Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - 'CHANGELOG.md'
+
+env:
+  NODE_VERSION: '20'
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+    permissions:
+      contents: write
+      packages: write
+      pull-requests: write
+      issues: write
+    
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Run pre-release checks
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run test
+          npm run build
+
+      - name: Determine if release needed
+        id: check-release
+        run: |
+          # Check if there are conventional commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            echo "No previous tags found, release needed"
+            echo "release_needed=true" >> $GITHUB_OUTPUT
+          else
+            # Check for conventional commits since last tag
+            COMMITS=$(git log ${LAST_TAG}..HEAD --oneline --grep="^feat" --grep="^fix" --grep="^perf" --grep="^BREAKING CHANGE" --basic-regexp)
+            if [ -n "$COMMITS" ]; then
+              echo "Found conventional commits since last tag, release needed"
+              echo "release_needed=true" >> $GITHUB_OUTPUT
+            else
+              echo "No conventional commits found, no release needed"
+              echo "release_needed=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Create release
+        id: release
+        if: steps.check-release.outputs.release_needed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Run standard-version to create release
+          npm run release
+          
+          # Get the new version and tag
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}"
+          
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "released=true" >> $GITHUB_OUTPUT
+          
+          # Push the changes and tags
+          git push --follow-tags origin main
+
+      - name: Create GitHub Release
+        if: steps.release.outputs.released == 'true'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.release.outputs.tag }}
+          name: "Release ${{ steps.release.outputs.version }}"
+          body_path: CHANGELOG.md
+          generate_release_notes: true
+          files: |
+            dist/**/*
+            *.tgz
+          draft: false
+          prerelease: ${{ contains(steps.release.outputs.version, '-') }}
+
+  publish:
+    name: Publish Package
+    needs: release
+    runs-on: ubuntu-latest
+    if: needs.release.outputs.released == 'true'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build package
+        run: npm run build
+
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # Check if version already exists on npm
+          VERSION=$(node -p "require('./package.json').version")
+          if npm view proxmox-mpc@$VERSION version 2>/dev/null; then
+            echo "Version $VERSION already exists on npm, skipping publish"
+          else
+            echo "Publishing version $VERSION to npm"
+            npm publish --access public
+          fi
+
+      - name: Publish to GitHub Packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Switch registry to GitHub Packages
+          echo "@proxmox-mpc:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+          
+          # Update package name for GitHub Packages
+          node -e "
+            const pkg = require('./package.json');
+            pkg.name = '@proxmox-mpc/proxmox-mpc';
+            require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+          "
+          
+          npm publish
+
+  notify:
+    name: Post-Release Notifications
+    needs: [release, publish]
+    runs-on: ubuntu-latest
+    if: needs.release.outputs.released == 'true'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Create release announcement
+        run: |
+          cat << EOF > release-announcement.md
+          # 🚀 Proxmox-MPC ${{ needs.release.outputs.version }} Released!
+          
+          We're excited to announce the release of Proxmox-MPC ${{ needs.release.outputs.version }}!
+          
+          ## Installation
+          
+          \`\`\`bash
+          npm install -g proxmox-mpc@${{ needs.release.outputs.version }}
+          \`\`\`
+          
+          ## What's New
+          
+          See the [full changelog](https://github.com/proxmox-mpc/proxmox-mpc/releases/tag/${{ needs.release.outputs.tag }}) for details.
+          
+          ## Documentation
+          
+          - [Getting Started](https://proxmox-mpc.dev/getting-started/)
+          - [User Guide](https://proxmox-mpc.dev/user-guide/)
+          - [API Reference](https://proxmox-mpc.dev/reference/)
+          
+          ## Support
+          
+          - [GitHub Issues](https://github.com/proxmox-mpc/proxmox-mpc/issues)
+          - [Discussions](https://github.com/proxmox-mpc/proxmox-mpc/discussions)
+          EOF
+
+      - name: Update documentation site
+        run: |
+          echo "Documentation site update would happen here"
+          echo "This would trigger the docs deployment workflow"

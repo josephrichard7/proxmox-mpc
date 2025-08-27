@@ -1,0 +1,35 @@
+{
+  "types": [
+    {"type": "feat", "section": "🚀 Features"},
+    {"type": "fix", "section": "🐛 Bug Fixes"},
+    {"type": "docs", "section": "📚 Documentation"},
+    {"type": "style", "section": "💅 Styles"},
+    {"type": "refactor", "section": "♻️ Code Refactoring"},
+    {"type": "perf", "section": "⚡ Performance Improvements"},
+    {"type": "test", "section": "🧪 Tests"},
+    {"type": "ci", "section": "🔧 CI/CD"},
+    {"type": "chore", "hidden": true}
+  ],
+  "commitUrlFormat": "https://github.com/proxmox-mpc/proxmox-mpc/commit/{{hash}}",
+  "compareUrlFormat": "https://github.com/proxmox-mpc/proxmox-mpc/compare/{{previousTag}}...{{currentTag}}",
+  "issueUrlFormat": "https://github.com/proxmox-mpc/proxmox-mpc/issues/{{id}}",
+  "releaseCommitMessageFormat": "chore(release): {{currentTag}}",
+  "skip": {
+    "bump": false,
+    "changelog": false,
+    "commit": false,
+    "tag": false
+  },
+  "packageFiles": [
+    {
+      "filename": "package.json",
+      "type": "json"
+    }
+  ],
+  "bumpFiles": [
+    {
+      "filename": "package.json",
+      "type": "json"
+    }
+  ]
+}

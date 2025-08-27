@@ -1,0 +1,263 @@
+name: Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Documentation version to deploy'
+        required: false
+        default: 'latest'
+      alias:
+        description: 'Version alias (latest, stable, etc.)'
+        required: false
+
+jobs:
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install documentation dependencies
+        run: |
+          pip install --upgrade pip
+          pip install mkdocs-material
+          pip install mike
+          pip install mkdocs-mermaid2-plugin
+
+      - name: Validate MkDocs configuration
+        run: |
+          echo "Validating MkDocs configuration..."
+          mkdocs config --verbose
+
+      - name: Build documentation
+        run: |
+          echo "Building documentation..."
+          mkdocs build --strict --verbose
+
+      - name: Test documentation build
+        run: |
+          echo "Testing documentation build..."
+          # Check that essential files were created
+          test -f site/index.html
+          test -f site/sitemap.xml
+          test -d site/assets
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation-build
+          path: site/
+          retention-days: 7
+
+  deploy:
+    name: Deploy Documentation
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install documentation dependencies
+        run: |
+          pip install --upgrade pip
+          pip install mkdocs-material
+          pip install mike
+          pip install mkdocs-mermaid2-plugin
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy development documentation
+        if: github.ref == 'refs/heads/main' && github.event_name != 'release'
+        run: |
+          echo "Deploying development documentation..."
+          mike deploy --push --update-aliases dev latest
+          mike set-default --push latest
+
+      - name: Deploy release documentation
+        if: github.event_name == 'release'
+        run: |
+          echo "Deploying release documentation..."
+          # Extract version from release tag
+          VERSION=${GITHUB_REF#refs/tags/v}
+          MAJOR_MINOR=$(echo $VERSION | sed -E 's/([0-9]+\.[0-9]+)\..*/\1/')
+          
+          echo "Deploying documentation for version: $VERSION"
+          echo "Major.Minor version: $MAJOR_MINOR"
+          
+          # Deploy version-specific documentation
+          mike deploy --push --update-aliases $VERSION $MAJOR_MINOR
+          
+          # If this is a stable release (no pre-release suffix), update stable alias
+          if [[ ! $VERSION =~ -[a-zA-Z] ]]; then
+            mike deploy --push --update-aliases $VERSION stable
+            mike set-default --push stable
+          fi
+
+      - name: Deploy manual documentation
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "Deploying manual documentation..."
+          VERSION="${{ github.event.inputs.version }}"
+          ALIAS="${{ github.event.inputs.alias }}"
+          
+          if [ -n "$ALIAS" ]; then
+            mike deploy --push --update-aliases $VERSION $ALIAS
+            if [ "$ALIAS" = "latest" ] || [ "$ALIAS" = "stable" ]; then
+              mike set-default --push $ALIAS
+            fi
+          else
+            mike deploy --push $VERSION
+          fi
+
+      - name: List deployed versions
+        run: |
+          echo "Currently deployed documentation versions:"
+          mike list
+
+  validate:
+    name: Validate Documentation Links
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation-build
+          path: site/
+
+      - name: Setup Node.js for link checking
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install link checker
+        run: npm install -g broken-link-checker
+
+      - name: Start local server
+        run: |
+          cd site
+          python -m http.server 8000 &
+          echo $! > server.pid
+          sleep 5
+
+      - name: Check internal links
+        run: |
+          blc http://localhost:8000 \
+            --recursive \
+            --ordered \
+            --exclude-external \
+            --filter-level 3 \
+            --timeout 30000 \
+            || true
+
+      - name: Stop local server
+        run: |
+          if [ -f site/server.pid ]; then
+            kill $(cat site/server.pid) || true
+            rm site/server.pid
+          fi
+
+  accessibility:
+    name: Accessibility Check
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation-build
+          path: site/
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install accessibility checker
+        run: npm install -g @axe-core/cli
+
+      - name: Start local server
+        run: |
+          cd site
+          python -m http.server 8001 &
+          echo $! > server.pid
+          sleep 5
+
+      - name: Run accessibility tests
+        run: |
+          axe http://localhost:8001 \
+            --exit \
+            --timeout 30000 \
+            --disable color-contrast \
+            --reporter json \
+            --output-file accessibility-report.json \
+            || echo "Accessibility issues found (non-blocking)"
+
+      - name: Upload accessibility report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-report
+          path: accessibility-report.json
+          retention-days: 7
+
+      - name: Stop local server
+        run: |
+          if [ -f site/server.pid ]; then
+            kill $(cat site/server.pid) || true
+            rm site/server.pid
+          fi
