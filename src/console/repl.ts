@@ -7,6 +7,7 @@ import * as readline from 'readline';
 
 import { ProxmoxClient } from '../api';
 import { ProjectWorkspace } from '../workspace';
+import { getDisplayVersion } from '../utils/version';
 
 import { SlashCommandRegistry } from './commands';
 import { ResourceCommand } from './commands/resource';
@@ -154,7 +155,7 @@ export class InteractiveConsole {
   }
 
   private displayWelcome(): void {
-    console.log('🔧 Proxmox Infrastructure Console v0.1.0');
+    console.log(`🔧 Proxmox Infrastructure Console ${getDisplayVersion()}`);
     console.log('Welcome! Type /help for commands or /init to get started.\n');
     
     if (!this.session.workspace) {

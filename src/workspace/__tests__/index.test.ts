@@ -9,6 +9,7 @@ import * as path from 'path';
 import * as yaml from 'js-yaml';
 
 import { ProjectWorkspace, WorkspaceConfig } from '../index';
+import { getVersion } from '../../utils/version';
 
 // Mock fs operations (both async and sync)
 jest.mock('fs/promises');
@@ -107,7 +108,7 @@ describe('ProjectWorkspace', () => {
       expect(workspace.name).toBe('workspace');
       expect(workspace.config.name).toBe('workspace');
       expect(workspace.config.created).toBeDefined();
-      expect(workspace.config.version).toBe('0.1.0');
+      expect(workspace.config.version).toBe(getVersion());
     });
 
     it('should create all required directories', async () => {
@@ -150,7 +151,7 @@ describe('ProjectWorkspace', () => {
           ...testConfig,
           name: 'workspace',
           created: expect.any(String),
-          version: '0.1.0'
+          version: getVersion()
         }),
         { indent: 2, lineWidth: -1 }
       );

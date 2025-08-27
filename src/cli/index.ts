@@ -8,6 +8,7 @@ import { Command } from 'commander';
 
 import { ProxmoxClient, loadProxmoxConfig, validateConfig, sanitizeConfig } from '../api';
 import { VMCreateConfig, ContainerCreateConfig } from '../types';
+import { getVersion } from '../utils/version';
 import {
   promptConfirmation,
   validateVM,
@@ -31,7 +32,7 @@ const program = new Command();
 program
   .name('proxmox-mpc')
   .description('Professional Proxmox Management and Control with safety mechanisms and batch operations')
-  .version('0.1.0')
+  .version(getVersion())
   .addHelpText('after', `
 Examples:
   # Connection and discovery

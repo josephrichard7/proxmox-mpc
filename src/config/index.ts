@@ -28,6 +28,7 @@ import * as dotenv from 'dotenv';
 import * as yaml from 'js-yaml';
 
 import { ProxmoxConfig } from '../types';
+import { getVersion } from '../utils/version';
 
 // Load environment variables
 dotenv.config();
@@ -218,7 +219,7 @@ export class ConfigManager {
   static createDefaultWorkspaceConfig(name: string): WorkspaceConfig {
     return {
       name,
-      version: '0.1.0',
+      version: getVersion(),
       created: new Date().toISOString(),
       host: 'your-proxmox-server.local',
       port: 8006,

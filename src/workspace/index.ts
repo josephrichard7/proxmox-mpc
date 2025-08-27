@@ -7,6 +7,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import { ConfigManager, WorkspaceConfig } from '../config';
+import { getVersion } from '../utils/version';
 
 // Re-export WorkspaceConfig for convenience
 export { WorkspaceConfig } from '../config';
@@ -101,7 +102,7 @@ export class ProjectWorkspace {
       ...config,
       name: path.basename(rootPath),
       created: new Date().toISOString(),
-      version: '0.1.0'
+      version: getVersion()
     };
 
     // Create directory structure

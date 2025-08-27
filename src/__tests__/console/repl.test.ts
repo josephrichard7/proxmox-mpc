@@ -9,6 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, jest } from '@jest/globals
 
 import { InteractiveConsole, ConsoleSession } from '../../console/repl';
 import { ProjectWorkspace } from '../../workspace';
+import { getDisplayVersion } from '../../utils/version';
 
 // Mock dependencies
 jest.mock('readline');
@@ -86,7 +87,7 @@ describe('InteractiveConsole', () => {
 
       await console.start();
 
-      expect(global.console.log).toHaveBeenCalledWith('🔧 Proxmox Infrastructure Console v0.1.0');
+      expect(global.console.log).toHaveBeenCalledWith(`🔧 Proxmox Infrastructure Console ${getDisplayVersion()}`);
       expect(global.console.log).toHaveBeenCalledWith('Welcome! Type /help for commands or /init to get started.\n');
       expect(mockRl.prompt).toHaveBeenCalled();
     });
