@@ -83,7 +83,7 @@ describe('ProjectWorkspace', () => {
     fsSync.readFileSync.mockImplementation((filePath: string) => {
       // For package.json, return valid JSON
       if (filePath.includes('package.json')) {
-        return JSON.stringify({ version: '1.0.0' });
+        return JSON.stringify({ version: '0.1.3' });
       }
       // For other files (like config.yml), return yaml content
       return 'mocked yaml content';
