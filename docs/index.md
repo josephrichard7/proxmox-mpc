@@ -187,9 +187,18 @@ Ready to get started? Follow our comprehensive guides:
 3. **[First Project](getting-started/first-project.md)** - Detailed project creation tutorial
 4. **[Authentication](getting-started/authentication.md)** - Set up Proxmox API access
 
+## Documentation Framework
+
+This documentation is built with professional standards and governance:
+
+- **[Documentation Standards](DOCUMENTATION_STANDARDS.md)** - Style guide and quality standards
+- **[Content Lifecycle](CONTENT_LIFECYCLE.md)** - Content management and maintenance processes
+- **[Templates](templates/README.md)** - Standardized templates for consistent documentation
+- **Quality Assurance** - Automated validation and review processes
+
 ## Support & Community
 
-- **Documentation**: Comprehensive guides and API reference
+- **Documentation**: Comprehensive guides and API reference with professional governance
 - **Issues**: [GitHub Issues](https://github.com/proxmox-mpc/proxmox-mpc/issues) for bug reports and feature requests
 - **Discussions**: [GitHub Discussions](https://github.com/proxmox-mpc/proxmox-mpc/discussions) for community support
 - **Contributing**: [Development Guide](development/contributing.md) for contributors
