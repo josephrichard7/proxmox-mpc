@@ -1,1 +1,35 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Validate conventional commit message format
 npx commitlint --edit $1
+
+# Check commit message for non-standard formats and provide guidance
+if ! npx commitlint --edit $1 > /dev/null 2>&1; then
+  echo ""
+  echo "❌ Commit message does not follow conventional commit format!"
+  echo ""
+  echo "📋 Required format: <type>(<scope>): <subject>"
+  echo ""
+  echo "📝 Valid types:"
+  echo "  feat:     New features"
+  echo "  fix:      Bug fixes"
+  echo "  docs:     Documentation changes"
+  echo "  style:    Code style changes (formatting, etc.)"
+  echo "  refactor: Code refactoring"
+  echo "  perf:     Performance improvements"
+  echo "  test:     Test changes"
+  echo "  build:    Build system changes"
+  echo "  ci:       CI/CD changes"
+  echo "  chore:    Maintenance tasks"
+  echo "  revert:   Revert previous commit"
+  echo ""
+  echo "✅ Examples:"
+  echo "  feat: add user authentication system"
+  echo "  fix(api): resolve timeout issues in health check"
+  echo "  docs: update installation guide"
+  echo "  feat!: implement breaking API changes"
+  echo ""
+  echo "📚 More info: https://www.conventionalcommits.org/"
+  exit 1
+fi

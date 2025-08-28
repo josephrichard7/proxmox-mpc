@@ -1,1 +1,36 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🚀 Running pre-push validation..."
+
+# 1. Ensure we're not pushing broken code
+echo "🧪 Running comprehensive test suite..."
+npm run test:coverage
+
+# 2. Run release preparation checks
+echo "📦 Running release preparation..."
 npm run release:prepare
+
+# 3. Validate conventional commits since last tag
+echo "📝 Validating recent commit messages..."
+LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD~10")
+git log $LAST_TAG..HEAD --pretty=format:"%s" | while read commit_msg; do
+  if ! echo "$commit_msg" | npx commitlint --from-stdin; then
+    echo "❌ Found non-conventional commit: $commit_msg"
+    echo "Please fix commit messages before pushing."
+    exit 1
+  fi
+done
+
+# 4. Check for version consistency
+echo "🏷️  Checking version consistency..."
+PACKAGE_VERSION=$(node -p "require('./package.json').version")
+VERSION_TS=$(node -p "require('./dist/types/version.js').VERSION" 2>/dev/null || echo "build-needed")
+
+if [ "$VERSION_TS" != "$PACKAGE_VERSION" ] && [ "$VERSION_TS" != "build-needed" ]; then
+  echo "❌ Version mismatch between package.json ($PACKAGE_VERSION) and version.ts ($VERSION_TS)"
+  echo "Run 'npm run build' to update version.ts"
+  exit 1
+fi
+
+echo "✅ All pre-push validations passed!"

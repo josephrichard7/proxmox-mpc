@@ -43,7 +43,7 @@ Usage: $0 [OPTIONS]
 Professional release automation for Proxmox-MPC
 
 OPTIONS:
-    -t, --type TYPE       Release type: patch, minor, major, prerelease (default: patch)
+    -t, --type TYPE       Release type: auto, patch, minor, major, prerelease (default: patch)
     -d, --dry-run        Show what would be done without executing
     -s, --skip-tests     Skip test execution (not recommended)
     -b, --skip-build     Skip build process (not recommended)
@@ -51,6 +51,7 @@ OPTIONS:
 
 EXAMPLES:
     $0                   # Create patch release (0.1.3 -> 0.1.4)
+    $0 -t auto           # Analyze commits and auto-determine version bump
     $0 -t minor          # Create minor release (0.1.3 -> 0.2.0)
     $0 -t major          # Create major release (0.1.3 -> 1.0.0)
     $0 -t prerelease     # Create prerelease (0.1.3 -> 0.1.4-alpha.0)
@@ -91,9 +92,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate release type
-if [[ ! "$RELEASE_TYPE" =~ ^(patch|minor|major|prerelease)$ ]]; then
+if [[ ! "$RELEASE_TYPE" =~ ^(auto|patch|minor|major|prerelease)$ ]]; then
     print_error "Invalid release type: $RELEASE_TYPE"
-    print_error "Valid types: patch, minor, major, prerelease"
+    print_error "Valid types: auto, patch, minor, major, prerelease"
     exit 1
 fi
 
@@ -147,59 +148,49 @@ if [[ -n "$REMOTE_COMMIT" && "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]]; then
     exit 1
 fi
 
-# Run tests unless skipped
-if [[ "$SKIP_TESTS" != "true" ]]; then
-    print_status "Running test suite..."
-    if [[ "$DRY_RUN" == "true" ]]; then
-        print_status "[DRY RUN] Would run: npm test"
+# Run comprehensive pre-release validation
+print_status "Running comprehensive release validation..."
+if [[ "$DRY_RUN" == "true" ]]; then
+    print_status "[DRY RUN] Would run: ./scripts/validate-release.sh"
+else
+    if ./scripts/validate-release.sh; then
+        print_success "✅ All release validations passed"
     else
-        npm test
-        print_success "Tests passed successfully"
+        print_error "❌ Release validation failed"
+        exit 1
+    fi
+fi
+
+# Run tests unless skipped (already covered in validation but explicit for clarity)
+if [[ "$SKIP_TESTS" != "true" ]]; then
+    print_status "Final test verification..."
+    if [[ "$DRY_RUN" == "true" ]]; then
+        print_status "[DRY RUN] Would run: npm run test:coverage"
+    else
+        npm run test:coverage
+        print_success "Tests passed with coverage verification"
     fi
 else
     print_warning "Skipping tests (not recommended for production releases)"
 fi
 
-# Run build unless skipped
-if [[ "$SKIP_BUILD" != "true" ]]; then
-    print_status "Building project..."
-    if [[ "$DRY_RUN" == "true" ]]; then
-        print_status "[DRY RUN] Would run: npm run build"
+# Execute version bump with our intelligent system
+print_status "Executing version bump..."
+if [[ "$DRY_RUN" == "true" ]]; then
+    print_status "[DRY RUN] Running version bump preview..."
+    if [[ "$RELEASE_TYPE" == "auto" ]]; then
+        ./scripts/version-bump.sh --dry-run
     else
-        npm run build
-        print_success "Build completed successfully"
+        ./scripts/version-bump.sh --type $RELEASE_TYPE --dry-run
     fi
+    NEW_VERSION="[DRY-RUN-VERSION]"
 else
-    print_warning "Skipping build (not recommended for production releases)"
-fi
-
-# Run linting
-print_status "Running code quality checks..."
-if [[ "$DRY_RUN" == "true" ]]; then
-    print_status "[DRY RUN] Would run: npm run lint"
-    print_status "[DRY RUN] Would run: npm run typecheck"
-else
-    npm run lint
-    npm run typecheck
-    print_success "Code quality checks passed"
-fi
-
-# Preview version bump
-print_status "Previewing version bump..."
-if [[ "$DRY_RUN" == "true" ]]; then
-    NEW_VERSION=$(npm version $RELEASE_TYPE --no-git-tag-version --dry-run)
-    print_status "[DRY RUN] Would bump version to: $NEW_VERSION"
+    print_status "Creating release with intelligent version bumping..."
     
-    # Reset any changes made by dry run
-    git checkout -- package.json package-lock.json 2>/dev/null || true
-else
-    # Create release with standard-version
-    print_status "Creating release with standard-version..."
-    
-    if [[ "$RELEASE_TYPE" == "prerelease" ]]; then
-        npx standard-version --prerelease alpha
+    if [[ "$RELEASE_TYPE" == "auto" ]]; then
+        ./scripts/version-bump.sh
     else
-        npx standard-version --release-as $RELEASE_TYPE
+        ./scripts/version-bump.sh --type $RELEASE_TYPE
     fi
     
     NEW_VERSION=$(node -p "require('./package.json').version")

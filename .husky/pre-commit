@@ -1,1 +1,26 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# 1. Lint staged files
+echo "📝 Linting staged files..."
+npx lint-staged
+
+# 2. Type checking
+echo "🔧 Running TypeScript type checks..."
+npm run typecheck
+
+# 3. Run tests
+echo "🧪 Running test suite..."
 npm test
+
+# 4. Format check
+echo "💅 Checking code formatting..."
+npm run format:check
+
+# 5. Build verification
+echo "🏗️  Verifying build..."
+npm run build
+
+echo "✅ All pre-commit checks passed!"

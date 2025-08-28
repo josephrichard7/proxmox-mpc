@@ -370,6 +370,43 @@ for pattern in "${SENSITIVE_PATTERNS[@]}"; do
     fi
 done
 
+# Audit dependencies for vulnerabilities
+if command -v npm >/dev/null 2>&1; then
+    print_status "Running npm audit..."
+    if npm audit --audit-level moderate >/dev/null 2>&1; then
+        print_success "No moderate+ vulnerabilities found in dependencies"
+    else
+        print_error "Security vulnerabilities found in dependencies - run 'npm audit' for details"
+    fi
+else
+    print_warning "npm not found, skipping dependency audit"
+fi
+
+# Version consistency validation
+print_header "🏷️ Version Consistency Validation"
+
+if [[ -n "$PACKAGE_VERSION" ]]; then
+    # Check version.ts consistency
+    if [[ -f "src/types/version.ts" ]]; then
+        VERSION_TS=$(grep "export const VERSION = " src/types/version.ts | sed "s/.*'\(.*\)'.*/\1/" || echo "")
+        if [[ "$VERSION_TS" == "$PACKAGE_VERSION" ]]; then
+            print_success "version.ts matches package.json ($PACKAGE_VERSION)"
+        else
+            print_error "Version mismatch: package.json($PACKAGE_VERSION) != version.ts($VERSION_TS)"
+        fi
+    fi
+    
+    # Check if dist version matches (if built)
+    if [[ -f "dist/types/version.js" ]]; then
+        DIST_VERSION=$(node -p "require('./dist/types/version.js').VERSION" 2>/dev/null || echo "")
+        if [[ "$DIST_VERSION" == "$PACKAGE_VERSION" ]]; then
+            print_success "Built version matches package.json ($PACKAGE_VERSION)"
+        else
+            print_warning "Built version mismatch - run 'npm run build'"
+        fi
+    fi
+fi
+
 # Final validation summary
 print_header "📊 Validation Summary"
 
