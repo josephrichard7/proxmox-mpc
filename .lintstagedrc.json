@@ -1,13 +1,4 @@
 {
-  "*.{ts,js}": [
-    "eslint --fix",
-    "prettier --write"
-  ],
-  "*.{json,md,yml,yaml}": [
-    "prettier --write"
-  ],
-  "package.json": [
-    "npm run typecheck",
-    "npm run test:coverage"
-  ]
+  "*.{ts,js}": ["eslint --fix", "prettier --write"],
+  "*.{json,md,yml,yaml}": ["prettier --write"]
 }

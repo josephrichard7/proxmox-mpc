@@ -1,0 +1,138 @@
+{
+  "validation_config": {
+    "version": "1.0.0",
+    "description": "Pre-release validation configuration for Proxmox-MPC",
+    "environments": {
+      "development": {
+        "min_test_coverage": 80,
+        "min_test_success_rate": 90,
+        "max_security_vulnerabilities": 5,
+        "max_critical_vulnerabilities": 0,
+        "required_documentation": false,
+        "strict_linting": false
+      },
+      "staging": {
+        "min_test_coverage": 90,
+        "min_test_success_rate": 95,
+        "max_security_vulnerabilities": 2,
+        "max_critical_vulnerabilities": 0,
+        "required_documentation": true,
+        "strict_linting": true
+      },
+      "production": {
+        "min_test_coverage": 95,
+        "min_test_success_rate": 98,
+        "max_security_vulnerabilities": 0,
+        "max_critical_vulnerabilities": 0,
+        "required_documentation": true,
+        "strict_linting": true,
+        "require_signed_commits": true,
+        "require_clean_git_status": true
+      }
+    },
+    "validation_checks": {
+      "code_quality": {
+        "enabled": true,
+        "checks": [
+          "typescript_compilation",
+          "eslint_validation",
+          "prettier_formatting",
+          "import_order_validation"
+        ]
+      },
+      "test_coverage": {
+        "enabled": true,
+        "checks": [
+          "unit_test_coverage",
+          "integration_test_coverage",
+          "test_success_rate",
+          "test_execution_time"
+        ]
+      },
+      "security_audit": {
+        "enabled": true,
+        "checks": [
+          "npm_audit",
+          "hardcoded_secrets_scan",
+          "dependency_vulnerabilities",
+          "license_compliance"
+        ]
+      },
+      "build_distribution": {
+        "enabled": true,
+        "checks": [
+          "build_process",
+          "distribution_files",
+          "package_structure",
+          "binary_executable"
+        ]
+      },
+      "dependencies": {
+        "enabled": true,
+        "checks": [
+          "outdated_dependencies",
+          "node_version_compatibility",
+          "package_json_validation",
+          "dependency_tree_health"
+        ]
+      },
+      "documentation": {
+        "enabled": true,
+        "checks": [
+          "readme_completeness",
+          "changelog_format",
+          "api_documentation",
+          "inline_code_documentation"
+        ]
+      },
+      "release_readiness": {
+        "enabled": true,
+        "checks": [
+          "git_status_clean",
+          "version_consistency",
+          "release_notes_present",
+          "license_validation"
+        ]
+      }
+    },
+    "notification_config": {
+      "slack_webhook": "",
+      "email_recipients": [],
+      "github_issue_creation": false
+    },
+    "reporting": {
+      "formats": ["json", "html", "markdown"],
+      "output_directory": "validation-reports",
+      "retention_days": 30,
+      "include_metrics": true
+    },
+    "automation": {
+      "pre_commit_hook": true,
+      "ci_integration": true,
+      "release_gate": true,
+      "scheduled_validation": {
+        "enabled": false,
+        "cron_schedule": "0 2 * * *"
+      }
+    }
+  },
+  "custom_checks": {
+    "proxmox_specific": {
+      "api_client_tests": {
+        "enabled": true,
+        "mock_server_validation": true,
+        "api_response_validation": true
+      },
+      "database_schema_validation": {
+        "enabled": true,
+        "migration_tests": true,
+        "data_integrity_checks": true
+      },
+      "console_interface_tests": {
+        "enabled": true,
+        "command_parsing_validation": true,
+        "interactive_flow_tests": true
+      }
+    }
+  }
+}
