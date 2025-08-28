@@ -50,7 +50,7 @@ export function getVersion(): string {
     return cachedVersion;
   } catch (error) {
     // Fallback version for error cases - should not happen in normal operation
-    const fallbackVersion = '0.1.3';
+    const fallbackVersion = '1.0.0';
     console.warn(`Warning: Failed to read version from package.json: ${error instanceof Error ? error.message : error}`);
     console.warn(`Using fallback version: ${fallbackVersion}`);
     
