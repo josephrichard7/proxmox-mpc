@@ -5,6 +5,7 @@ This comprehensive guide covers all installation methods for Proxmox-MPC, from s
 ## System Requirements
 
 ### Minimum Requirements
+
 - **Node.js**: Version 18.0 or higher
 - **npm**: Version 8.0 or higher (included with Node.js)
 - **Proxmox VE**: Version 7.0 or higher (tested with 8.4.1+)
@@ -13,6 +14,7 @@ This comprehensive guide covers all installation methods for Proxmox-MPC, from s
 - **Storage**: 500MB free disk space
 
 ### Recommended Requirements
+
 - **Node.js**: Version 20.0 LTS
 - **Proxmox VE**: Version 8.0+
 - **Memory**: 4GB RAM for large infrastructure management
@@ -35,11 +37,7 @@ proxmox-mpc --version
 proxmox-mpc
 ```
 
-!!! tip "Global Installation Benefits"
-    - Available from any directory like the `claude` command
-    - Automatic PATH configuration
-    - Easy updates with `npm update -g proxmox-mpc`
-    - No need to navigate to specific directories
+!!! tip "Global Installation Benefits" - Available from any directory like the `claude` command - Automatic PATH configuration - Easy updates with `npm update -g proxmox-mpc` - No need to navigate to specific directories
 
 ### Method 2: From Source (Development)
 
@@ -64,11 +62,7 @@ npm run console  # Interactive console
 npm run cli      # CLI commands
 ```
 
-!!! tip "Development Installation Benefits"
-    - Changes to source code are immediately reflected globally
-    - Perfect for development and testing
-    - No need to reinstall after code changes
-    - Can delete and recreate global link easily
+!!! tip "Development Installation Benefits" - Changes to source code are immediately reflected globally - Perfect for development and testing - No need to reinstall after code changes - Can delete and recreate global link easily
 
 ### Method 3: Local Development Setup
 
@@ -91,8 +85,8 @@ npm run build     # Build the project
 ```
 
 !!! note "Development Environment"
-    This method is ideal for:
-    
+This method is ideal for:
+
     - Contributing to the project
     - Testing unreleased features
     - Local development without affecting global installation
@@ -169,11 +163,12 @@ proxmox-mpc
 ```
 
 You should see output similar to:
+
 ```
-Proxmox-MPC Interactive Console v0.1.3
+Proxmox-MPC Interactive Console v1.0.0
 Type /help for available commands or /exit to quit.
 
-proxmox-mpc> 
+proxmox-mpc>
 ```
 
 ### 2. Environment Setup
@@ -254,10 +249,11 @@ npm install -g proxmox-mpc
    - Run installer with default options
 
 2. **Install Proxmox-MPC**:
+
    ```cmd
    # Open Command Prompt or PowerShell as Administrator
    npm install -g proxmox-mpc
-   
+
    # Verify installation
    proxmox-mpc --version
    ```
@@ -290,6 +286,7 @@ echo 'alias pmpc-docker="docker run -it --rm -v \$(pwd):/workspace proxmox-mpc/p
 ### Common Issues
 
 #### Permission Errors (Linux/macOS)
+
 ```bash
 # If you get permission errors with global install
 sudo npm install -g proxmox-mpc
@@ -303,6 +300,7 @@ npm install -g proxmox-mpc
 ```
 
 #### Node.js Version Issues
+
 ```bash
 # Check Node.js version
 node --version
@@ -315,6 +313,7 @@ npm install -g proxmox-mpc
 ```
 
 #### Network/Proxy Issues
+
 ```bash
 # Configure npm proxy (if behind corporate firewall)
 npm config set proxy http://proxy.company.com:8080
@@ -325,6 +324,7 @@ npm config set registry https://registry.npmmirror.com/
 ```
 
 #### Windows Path Issues
+
 ```cmd
 # Add npm global directory to PATH
 setx PATH "%PATH%;%APPDATA%\npm"
@@ -409,12 +409,12 @@ npm cache clean --force
 ```
 
 !!! tip "Complete Cleanup"
-    After uninstalling, you may also want to remove any project-specific configuration:
-    
+After uninstalling, you may also want to remove any project-specific configuration:
+
     ```bash
     # Remove global configuration (if any)
     rm -rf ~/.proxmox-mpc
-    
+
     # Remove project workspaces (manual)
     # These contain your infrastructure definitions
     ```

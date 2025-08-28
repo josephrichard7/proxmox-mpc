@@ -2,10 +2,7 @@
 
 Get up and running with Proxmox-MPC in just 5 minutes! This guide will take you from installation to creating your first virtual machine.
 
-!!! tip "Prerequisites"
-    - Proxmox-MPC installed ([Installation Guide](installation.md))
-    - Proxmox VE server with API access
-    - API token generated ([Authentication Guide](authentication.md))
+!!! tip "Prerequisites" - Proxmox-MPC installed ([Installation Guide](installation.md)) - Proxmox VE server with API access - API token generated ([Authentication Guide](authentication.md))
 
 ## Step 1: Launch Interactive Console
 
@@ -20,11 +17,12 @@ proxmox-mpc
 ```
 
 You should see:
+
 ```
-Proxmox-MPC Interactive Console v0.1.3
+Proxmox-MPC Interactive Console v1.0.0
 Type /help for available commands or /exit to quit.
 
-proxmox-mpc> 
+proxmox-mpc>
 ```
 
 ## Step 2: Initialize Your First Project
@@ -62,6 +60,7 @@ proxmox-mpc> /sync
 ```
 
 You'll see output like:
+
 ```
 🔄 Connecting to Proxmox server...
 ✅ Connected successfully!
@@ -94,6 +93,7 @@ proxmox-mpc> create vm --name web-server-01 --cores 2 --memory 4096 --disk 50
 ```
 
 Output:
+
 ```
 🏗️  Creating VM configuration...
 
@@ -120,6 +120,7 @@ proxmox-mpc> /plan
 ```
 
 You'll see:
+
 ```
 📋 Infrastructure Plan:
 
@@ -146,6 +147,7 @@ proxmox-mpc> /test
 ```
 
 Output:
+
 ```
 🧪 Running infrastructure tests...
 
@@ -172,6 +174,7 @@ proxmox-mpc> /apply
 ```
 
 You'll see:
+
 ```
 🚀 Deploying infrastructure changes...
 
@@ -213,6 +216,7 @@ Storage:
 ```
 
 Start the VM:
+
 ```bash
 proxmox-mpc> vm start 101
 ```
@@ -248,7 +252,7 @@ In just 5 minutes, you've:
 ✅ **Generated** Terraform, Ansible, and test files  
 ✅ **Tested** your infrastructure changes  
 ✅ **Deployed** the VM to your Proxmox server  
-✅ **Synchronized** everything back to your local database  
+✅ **Synchronized** everything back to your local database
 
 ## Your Generated Project Structure
 
@@ -279,33 +283,36 @@ my-datacenter/
 
 ## Essential Commands Learned
 
-| Command | Purpose |
-|---------|---------|
-| `proxmox-mpc` | Launch interactive console |
-| `/init` | Initialize project workspace |
-| `/sync` | Sync state between server and local |
-| `create vm` | Create VM configuration |
-| `/plan` | Preview infrastructure changes |
-| `/test` | Run infrastructure tests |
-| `/apply` | Deploy changes to Proxmox |
-| `/status` | Show project and server status |
-| `/help` | Show all available commands |
+| Command       | Purpose                             |
+| ------------- | ----------------------------------- |
+| `proxmox-mpc` | Launch interactive console          |
+| `/init`       | Initialize project workspace        |
+| `/sync`       | Sync state between server and local |
+| `create vm`   | Create VM configuration             |
+| `/plan`       | Preview infrastructure changes      |
+| `/test`       | Run infrastructure tests            |
+| `/apply`      | Deploy changes to Proxmox           |
+| `/status`     | Show project and server status      |
+| `/help`       | Show all available commands         |
 
 ## Next Steps
 
 Now that you've mastered the basics, explore more advanced features:
 
 ### 🎯 Immediate Next Steps
+
 1. **[Authentication Setup](authentication.md)** - Secure your API access
 2. **[Project Workspaces](../user-guide/project-workspaces.md)** - Organize multiple projects
 3. **[Resource Management](../user-guide/resource-management.md)** - Advanced VM/container operations
 
 ### 🚀 Advanced Features
+
 1. **[Infrastructure as Code](../features/infrastructure-as-code.md)** - Deep dive into IaC generation
 2. **[State Synchronization](../features/state-synchronization.md)** - Advanced sync strategies
 3. **[Testing Framework](../features/testing-framework.md)** - Comprehensive testing workflows
 
 ### 📚 Learn More
+
 1. **[Console Commands](../reference/console-commands.md)** - Complete command reference
 2. **[CLI Reference](../reference/cli-reference.md)** - All CLI commands
 3. **[Tutorials](../tutorials/basic-vm-management.md)** - Step-by-step guides
@@ -332,17 +339,20 @@ proxmox-mpc> /debug
 ## Common Next Actions
 
 ### Create More VMs
+
 ```bash
 proxmox-mpc> create vm --name database-01 --cores 4 --memory 8192 --disk 100
 proxmox-mpc> create vm --name cache-01 --cores 1 --memory 2048 --disk 20
 ```
 
 ### Create Containers
+
 ```bash
 proxmox-mpc> create container --name web-proxy --cores 1 --memory 1024 --template ubuntu-22.04
 ```
 
 ### Manage Existing Resources
+
 ```bash
 proxmox-mpc> list vms
 proxmox-mpc> describe vm 100
@@ -351,6 +361,7 @@ proxmox-mpc> vm start 100
 ```
 
 ### Export for Multi-Server Deployment
+
 ```bash
 proxmox-mpc> /export ../production-datacenter
 ```

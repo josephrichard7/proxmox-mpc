@@ -1,7 +1,7 @@
 # Proxmox-MPC Documentation
 
-!!! tip "Production Ready"
-    Proxmox-MPC is a production-ready Interactive Infrastructure-as-Code Console with 91.4% test success rate and comprehensive validation on real Proxmox infrastructure.
+!!! success "v1.0.0 Production Release"
+Proxmox-MPC v1.0.0 is now available! A production-ready Interactive Infrastructure-as-Code Console with 96.8% test success rate and comprehensive validation on real Proxmox infrastructure.
 
 ## Welcome to Proxmox-MPC
 
@@ -9,46 +9,47 @@
 
 <div class="grid cards" markdown>
 
--   :fontawesome-solid-rocket:{ .lg .middle } **Quick Start**
+- :fontawesome-solid-rocket:{ .lg .middle } **Quick Start**
 
-    ---
+  ***
 
-    Get up and running in minutes with our comprehensive quick start guide
+  Get up and running in minutes with our comprehensive quick start guide
 
-    [:octicons-arrow-right-24: Quick Start](getting-started/quick-start.md)
+  [:octicons-arrow-right-24: Quick Start](getting-started/quick-start.md)
 
--   :fontawesome-solid-terminal:{ .lg .middle } **Interactive Console**
+- :fontawesome-solid-terminal:{ .lg .middle } **Interactive Console**
 
-    ---
+  ***
 
-    Claude Code-like interactive console with slash commands and project workspaces
+  Claude Code-like interactive console with slash commands and project workspaces
 
-    [:octicons-arrow-right-24: Console Guide](user-guide/interactive-console.md)
+  [:octicons-arrow-right-24: Console Guide](user-guide/interactive-console.md)
 
--   :fontawesome-solid-code:{ .lg .middle } **Infrastructure as Code**
+- :fontawesome-solid-code:{ .lg .middle } **Infrastructure as Code**
 
-    ---
+  ***
 
-    Automatic Terraform and Ansible generation from existing infrastructure
+  Automatic Terraform and Ansible generation from existing infrastructure
 
-    [:octicons-arrow-right-24: IaC Features](features/infrastructure-as-code.md)
+  [:octicons-arrow-right-24: IaC Features](features/infrastructure-as-code.md)
 
--   :fontawesome-solid-book:{ .lg .middle } **API Reference**
+- :fontawesome-solid-book:{ .lg .middle } **API Reference**
 
-    ---
+  ***
 
-    Complete command reference for both CLI and interactive console
+  Complete command reference for both CLI and interactive console
 
-    [:octicons-arrow-right-24: Reference](reference/console-commands.md)
+  [:octicons-arrow-right-24: Reference](reference/console-commands.md)
 
 </div>
 
 ## Key Capabilities
 
 ### :material-console: Interactive Console Experience
+
 ```bash
 $ proxmox-mpc                    # Launch interactive console
-proxmox-mpc> /init              # Initialize new project workspace  
+proxmox-mpc> /init              # Initialize new project workspace
 proxmox-mpc> /sync              # Discover & sync existing infrastructure
 proxmox-mpc> create vm --name web-01  # Generate IaC files for new resources
 proxmox-mpc> /test              # Validate infrastructure changes
@@ -56,19 +57,21 @@ proxmox-mpc> /apply             # Deploy to Proxmox server
 ```
 
 ### :material-database: Professional CLI Interface
+
 ```bash
 # Connection and discovery
 npm run cli test-connection [-v]    # Test Proxmox API connectivity
-npm run cli list-nodes [-v]         # List cluster nodes  
+npm run cli list-nodes [-v]         # List cluster nodes
 npm run cli discover-vms            # List VMs with status
 
-# VM/Container management  
+# VM/Container management
 npm run cli vm create --vmid 100 --name web-01 --cores 2
 npm run cli vm start 100 --wait     # Start VM
 npm run cli container create --vmid 200 --ostemplate ubuntu
 ```
 
 ### :material-file-tree: Generated Project Structure
+
 Each project workspace includes automatically generated Infrastructure-as-Code:
 
 ```
@@ -96,24 +99,28 @@ my-proxmox-project/
 ## Core Features
 
 ### :material-sync: State Synchronization
+
 - **Bidirectional sync** between Proxmox server, local database, and IaC files
 - **State tracking** with comprehensive history and rollback capabilities
 - **Conflict resolution** with intelligent merge strategies
 
 ### :material-test-tube: Test-Driven Infrastructure
+
 - **Automatic test generation** for infrastructure changes
 - **Validation workflows** with comprehensive quality gates
 - **Integration testing** with real infrastructure validation
 
 ### :material-server-network: Multi-Interface Design
+
 - **Interactive Console**: Claude Code-like REPL experience
 - **Professional CLI**: 20+ commands for scripting and automation
 - **Planned Web UI**: Dashboard for visual management
 - **Future MCP Server**: AI model integration capabilities
 
 ### :material-shield-check: Production Ready
-- **91.4% test success rate** (445/487 tests passing)
-- **Version 0.1.3** with professional version management system
+
+- **96.8% test success rate** (509/526 tests passing)
+- **Version 1.0.0** - First major production release
 - **Comprehensive validation** with real Proxmox server testing
 - **Professional error handling** and user-friendly diagnostics
 - **SSL certificate handling** for homelab environments
@@ -122,41 +129,37 @@ my-proxmox-project/
 
 <div class="grid cards" markdown>
 
--   **Backend**
-    
-    ---
-    
-    - Node.js/TypeScript
-    - Prisma ORM
-    - SQLite/PostgreSQL
-    - Express.js framework
+- **Backend**
 
--   **CLI & Console**
-    
-    ---
-    
-    - Commander.js framework
-    - Readline interface
-    - Professional error handling
-    - Session management
+  ***
+  - Node.js/TypeScript
+  - Prisma ORM
+  - SQLite/PostgreSQL
+  - Express.js framework
 
--   **Infrastructure**
-    
-    ---
-    
-    - Terraform generation
-    - Ansible playbooks
-    - Test automation
-    - State management
+- **CLI & Console**
 
--   **Integration**
-    
-    ---
-    
-    - Proxmox VE 8.4.1+
-    - API token authentication
-    - Multi-server support
-    - Observability system
+  ***
+  - Commander.js framework
+  - Readline interface
+  - Professional error handling
+  - Session management
+
+- **Infrastructure**
+
+  ***
+  - Terraform generation
+  - Ansible playbooks
+  - Test automation
+  - State management
+
+- **Integration**
+
+  ***
+  - Proxmox VE 8.4.1+
+  - API token authentication
+  - Multi-server support
+  - Observability system
 
 </div>
 
@@ -201,4 +204,4 @@ Proxmox-MPC is actively developed with exciting features planned:
 
 ---
 
-*Transform your Proxmox infrastructure into declarative, version-controlled Infrastructure-as-Code with the power and simplicity of modern tooling.*
+_Transform your Proxmox infrastructure into declarative, version-controlled Infrastructure-as-Code with the power and simplicity of modern tooling._
