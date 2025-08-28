@@ -1,5 +1,12 @@
 # Local Installation Guide for Proxmox-MPC
 
+!!! warning "Deprecated Guide"
+    This guide is deprecated. For comprehensive installation instructions, please refer to the official **[Installation Guide](https://proxmox-mpc.dev/getting-started/installation/)** in the documentation.
+    
+    The information below is kept for reference but may be outdated.
+
+---
+
 This guide explains how to install and use Proxmox-MPC globally on your local machine.
 
 ## 🚀 Quick Installation (Already Completed)

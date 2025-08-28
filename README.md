@@ -65,35 +65,19 @@ Complete workspace database initialization, resource command implementation, and
 
 ## Getting Started
 
-### Prerequisites
+### Quick Installation
 
-- Proxmox VE server with API token access
-- Node.js 18+ (for development)
-- Git for cloning the repository
+Install Proxmox-MPC globally via npm:
 
-### Installation
+```bash
+# Global installation (recommended)
+npm install -g proxmox-mpc
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/josephrichard7/proxmox-mpc.git
-   cd proxmox-mpc
-   ```
+# Launch interactive console
+proxmox-mpc
+```
 
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-3. Configure Proxmox connection:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Proxmox server details:
-   # - PROXMOX_HOST (your server IP/domain)
-   # - PROXMOX_USERNAME (e.g., root@pam)
-   # - PROXMOX_TOKEN_ID (create in Proxmox UI)
-   # - PROXMOX_TOKEN_SECRET (from Proxmox token creation)
-   # - PROXMOX_NODE (your node name)
-   ```
+For detailed installation instructions, platform-specific guides, and troubleshooting, see the **[Installation Guide](https://proxmox-mpc.dev/getting-started/installation/)**.
 
 ### Usage
 

@@ -1,6 +1,6 @@
 # Installation Guide
 
-This guide will help you install Proxmox-MPC on your system using various methods.
+This comprehensive guide covers all installation methods for Proxmox-MPC, from simple global installation to advanced development setups. Choose the method that best fits your use case.
 
 ## System Requirements
 
@@ -56,7 +56,7 @@ npm install
 # Build the project
 npm run build
 
-# Create global link (optional)
+# Create global link (recommended for development)
 npm link
 
 # Run development version
@@ -64,7 +64,41 @@ npm run console  # Interactive console
 npm run cli      # CLI commands
 ```
 
-### Method 3: Using npx (No Installation)
+!!! tip "Development Installation Benefits"
+    - Changes to source code are immediately reflected globally
+    - Perfect for development and testing
+    - No need to reinstall after code changes
+    - Can delete and recreate global link easily
+
+### Method 3: Local Development Setup
+
+For local development without global installation:
+
+```bash
+# Clone and setup development environment
+git clone https://github.com/proxmox-mpc/proxmox-mpc.git
+cd proxmox-mpc
+npm install
+
+# Run directly from source
+npm run console    # Launch interactive console
+npm run cli test-connection  # Run CLI commands
+
+# Development workflow
+npm test          # Run test suite
+npm run typecheck # TypeScript validation
+npm run build     # Build the project
+```
+
+!!! note "Development Environment"
+    This method is ideal for:
+    
+    - Contributing to the project
+    - Testing unreleased features
+    - Local development without affecting global installation
+    - Running test suites and development tools
+
+### Method 4: Using npx (No Installation)
 
 Try Proxmox-MPC without installing:
 
@@ -74,6 +108,47 @@ npx proxmox-mpc
 
 # Run specific CLI commands
 npx proxmox-mpc cli test-connection
+```
+
+## Alternative Installation Methods
+
+### npm link Method (Development)
+
+If you're working with the source code and want global access:
+
+```bash
+# From the proxmox-mpc project directory
+npm link
+
+# Now available globally as 'proxmox-mpc'
+proxmox-mpc
+
+# To unlink later
+npm unlink -g proxmox-mpc
+```
+
+### Direct Binary Link (Advanced)
+
+Create a direct symlink to the binary:
+
+```bash
+# Create symlink in /usr/local/bin (requires sudo)
+sudo ln -s /path/to/proxmox-mpc/bin/proxmox-mpc /usr/local/bin/proxmox-mpc
+
+# Make sure it's executable
+sudo chmod +x /usr/local/bin/proxmox-mpc
+```
+
+### Add to PATH Method
+
+Add the bin directory to your PATH:
+
+```bash
+# Add to ~/.bashrc or ~/.zshrc
+export PATH="$PATH:/path/to/proxmox-mpc/bin"
+
+# Reload shell configuration
+source ~/.bashrc  # or source ~/.zshrc
 ```
 
 ## Post-Installation Setup
@@ -311,6 +386,38 @@ npm list -g proxmox-mpc
 npm uninstall -g proxmox-mpc
 npm install -g proxmox-mpc@latest
 ```
+
+## Uninstalling Proxmox-MPC
+
+To completely remove Proxmox-MPC from your system:
+
+```bash
+# Global npm installation
+npm uninstall -g proxmox-mpc
+
+# npm link installation
+npm unlink -g proxmox-mpc
+
+# Direct binary symlink (if used)
+sudo rm /usr/local/bin/proxmox-mpc
+
+# Remove from PATH (if added manually)
+# Edit ~/.bashrc or ~/.zshrc to remove PATH export
+
+# Clean npm cache (optional)
+npm cache clean --force
+```
+
+!!! tip "Complete Cleanup"
+    After uninstalling, you may also want to remove any project-specific configuration:
+    
+    ```bash
+    # Remove global configuration (if any)
+    rm -rf ~/.proxmox-mpc
+    
+    # Remove project workspaces (manual)
+    # These contain your infrastructure definitions
+    ```
 
 ---
 
