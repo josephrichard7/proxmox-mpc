@@ -3,28 +3,24 @@
  * Manages registration and execution of slash commands
  */
 
-import { ConsoleSession } from "../repl";
+import { ConsoleSession } from '../repl';
 
-import { ApplyCommand } from "./apply";
-import { DebugCommand } from "./debug";
-import { DebugAutonomousCommand } from "./debug-autonomous";
-import { DestroyCommand } from "./destroy";
-import { ExitCommand } from "./exit";
-import { HealthCommand } from "./health";
-import { HelpCommand } from "./help";
-import { InitCommand } from "./init";
-import { LogsCommand } from "./logs";
-import { PlanCommand } from "./plan";
-import { ReportIssueCommand } from "./report-issue";
-import { StatusCommand } from "./status";
-import { SyncCommand } from "./sync";
-import { TestCommand } from "./test-command";
-import { ValidateCommand } from "./validate";
+import { ApplyCommand } from './apply';
+import { DebugCommand } from './debug';
+import { DestroyCommand } from './destroy';
+import { ExitCommand } from './exit';
+import { HealthCommand } from './health';
+import { HelpCommand } from './help';
+import { InitCommand } from './init';
+import { LogsCommand } from './logs';
+import { PlanCommand } from './plan';
+import { ReportIssueCommand } from './report-issue';
+import { StatusCommand } from './status';
+import { SyncCommand } from './sync';
+import { TestCommand } from './test-command';
+import { ValidateCommand } from './validate';
 
-export type SlashCommandHandler = (
-  args: string[],
-  session: ConsoleSession,
-) => Promise<void>;
+export type SlashCommandHandler = (args: string[], session: ConsoleSession) => Promise<void>;
 
 export class SlashCommandRegistry {
   private commands = new Map<string, SlashCommandHandler>();
@@ -45,38 +41,30 @@ export class SlashCommandRegistry {
     const destroyCommand = new DestroyCommand();
     const exitCommand = new ExitCommand();
     const debugCommand = new DebugCommand();
-    const debugAutonomousCommand = new DebugAutonomousCommand();
     const healthCommand = new HealthCommand();
     const logsCommand = new LogsCommand();
     const reportIssueCommand = new ReportIssueCommand();
-
+    
     // Core commands
-    this.register("help", helpCommand.execute.bind(helpCommand));
-    this.register("init", initCommand.execute.bind(initCommand));
-    this.register("status", statusCommand.execute.bind(statusCommand));
-    this.register("sync", syncCommand.execute.bind(syncCommand));
-    this.register("test", testCommand.execute.bind(testCommand));
-    this.register("apply", applyCommand.execute.bind(applyCommand));
-    this.register("plan", planCommand.execute.bind(planCommand));
-    this.register("validate", validateCommand.execute.bind(validateCommand));
-    this.register("destroy", destroyCommand.execute.bind(destroyCommand));
-    this.register("exit", exitCommand.execute.bind(exitCommand));
-
+    this.register('help', helpCommand.execute.bind(helpCommand));
+    this.register('init', initCommand.execute.bind(initCommand));
+    this.register('status', statusCommand.execute.bind(statusCommand));
+    this.register('sync', syncCommand.execute.bind(syncCommand));
+    this.register('test', testCommand.execute.bind(testCommand));
+    this.register('apply', applyCommand.execute.bind(applyCommand));
+    this.register('plan', planCommand.execute.bind(planCommand));
+    this.register('validate', validateCommand.execute.bind(validateCommand));
+    this.register('destroy', destroyCommand.execute.bind(destroyCommand));
+    this.register('exit', exitCommand.execute.bind(exitCommand));
+    
     // Observability commands
-    this.register("debug", debugCommand.execute.bind(debugCommand));
-    this.register(
-      "debug-auto",
-      debugAutonomousCommand.execute.bind(debugAutonomousCommand),
-    );
-    this.register("health", healthCommand.execute.bind(healthCommand));
-    this.register("logs", logsCommand.execute.bind(logsCommand));
-    this.register(
-      "report-issue",
-      reportIssueCommand.execute.bind(reportIssueCommand),
-    );
-
+    this.register('debug', debugCommand.execute.bind(debugCommand));
+    this.register('health', healthCommand.execute.bind(healthCommand));
+    this.register('logs', logsCommand.execute.bind(logsCommand));
+    this.register('report-issue', reportIssueCommand.execute.bind(reportIssueCommand));
+    
     // Aliases
-    this.register("quit", exitCommand.execute.bind(exitCommand));
+    this.register('quit', exitCommand.execute.bind(exitCommand));
   }
 
   /**
@@ -96,11 +84,7 @@ export class SlashCommandRegistry {
   /**
    * Execute a slash command
    */
-  async execute(
-    name: string,
-    args: string[],
-    session: ConsoleSession,
-  ): Promise<void> {
+  async execute(name: string, args: string[], session: ConsoleSession): Promise<void> {
     const handler = this.commands.get(name);
     if (!handler) {
       throw new Error(`Unknown command: /${name}`);
