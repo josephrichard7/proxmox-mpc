@@ -1,0 +1,33 @@
+{
+  "name": "proxmox-mpc-github-projects",
+  "version": "1.0.0",
+  "description": "MCP wrapper for GitHub Projects integration with proxmox-mpc",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/github-projects-mcp.js",
+    "dev": "tsx watch src/github-projects-mcp.ts",
+    "migrate": "tsx src/migrate-plan.ts",
+    "test-connection": "tsx src/test-connection.ts",
+    "test-mcp": "tsx src/simple-mcp-test.ts",
+    "add-to-project": "tsx src/add-issues-to-project.ts",
+    "create-repo-project": "tsx src/create-repo-project.ts",
+    "organize-kanban": "tsx src/organize-kanban-board.ts",
+    "mark-completed": "tsx src/mark-completed-issues.ts",
+    "create-epics": "tsx src/create-epics.ts",
+    "organize-epics": "tsx src/organize-issue-hierarchy.ts",
+    "create-epic-views": "tsx src/create-epic-views.ts",
+    "create-milestones-roadmap": "tsx src/create-milestones-roadmap.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "@octokit/graphql": "^8.1.1",
+    "@octokit/rest": "^21.0.2",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  }
+}

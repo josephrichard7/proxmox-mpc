@@ -1,0 +1,53 @@
+{
+  "name": "proxmox-mpc-web-ui",
+  "version": "1.0.0",
+  "description": "React frontend for Proxmox-MPC Interactive Infrastructure Console",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.26.1",
+    "@tanstack/react-query": "^5.51.23",
+    "@mantine/core": "^7.12.2",
+    "@mantine/hooks": "^7.12.2",
+    "@mantine/notifications": "^7.12.2",
+    "@mantine/form": "^7.12.2",
+    "@mantine/dates": "^7.12.2",
+    "socket.io-client": "^4.8.1",
+    "@monaco-editor/react": "^4.6.0",
+    "axios": "^1.6.7",
+    "zod": "^3.22.4",
+    "recharts": "^2.12.7",
+    "@tabler/icons-react": "^3.14.0",
+    "@hello-pangea/dnd": "^16.6.0",
+    "d3": "^7.9.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
+    "@vitejs/plugin-react": "^4.2.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vitest": "^1.6.0",
+    "@vitest/ui": "^1.6.0",
+    "@vitest/coverage-v8": "^1.6.0",
+    "@testing-library/react": "^14.3.1",
+    "@testing-library/jest-dom": "^6.4.6",
+    "jsdom": "^24.1.1",
+    "@types/d3": "^7.4.3"
+  }
+}

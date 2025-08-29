@@ -1,0 +1,459 @@
+/**
+ * WCAG 2.1 AA Accessibility Styles
+ * 
+ * Comprehensive CSS for accessibility compliance including focus indicators,
+ * high contrast support, reduced motion, and screen reader utilities.
+ */
+
+/* ==========================================================================
+   Screen Reader Only Utilities
+   ========================================================================== */
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  padding: initial !important;
+  margin: initial !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: initial !important;
+}
+
+/* ==========================================================================
+   Focus Management
+   ========================================================================== */
+
+/* Enhanced focus indicators for WCAG 2.1 AA compliance */
+*:focus {
+  outline: 2px solid var(--mantine-primary-color-filled) !important;
+  outline-offset: 2px !important;
+  border-radius: 2px !important;
+}
+
+/* Skip links for keyboard navigation */
+.skip-links {
+  position: absolute;
+  top: -100px;
+  left: 0;
+  z-index: 1000;
+}
+
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: #000;
+  color: #fff;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  font-weight: bold;
+  font-size: 14px;
+  transform: translateY(-100%);
+  transition: transform 0.2s ease-in-out;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+
+.skip-link:hover {
+  background: #333;
+}
+
+/* Focus trap styling */
+.focus-trap {
+  position: relative;
+}
+
+.focus-trap::before,
+.focus-trap::after {
+  content: '';
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+/* ==========================================================================
+   High Contrast Mode Support
+   ========================================================================== */
+
+@media (prefers-contrast: high) {
+  /* Enhanced borders and outlines for high contrast */
+  button,
+  input,
+  select,
+  textarea {
+    border: 2px solid !important;
+  }
+  
+  /* Stronger focus indicators */
+  *:focus {
+    outline-width: 3px !important;
+    outline-color: HighlightText !important;
+    background-color: Highlight !important;
+    color: HighlightText !important;
+  }
+  
+  /* Ensure text is readable */
+  .mantine-Text-root,
+  .mantine-Title-root {
+    color: WindowText !important;
+  }
+  
+  /* Button enhancements */
+  .mantine-Button-root {
+    border: 2px solid ButtonBorder !important;
+    background-color: ButtonFace !important;
+    color: ButtonText !important;
+  }
+  
+  .mantine-Button-root:hover {
+    background-color: Highlight !important;
+    color: HighlightText !important;
+  }
+}
+
+/* ==========================================================================
+   Reduced Motion Support
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  /* Disable parallax and transform animations */
+  * {
+    transform: none !important;
+  }
+  
+  /* Keep essential loading animations but make them simpler */
+  .mantine-Loader-root {
+    animation: simple-spin 2s linear infinite !important;
+  }
+  
+  @keyframes simple-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}
+
+/* ==========================================================================
+   Color and Contrast
+   ========================================================================== */
+
+/* Ensure sufficient color contrast for text */
+.text-contrast-aa {
+  color: #212529 !important; /* 4.5:1 contrast ratio on white */
+}
+
+.text-contrast-aaa {
+  color: #000000 !important; /* 7:1 contrast ratio on white */
+}
+
+/* Error states with sufficient contrast */
+.error-text {
+  color: #c5221f !important; /* 4.5:1 contrast ratio on white */
+}
+
+.success-text {
+  color: #2f7d32 !important; /* 4.5:1 contrast ratio on white */
+}
+
+.warning-text {
+  color: #ed6c02 !important; /* 4.5:1 contrast ratio on white */
+}
+
+/* ==========================================================================
+   Form Accessibility Enhancements
+   ========================================================================== */
+
+/* Required field indicators */
+.required::after {
+  content: ' *';
+  color: #c5221f;
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+/* Invalid field styling */
+input:invalid,
+select:invalid,
+textarea:invalid {
+  border-color: #c5221f !important;
+  box-shadow: 0 0 0 1px #c5221f !important;
+}
+
+/* Valid field styling */
+input:valid:not(:placeholder-shown),
+select:valid:not([value=""]),
+textarea:valid:not(:placeholder-shown) {
+  border-color: #2f7d32 !important;
+}
+
+/* Form error messages */
+.field-error {
+  color: #c5221f !important;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* Form success messages */
+.field-success {
+  color: #2f7d32 !important;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+/* ==========================================================================
+   Interactive Element Enhancements
+   ========================================================================== */
+
+/* Clickable area enhancement */
+.clickable {
+  min-height: 44px !important;
+  min-width: 44px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Button state indicators */
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled {
+  opacity: 0.6 !important;
+  cursor: not-allowed !important;
+}
+
+/* Loading state accessibility */
+.loading {
+  position: relative;
+}
+
+.loading::after {
+  content: 'Loading...';
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+
+/* ==========================================================================
+   Table Accessibility
+   ========================================================================== */
+
+/* Sortable table headers */
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.sortable-header:hover {
+  background-color: var(--mantine-color-gray-1) !important;
+}
+
+.sortable-header[aria-sort="ascending"]::after {
+  content: ' ↑';
+  position: absolute;
+  right: 8px;
+}
+
+.sortable-header[aria-sort="descending"]::after {
+  content: ' ↓';
+  position: absolute;
+  right: 8px;
+}
+
+/* Table row hover states */
+.table-row-hover:hover {
+  background-color: var(--mantine-color-gray-0) !important;
+}
+
+.table-row-selected {
+  background-color: var(--mantine-color-blue-0) !important;
+}
+
+/* ==========================================================================
+   Modal and Dialog Accessibility
+   ========================================================================== */
+
+/* Modal backdrop */
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+}
+
+/* Modal content */
+.modal-content {
+  position: relative;
+  z-index: 1001;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* ==========================================================================
+   Navigation Accessibility
+   ========================================================================== */
+
+/* Current page indicator */
+.nav-current {
+  font-weight: bold !important;
+  text-decoration: underline !important;
+}
+
+.nav-current::after {
+  content: ' (current page)';
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+}
+
+/* ==========================================================================
+   Content Structure
+   ========================================================================== */
+
+/* Landmark regions */
+main[role="main"],
+nav[role="navigation"],
+aside[role="complementary"],
+header[role="banner"],
+footer[role="contentinfo"] {
+  position: relative;
+}
+
+/* Heading hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  line-height: 1.2;
+}
+
+h1:first-child,
+h2:first-child,
+h3:first-child,
+h4:first-child,
+h5:first-child,
+h6:first-child {
+  margin-top: 0;
+}
+
+/* ==========================================================================
+   Status and Notification Accessibility
+   ========================================================================== */
+
+/* Live regions for dynamic content */
+.live-region {
+  position: absolute;
+  left: -9999px;
+  top: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* Status indicators */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.status-indicator::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: block;
+}
+
+.status-online::before {
+  background-color: #2f7d32;
+}
+
+.status-offline::before {
+  background-color: #c5221f;
+}
+
+.status-pending::before {
+  background-color: #ed6c02;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .status-pending::before {
+    animation: none;
+  }
+}
+
+/* ==========================================================================
+   Print Accessibility
+   ========================================================================== */
+
+@media print {
+  /* Hide non-essential elements */
+  .no-print,
+  button,
+  .mantine-Button-root {
+    display: none !important;
+  }
+  
+  /* Ensure sufficient contrast */
+  * {
+    color: black !important;
+    background: white !important;
+  }
+  
+  /* Show link URLs */
+  a::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.8em;
+    color: #666;
+  }
+  
+  /* Page breaks */
+  .page-break {
+    page-break-before: always;
+  }
+  
+  .avoid-break {
+    page-break-inside: avoid;
+  }
+}

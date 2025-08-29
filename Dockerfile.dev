@@ -1,0 +1,44 @@
+# Development Dockerfile with hot reloading
+FROM node:18-alpine AS development
+
+# Install development dependencies
+RUN apk add --no-cache \
+    curl \
+    git \
+    openssh-client \
+    python3 \
+    make \
+    g++
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY web-ui/package*.json ./web-ui/
+
+# Install dependencies
+RUN npm install && cd web-ui && npm install
+
+# Install global development tools
+RUN npm install -g \
+    nodemon \
+    ts-node \
+    typescript \
+    prisma \
+    concurrently
+
+# Copy source code (will be overridden by volume mounts)
+COPY . .
+
+# Generate Prisma client
+RUN npx prisma generate
+
+# Create necessary directories
+RUN mkdir -p data logs temp && \
+    chmod 777 data logs temp
+
+# Expose ports
+EXPOSE 3000 9229 5173
+
+# Development command with concurrently running both backend and frontend
+CMD ["npm", "run", "dev"]

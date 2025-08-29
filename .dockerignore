@@ -1,0 +1,88 @@
+# Dependencies
+node_modules/
+web-ui/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Development files
+*.local
+.env.local
+.env.development
+.env.test
+
+# Build outputs (will be copied from build stages)
+dist/
+build/
+web-ui/dist/
+web-ui/build/
+
+# Database files (use volume mounts)
+*.db
+*.db-journal
+data/
+
+# Logs (use volume mounts)
+logs/
+*.log
+
+# Test files
+coverage/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+e2e/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+CLAUDE.md
+docs/
+*.md
+
+# Development configuration
+docker-compose.dev.yml
+.editorconfig
+.eslintrc*
+.prettierrc*
+jest.config.*
+vitest.config.*
+playwright.config.*
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Package manager files
+package-lock.json
+yarn.lock
+
+# Source maps in production
+*.map
+
+# Performance monitoring
+.next/
+.nuxt/

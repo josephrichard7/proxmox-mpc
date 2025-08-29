@@ -1,0 +1,68 @@
+# Multi-stage Docker build for Proxmox-MPC Web Dashboard
+# Optimized for production deployment with minimal attack surface
+
+# Build stage - Node.js with full build tools
+FROM node:20-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache git python3 make g++
+
+# Set working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY web-ui/package*.json ./web-ui/
+
+# Install dependencies
+RUN npm ci --only=production --ignore-scripts
+RUN cd web-ui && npm ci --only=production --ignore-scripts
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN npm run build:web
+
+# Production stage - Minimal runtime
+FROM node:20-alpine AS production
+
+# Create app user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S proxmoxmpc -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy built application from builder stage
+COPY --from=builder --chown=proxmoxmpc:nodejs /app/dist ./dist
+COPY --from=builder --chown=proxmoxmpc:nodejs /app/web-ui/dist ./web-ui/dist
+COPY --from=builder --chown=proxmoxmpc:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=proxmoxmpc:nodejs /app/package.json ./package.json
+
+# Copy production configuration
+COPY --chown=proxmoxmpc:nodejs docker/web-entrypoint.sh ./entrypoint.sh
+COPY --chown=proxmoxmpc:nodejs docker/web-config/ ./config/
+
+# Make entrypoint executable
+RUN chmod +x ./entrypoint.sh
+
+# Install runtime dependencies only
+RUN apk add --no-cache \
+    dumb-init \
+    curl \
+    && rm -rf /var/cache/apk/*
+
+# Switch to non-root user
+USER proxmoxmpc
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3000/api/health || exit 1
+
+# Expose port
+EXPOSE 3000
+
+# Use dumb-init to handle signals properly
+ENTRYPOINT ["/usr/bin/dumb-init", "--"]
+CMD ["./entrypoint.sh"]

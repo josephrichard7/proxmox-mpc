@@ -1,0 +1,150 @@
+version: '3.8'
+
+# Development Docker Compose with hot reloading and debugging
+services:
+  # Development application with volume mounts
+  proxmox-mpc-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+      target: development
+    container_name: proxmox-mpc-dev
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+      - "9229:9229"  # Node.js debugger
+      - "5173:5173"  # Vite dev server
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: "file:/app/data/proxmox-mpc.db"
+      LOG_LEVEL: debug
+      VITE_API_URL: http://localhost:3000
+      CORS_ORIGIN: "http://localhost:5173"
+    volumes:
+      # Source code mounts for hot reloading
+      - ./src:/app/src:rw
+      - ./web-ui/src:/app/web-ui/src:rw
+      - ./prisma:/app/prisma:rw
+      - ./package.json:/app/package.json:ro
+      - ./web-ui/package.json:/app/web-ui/package.json:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./web-ui/tsconfig.json:/app/web-ui/tsconfig.json:ro
+      - ./web-ui/vite.config.ts:/app/web-ui/vite.config.ts:ro
+      # Data and logs
+      - dev-data:/app/data
+      - dev-logs:/app/logs
+      # Node modules (for faster installs)
+      - node_modules:/app/node_modules
+      - web_ui_node_modules:/app/web-ui/node_modules
+    networks:
+      - proxmox-dev-network
+    command: npm run dev
+    stdin_open: true
+    tty: true
+
+  # Development database
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: proxmox-mpc-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: proxmox_mpc_dev
+      POSTGRES_USER: proxmox_dev
+      POSTGRES_PASSWORD: dev_password
+    volumes:
+      - postgres-dev-data:/var/lib/postgresql/data
+      - ./docker/postgres/init-dev.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - proxmox-dev-network
+    ports:
+      - "5433:5432"
+    profiles:
+      - postgres
+
+  # Development Redis
+  redis-dev:
+    image: redis:7-alpine
+    container_name: proxmox-mpc-redis-dev
+    restart: unless-stopped
+    command: redis-server --requirepass dev_password --appendonly yes
+    volumes:
+      - redis-dev-data:/data
+    networks:
+      - proxmox-dev-network
+    ports:
+      - "6380:6379"
+    profiles:
+      - redis
+
+  # Mailhog for email testing
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: proxmox-mpc-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - proxmox-dev-network
+    profiles:
+      - mail
+
+  # pgAdmin for database management
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: proxmox-mpc-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@proxmox-mpc.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    networks:
+      - proxmox-dev-network
+    profiles:
+      - postgres
+      - tools
+
+  # Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: proxmox-mpc-redis-commander
+    restart: unless-stopped
+    environment:
+      REDIS_HOSTS: local:redis-dev:6379:0:dev_password
+      HTTP_USER: admin
+      HTTP_PASSWORD: admin
+    ports:
+      - "8081:8081"
+    networks:
+      - proxmox-dev-network
+    profiles:
+      - redis
+      - tools
+
+networks:
+  proxmox-dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+
+volumes:
+  dev-data:
+    driver: local
+  dev-logs:
+    driver: local
+  postgres-dev-data:
+    driver: local
+  redis-dev-data:
+    driver: local
+  pgadmin-data:
+    driver: local
+  node_modules:
+    driver: local
+  web_ui_node_modules:
+    driver: local
