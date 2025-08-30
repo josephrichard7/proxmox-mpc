@@ -1,6 +1,6 @@
-import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { Octokit } from '@octokit/rest';
-import { graphql } from '@octokit/graphql';
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { graphql } from "@octokit/graphql";
+import { Octokit } from "@octokit/rest";
 
 /**
  * MCP Server for GitHub Projects Integration
@@ -22,7 +22,7 @@ export class GitHubProjectsMCP {
   }) {
     this.repoOwner = config.repoOwner;
     this.repoName = config.repoName;
-    
+
     // Initialize GitHub clients
     this.octokit = new Octokit({ auth: config.githubToken });
     this.graphqlClient = graphql.defaults({
@@ -33,9 +33,10 @@ export class GitHubProjectsMCP {
 
     // Initialize MCP server
     this.server = new Server({
-      name: 'github-projects-pm',
-      version: '1.0.0',
-      description: 'GitHub Projects integration for efficient project management queries'
+      name: "github-projects-pm",
+      version: "1.0.0",
+      description:
+        "GitHub Projects integration for efficient project management queries",
     });
 
     this.setupHandlers();
@@ -43,7 +44,7 @@ export class GitHubProjectsMCP {
 
   private setupHandlers() {
     // Get current sprint/iteration items
-    this.server.setRequestHandler('get_in_progress', async () => {
+    this.server.setRequestHandler("get_in_progress", async () => {
       const query = `
         query($owner: String!, $repo: String!, $number: Int!) {
           repository(owner: $owner, name: $repo) {
@@ -91,29 +92,32 @@ export class GitHubProjectsMCP {
       const result = await this.graphqlClient(query, {
         owner: this.repoOwner,
         repo: this.repoName,
-        number: parseInt(process.env.GITHUB_PROJECT_NUMBER || '1')
+        number: parseInt(process.env.GITHUB_PROJECT_NUMBER || "1"),
       });
 
       // Filter for in-progress items (token-efficient response)
-      const inProgress = result.repository.projectV2.items.nodes.filter(item => {
-        const status = item.fieldValues.nodes.find(field => 
-          field.field?.name === 'Status' && field.name === 'In Progress'
-        );
-        return status !== undefined;
-      });
+      const inProgress = result.repository.projectV2.items.nodes.filter(
+        (item) => {
+          const status = item.fieldValues.nodes.find(
+            (field) =>
+              field.field?.name === "Status" && field.name === "In Progress",
+          );
+          return status !== undefined;
+        },
+      );
 
       return {
         count: inProgress.length,
-        items: inProgress.map(item => ({
+        items: inProgress.map((item) => ({
           title: item.content.title,
           number: item.content.number,
-          assignees: item.content.assignees?.nodes.map(a => a.login) || []
-        }))
+          assignees: item.content.assignees?.nodes.map((a) => a.login) || [],
+        })),
       };
     });
 
     // Get blockers
-    this.server.setRequestHandler('get_blockers', async () => {
+    this.server.setRequestHandler("get_blockers", async () => {
       const query = `
         query($owner: String!, $repo: String!) {
           repository(owner: $owner, name: $repo) {
@@ -137,23 +141,23 @@ export class GitHubProjectsMCP {
 
       const result = await this.graphqlClient(query, {
         owner: this.repoOwner,
-        repo: this.repoName
+        repo: this.repoName,
       });
 
       return {
-        blockers: result.repository.issues.nodes.map(issue => ({
+        blockers: result.repository.issues.nodes.map((issue) => ({
           number: issue.number,
           title: issue.title,
-          reason: issue.body?.split('\n')[0] || 'No reason specified',
-          duration: this.calculateDuration(issue.createdAt)
-        }))
+          reason: issue.body?.split("\n")[0] || "No reason specified",
+          duration: this.calculateDuration(issue.createdAt),
+        })),
       };
     });
 
     // Get release/milestone status
-    this.server.setRequestHandler('get_release_status', async (params) => {
+    this.server.setRequestHandler("get_release_status", async (params) => {
       const { milestone } = params;
-      
+
       const query = `
         query($owner: String!, $repo: String!, $milestone: String!) {
           repository(owner: $owner, name: $repo) {
@@ -179,12 +183,16 @@ export class GitHubProjectsMCP {
       const result = await this.graphqlClient(query, {
         owner: this.repoOwner,
         repo: this.repoName,
-        milestone
+        milestone,
       });
 
-      const milestone = result.repository.milestone;
-      const openCount = milestone.issues.nodes.filter(i => i.state === 'OPEN').length;
-      const closedCount = milestone.issues.nodes.filter(i => i.state === 'CLOSED').length;
+      const milestoneResult = result.repository.milestone;
+      const openCount = milestoneResult.issues.nodes.filter(
+        (i) => i.state === "OPEN",
+      ).length;
+      const closedCount = milestoneResult.issues.nodes.filter(
+        (i) => i.state === "CLOSED",
+      ).length;
 
       return {
         title: milestone.title,
@@ -194,15 +202,15 @@ export class GitHubProjectsMCP {
           total: milestone.issues.totalCount,
           open: openCount,
           closed: closedCount,
-          completion: `${Math.round((closedCount / milestone.issues.totalCount) * 100)}%`
-        }
+          completion: `${Math.round((closedCount / milestone.issues.totalCount) * 100)}%`,
+        },
       };
     });
 
     // Update task status
-    this.server.setRequestHandler('update_task_status', async (params) => {
+    this.server.setRequestHandler("update_task_status", async (params) => {
       const { issueNumber, status } = params;
-      
+
       // First get the project item ID
       const itemQuery = `
         query($owner: String!, $repo: String!, $issue: Int!) {
@@ -233,12 +241,14 @@ export class GitHubProjectsMCP {
       const itemResult = await this.graphqlClient(itemQuery, {
         owner: this.repoOwner,
         repo: this.repoName,
-        issue: issueNumber
+        issue: issueNumber,
       });
 
       const projectItem = itemResult.repository.issue.projectItems.nodes[0];
       const statusField = projectItem.project.field;
-      const statusOption = statusField.options.find(opt => opt.name === status);
+      const statusOption = statusField.options.find(
+        (opt) => opt.name === status,
+      );
 
       // Update the status
       const updateMutation = `
@@ -260,14 +270,14 @@ export class GitHubProjectsMCP {
         projectId: projectItem.project.id,
         itemId: projectItem.id,
         fieldId: statusField.id,
-        value: statusOption.id
+        value: statusOption.id,
       });
 
       return { success: true, issueNumber, newStatus: status };
     });
 
     // Get sprint velocity
-    this.server.setRequestHandler('get_velocity', async () => {
+    this.server.setRequestHandler("get_velocity", async () => {
       // Token-efficient velocity calculation
       const query = `
         query($owner: String!, $repo: String!) {
@@ -286,21 +296,23 @@ export class GitHubProjectsMCP {
 
       const result = await this.graphqlClient(query, {
         owner: this.repoOwner,
-        repo: this.repoName
+        repo: this.repoName,
       });
 
       // Calculate story points completed in last 2 weeks
       const twoWeeksAgo = new Date();
       twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
 
-      const recentIssues = result.repository.issues.nodes.filter(issue => 
-        new Date(issue.closedAt) > twoWeeksAgo
+      const recentIssues = result.repository.issues.nodes.filter(
+        (issue) => new Date(issue.closedAt) > twoWeeksAgo,
       );
 
       const points = recentIssues.reduce((sum, issue) => {
-        const pointLabel = issue.labels.nodes.find(l => l.name.includes('points'));
+        const pointLabel = issue.labels.nodes.find((l) =>
+          l.name.includes("points"),
+        );
         if (pointLabel) {
-          const points = parseInt(pointLabel.name.replace(/\D/g, ''));
+          const points = parseInt(pointLabel.name.replace(/\D/g, ""));
           return sum + (isNaN(points) ? 0 : points);
         }
         return sum;
@@ -309,14 +321,14 @@ export class GitHubProjectsMCP {
       return {
         velocity: points / 2, // Per week
         issuesCompleted: recentIssues.length,
-        period: '2 weeks'
+        period: "2 weeks",
       };
     });
 
     // Search functionality
-    this.server.setRequestHandler('search_tasks', async (params) => {
+    this.server.setRequestHandler("search_tasks", async (params) => {
       const { query: searchQuery } = params;
-      
+
       const query = `
         query($searchQuery: String!) {
           search(query: $searchQuery, type: ISSUE, first: 10) {
@@ -333,11 +345,11 @@ export class GitHubProjectsMCP {
       `;
 
       const result = await this.graphqlClient(query, {
-        searchQuery: `repo:${this.repoOwner}/${this.repoName} ${searchQuery}`
+        searchQuery: `repo:${this.repoOwner}/${this.repoName} ${searchQuery}`,
       });
 
       return {
-        results: result.search.nodes
+        results: result.search.nodes,
       };
     });
   }
@@ -345,22 +357,24 @@ export class GitHubProjectsMCP {
   private calculateDuration(createdAt: string): string {
     const created = new Date(createdAt);
     const now = new Date();
-    const days = Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+    const days = Math.floor(
+      (now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24),
+    );
     return `${days} days`;
   }
 
   async start() {
     await this.server.start();
-    console.log('GitHub Projects MCP Server started');
+    console.log("GitHub Projects MCP Server started");
   }
 }
 
 // Configuration
 const config = {
-  githubToken: process.env.GITHUB_TOKEN || '',
-  projectNumber: parseInt(process.env.GITHUB_PROJECT_NUMBER || '1'),
-  repoOwner: 'your-username',
-  repoName: 'proxmox-mpc'
+  githubToken: process.env.GITHUB_TOKEN || "",
+  projectNumber: parseInt(process.env.GITHUB_PROJECT_NUMBER || "1"),
+  repoOwner: "your-username",
+  repoName: "proxmox-mpc",
 };
 
 // Start server

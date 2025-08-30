@@ -1,0 +1,113 @@
+{
+  "id": "50238f4a-4675-4ec6-9c69-e733b11796a4",
+  "timestamp": "2025-08-29T22:39:52.454Z",
+  "workspace": "/home/admin/test-project",
+  "operation": "integration_test",
+  "error": {
+    "message": "Test error with admin@example.com and 192.168.1.100",
+    "stack": "Error: Test error with admin@example.com and 192.168.1.100\n    at Object.<anonymous> (/home/dev/dev/proxmox-mpc/src/anonymization/__tests__/Integration.test.ts:97:9)\n    at Promise.then.completed (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/utils.js:298:28)\n    at new Promise (<anonymous>)\n    at callAsyncCircusFn (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/utils.js:231:10)\n    at _callCircusTest (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/run.js:316:40)\n    at processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at _runTest (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/run.js:252:3)\n    at _runTestsForDescribeBlock (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/run.js:126:9)\n    at _runTestsForDescribeBlock (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/run.js:121:9)\n    at _runTestsForDescribeBlock (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/run.js:121:9)\n    at run (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/run.js:71:3)\n    at runAndTransformResultsToJestFormat (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapterInit.js:122:21)\n    at jestAdapter (/home/dev/dev/proxmox-mpc/node_modules/jest-circus/build/legacy-code-todo-rewrite/jestAdapter.js:79:19)\n    at runTestInternal (/home/dev/dev/proxmox-mpc/node_modules/jest-runner/build/runTest.js:367:16)\n    at runTest (/home/dev/dev/proxmox-mpc/node_modules/jest-runner/build/runTest.js:444:34)\n    at Object.worker (/home/dev/dev/proxmox-mpc/node_modules/jest-runner/build/testWorker.js:106:12)",
+    "type": "Error"
+  },
+  "logs": [],
+  "metrics": [],
+  "healthStatus": [
+    {
+      "component": "system",
+      "status": "healthy",
+      "message": "System running normally",
+      "details": {
+        "uptime": "0h 0m",
+        "loadAvg": ["3.68", "0.92", "0.84"],
+        "cpuCount": 28
+      },
+      "timestamp": "2025-08-29T22:39:52.463Z"
+    },
+    {
+      "component": "memory",
+      "status": "warning",
+      "message": "High memory usage",
+      "details": {
+        "heapUsed": "194.15 MB",
+        "heapTotal": "219.88 MB",
+        "heapUsagePercent": "88.3%"
+      },
+      "timestamp": "2025-08-29T22:39:52.463Z"
+    },
+    {
+      "component": "tool_terraform",
+      "status": "healthy",
+      "message": "terraform available",
+      "details": {
+        "version": "Terraform v1.12.2"
+      },
+      "timestamp": "2025-08-29T22:39:52.463Z"
+    },
+    {
+      "component": "tool_ansible",
+      "status": "error",
+      "message": "ansible not available",
+      "timestamp": "2025-08-29T22:39:52.463Z"
+    },
+    {
+      "component": "tool_node",
+      "status": "healthy",
+      "message": "node available",
+      "details": {
+        "version": "v22.17.1"
+      },
+      "timestamp": "2025-08-29T22:39:52.463Z"
+    },
+    {
+      "component": "tool_npm",
+      "status": "healthy",
+      "message": "npm available",
+      "details": {
+        "version": "10.9.2"
+      },
+      "timestamp": "2025-08-29T22:39:52.463Z"
+    },
+    {
+      "component": "tool_git",
+      "status": "healthy",
+      "message": "git available",
+      "details": {
+        "version": "git version 2.43.0"
+      },
+      "timestamp": "2025-08-29T22:39:52.463Z"
+    },
+    {
+      "component": "database",
+      "status": "warning",
+      "message": "Database not initialized",
+      "timestamp": "2025-08-29T22:39:52.463Z"
+    },
+    {
+      "component": "workspace",
+      "status": "error",
+      "message": "Workspace missing configuration",
+      "details": {
+        "hasConfig": false,
+        "hasTerraform": false,
+        "hasAnsible": false
+      },
+      "timestamp": "2025-08-29T22:39:52.463Z"
+    }
+  ],
+  "systemInfo": {
+    "nodeVersion": "v22.17.1",
+    "platform": "linux 6.14.0-28-generic",
+    "memory": {
+      "rss": 325386240,
+      "heapTotal": 230559744,
+      "heapUsed": 204068208,
+      "external": 7101552,
+      "arrayBuffers": 3533074
+    },
+    "uptime": 3.182759624
+  },
+  "workspaceInfo": {
+    "path": "/home/admin/test-project",
+    "config": {},
+    "terraformVersion": "Terraform v1.12.2"
+  }
+}
