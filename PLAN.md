@@ -147,6 +147,497 @@ proxmox-mpc> /apply                     # Deploy to Proxmox server
 
 ### 🚧 **NEXT PHASES** (Phases 7-10)
 
+## Epic #84: Terminal Interface Migration to Rich TUI 🎨 **HIGH PRIORITY** (3-4 weeks)
+
+**Strategic Context**: Migrate from the current readline-based terminal interface to a rich Terminal User Interface (TUI) using React Ink framework. This will provide a modern, feature-rich experience similar to modern CLI tools while maintaining all existing functionality.
+
+### Architecture Overview
+
+**Migration Strategy**: Phased migration approach maintaining backward compatibility throughout the transition:
+
+- **Phase 1**: Framework setup and core component development (1 week)
+- **Phase 2**: Command interface migration and layout implementation (1 week)
+- **Phase 3**: Advanced features and interactive components (1 week)
+- **Phase 4**: Testing, optimization, and production deployment (1 week)
+
+**Design Principles**:
+
+- **Backward Compatibility**: Existing commands and workflows remain unchanged
+- **Progressive Enhancement**: Rich UI features enhance but don't replace core functionality
+- **Performance First**: Sub-100ms response times for all interactions
+- **Accessibility**: Full keyboard navigation and screen reader support
+- **Extensibility**: Component architecture enables future enhancements
+
+### Framework Selection: React Ink
+
+**Selected Framework**: React Ink (github.com/vadimdemedes/ink)
+
+- **Maturity**: 27.4k+ GitHub stars, actively maintained, production-ready
+- **React Familiarity**: Leverages React component model for rapid development
+- **Rich Ecosystem**: ink-ui component library, extensive third-party components
+- **Performance**: Built on Yoga layout engine, optimized for terminal rendering
+- **TypeScript Support**: Full TypeScript support with comprehensive type definitions
+
+**Alternative Considered**: OpenTUI (sst/opentui) - Rejected due to "not ready for production use" status
+
+### Implementation Plan
+
+#### Phase T1: Framework Setup & Core Infrastructure (Week 1)
+
+**T1.1: Project Setup and Dependencies (2 hours)**
+
+- [ ] Install React Ink and related dependencies
+  - [ ] Add `ink`, `react`, `@types/react`, `ink-ui` packages
+  - [ ] Configure TypeScript for JSX/TSX support
+  - [ ] Set up build pipeline for TUI components
+  - [ ] Update package.json scripts for TUI development
+
+**T1.2: Core TUI Architecture (4 hours)**
+
+- [ ] Create TUI application structure
+  - [ ] Design main application component hierarchy
+  - [ ] Implement TUI context providers for session state
+  - [ ] Create routing system for different screens/views
+  - [ ] Set up theme system with branded colors and styles
+
+**T1.3: Basic Components Library (6 hours)**
+
+- [ ] Develop foundational UI components
+  - [ ] Header component with branding and status
+  - [ ] Command prompt component with history support
+  - [ ] Status bar component with connection/workspace info
+  - [ ] Modal/dialog system for confirmations and forms
+  - [ ] Loading spinner and progress indicator components
+
+**T1.4: Integration Bridge (4 hours)**
+
+- [ ] Create compatibility layer with existing code
+  - [ ] Abstract console interface for both readline and TUI
+  - [ ] Maintain ConsoleSession interface compatibility
+  - [ ] Ensure existing command handlers work unchanged
+  - [ ] Add feature flag for TUI vs readline mode
+
+**Files to Create**:
+
+```
+src/console/tui/
+├── index.tsx                    # Main TUI application entry
+├── App.tsx                      # Root application component
+├── components/
+│   ├── Header.tsx              # Application header
+│   ├── CommandPrompt.tsx       # Interactive command input
+│   ├── StatusBar.tsx           # Bottom status information
+│   ├── Modal.tsx               # Modal dialog system
+│   ├── Loading.tsx             # Loading indicators
+│   └── index.ts                # Component exports
+├── contexts/
+│   ├── SessionContext.tsx      # Session state management
+│   ├── ThemeContext.tsx        # Theme and styling
+│   └── index.ts                # Context exports
+├── hooks/
+│   ├── useSession.ts           # Session management hook
+│   ├── useCommands.ts          # Command handling hook
+│   └── index.ts                # Hook exports
+├── types.ts                    # TUI-specific type definitions
+└── utils/
+    ├── theme.ts                # Theme configuration
+    └── keyboard.ts             # Keyboard handling utilities
+```
+
+#### Phase T2: Command Interface & Layout (Week 2)
+
+**T2.1: Main Layout Implementation (4 hours)**
+
+- [ ] Design and implement main application layout
+  - [ ] Three-panel layout: header, main content, status bar
+  - [ ] Responsive layout that adapts to terminal size
+  - [ ] Split-pane support for multi-view operations
+  - [ ] Sidebar for navigation and quick actions
+
+**T2.2: Command System Migration (6 hours)**
+
+- [ ] Migrate slash command interface to TUI
+  - [ ] Interactive command palette with autocomplete
+  - [ ] Command history with visual browsing
+  - [ ] Real-time command validation and suggestions
+  - [ ] Visual feedback for command execution
+
+**T2.3: Resource Management Interface (6 hours)**
+
+- [ ] Create rich resource management views
+  - [ ] Resource list component with sorting and filtering
+  - [ ] Detailed resource view with tabbed information
+  - [ ] Interactive resource creation wizard
+  - [ ] Resource status dashboard with live updates
+
+**Files to Create**:
+
+```
+src/console/tui/screens/
+├── MainScreen.tsx              # Primary application screen
+├── ResourceListScreen.tsx      # Resource browsing and management
+├── ResourceDetailScreen.tsx    # Individual resource details
+├── SettingsScreen.tsx          # Application settings and configuration
+├── HelpScreen.tsx              # Interactive help and documentation
+└── index.ts                    # Screen exports
+
+src/console/tui/components/
+├── CommandPalette.tsx          # Command input with autocomplete
+├── ResourceList.tsx            # Table/list of resources
+├── ResourceCard.tsx            # Individual resource display
+├── ProgressTracker.tsx         # Operation progress display
+├── LogViewer.tsx               # Real-time log display
+└── WizardFlow.tsx              # Multi-step wizard component
+```
+
+**T2.4: Navigation System (4 hours)**
+
+- [ ] Implement keyboard-driven navigation
+  - [ ] Tab-based navigation between screens
+  - [ ] Vim-like keyboard shortcuts (hjkl navigation)
+  - [ ] Breadcrumb navigation for deep views
+  - [ ] Quick jump shortcuts for common actions
+
+#### Phase T3: Advanced Features & Interactions (Week 3)
+
+**T3.1: Interactive Components (6 hours)**
+
+- [ ] Build advanced interactive elements
+  - [ ] Multi-select lists with keyboard navigation
+  - [ ] Interactive forms with validation
+  - [ ] Real-time data tables with sorting
+  - [ ] Progress bars for long-running operations
+
+**T3.2: Real-time Updates (4 hours)**
+
+- [ ] Implement live data updates
+  - [ ] WebSocket-like updates for resource status
+  - [ ] Live log streaming with auto-scroll
+  - [ ] Real-time progress tracking for operations
+  - [ ] Background task monitoring
+
+**T3.3: Advanced Workflows (6 hours)**
+
+- [ ] Create complex interactive workflows
+  - [ ] Multi-step infrastructure deployment wizard
+  - [ ] Interactive troubleshooting assistant
+  - [ ] Visual configuration editor
+  - [ ] Batch operation interface with progress tracking
+
+**Files to Create**:
+
+```
+src/console/tui/components/
+├── DataTable.tsx               # Interactive sortable tables
+├── FormBuilder.tsx             # Dynamic form generation
+├── MultiSelect.tsx             # Multi-selection interface
+├── LogStream.tsx               # Live log streaming
+├── TaskRunner.tsx              # Background task monitoring
+├── ConfigEditor.tsx            # Visual configuration editing
+└── Wizard/
+    ├── DeploymentWizard.tsx    # Infrastructure deployment flow
+    ├── TroubleshootWizard.tsx  # Interactive problem solving
+    └── ConfigWizard.tsx        # Configuration setup flow
+```
+
+**T3.4: Performance Optimization (4 hours)**
+
+- [ ] Optimize TUI performance and responsiveness
+  - [ ] Implement virtual scrolling for large lists
+  - [ ] Debounce user input and API calls
+  - [ ] Optimize re-renders with React.memo
+  - [ ] Add performance monitoring and profiling
+
+#### Phase T4: Testing, Polish & Production (Week 4)
+
+**T4.1: Comprehensive Testing (6 hours)**
+
+- [ ] Build comprehensive test suite for TUI components
+  - [ ] Component unit tests with React Testing Library
+  - [ ] Integration tests for command workflows
+  - [ ] Keyboard navigation and accessibility tests
+  - [ ] Performance benchmarking and regression tests
+
+**T4.2: User Experience Polish (4 hours)**
+
+- [ ] Enhance user experience and visual polish
+  - [ ] Smooth animations and transitions
+  - [ ] Consistent color scheme and branding
+  - [ ] Contextual help and tooltips
+  - [ ] Error handling with user-friendly messages
+
+**T4.3: Documentation & Migration Guide (4 hours)**
+
+- [ ] Create comprehensive documentation
+  - [ ] TUI component documentation with examples
+  - [ ] Migration guide from readline to TUI mode
+  - [ ] Keyboard shortcuts reference
+  - [ ] Troubleshooting guide for TUI-specific issues
+
+**T4.4: Production Deployment (6 hours)**
+
+- [ ] Prepare for production deployment
+  - [ ] Feature flag system for gradual rollout
+  - [ ] Fallback mechanism to readline mode
+  - [ ] Performance monitoring and error tracking
+  - [ ] Beta testing with selected users
+
+**Files to Create**:
+
+```
+src/console/tui/__tests__/
+├── App.test.tsx                # Main application tests
+├── components/
+│   ├── CommandPrompt.test.tsx  # Command input tests
+│   ├── ResourceList.test.tsx   # Resource management tests
+│   └── Modal.test.tsx          # Modal system tests
+├── screens/
+│   ├── MainScreen.test.tsx     # Main screen integration tests
+│   └── ResourceDetailScreen.test.tsx
+└── utils/
+    ├── keyboard.test.ts        # Keyboard handling tests
+    └── theme.test.ts           # Theme system tests
+
+docs/tui/
+├── migration-guide.md          # readline to TUI migration
+├── keyboard-shortcuts.md       # Keyboard reference
+├── component-library.md        # Component documentation
+└── troubleshooting.md          # TUI-specific issues
+```
+
+### TUI Architecture Design
+
+#### Component Hierarchy
+
+```typescript
+<App>
+  <ThemeProvider>
+    <SessionProvider>
+      <Router>
+        <Layout>
+          <Header />
+          <MainContent>
+            <Screen /> // MainScreen, ResourceListScreen, etc.
+          </MainContent>
+          <StatusBar />
+        </Layout>
+      </Router>
+    </SessionProvider>
+  </ThemeProvider>
+</App>
+```
+
+#### Key Components Specification
+
+**Header Component**:
+
+```typescript
+interface HeaderProps {
+  workspace?: ProjectWorkspace;
+  connectionStatus: "connected" | "disconnected" | "connecting";
+  currentScreen: string;
+}
+```
+
+**CommandPrompt Component**:
+
+```typescript
+interface CommandPromptProps {
+  onCommand: (command: string) => Promise<void>;
+  history: string[];
+  suggestions: string[];
+  loading: boolean;
+}
+```
+
+**ResourceList Component**:
+
+```typescript
+interface ResourceListProps<T> {
+  resources: T[];
+  columns: ColumnDefinition<T>[];
+  onSelect: (resource: T) => void;
+  sortable: boolean;
+  filterable: boolean;
+}
+```
+
+### Migration Strategy
+
+#### Backward Compatibility Approach
+
+**Dual Mode Support**: Support both readline and TUI modes:
+
+```typescript
+// Console interface abstraction
+interface ConsoleInterface {
+  start(): Promise<void>;
+  stop(): void;
+  executeCommand(command: string): Promise<void>;
+}
+
+class ReadlineConsole implements ConsoleInterface { ... }
+class TUIConsole implements ConsoleInterface { ... }
+
+// Feature flag based selection
+const console = process.env.PMC_TUI_MODE === 'enabled'
+  ? new TUIConsole()
+  : new ReadlineConsole();
+```
+
+**Command Compatibility**: Existing command handlers work unchanged:
+
+```typescript
+// Existing command interface preserved
+interface ConsoleSession {
+  workspace?: ProjectWorkspace;
+  client?: ProxmoxClient;
+  rl: readline.Interface; // or TUI equivalent
+  history: string[];
+  startTime: Date;
+}
+```
+
+### Risk Assessment & Mitigation
+
+#### High Risk Items
+
+**R1: Framework Stability** (Risk: Medium)
+
+- **Risk**: React Ink stability for production use
+- **Mitigation**:
+  - Extensive testing in development environment
+  - Fallback to readline mode if TUI crashes
+  - Community validation and issue monitoring
+
+**R2: Performance Impact** (Risk: Medium)
+
+- **Risk**: TUI rendering performance vs readline
+- **Mitigation**:
+  - Performance benchmarking at each phase
+  - Virtual scrolling for large datasets
+  - Lazy loading of heavy components
+  - Memory leak monitoring and optimization
+
+**R3: Terminal Compatibility** (Risk: High)
+
+- **Risk**: TUI compatibility across different terminals
+- **Mitigation**:
+  - Testing matrix across major terminals (iTerm, Terminal, Windows Terminal, etc.)
+  - Graceful degradation for unsupported features
+  - Terminal capability detection
+  - Comprehensive documentation for supported terminals
+
+#### Medium Risk Items
+
+**R4: User Adoption** (Risk: Medium)
+
+- **Risk**: Users prefer simple readline interface
+- **Mitigation**:
+  - Gradual rollout with feature flags
+  - User feedback collection and iteration
+  - Option to disable TUI mode
+  - Training materials and documentation
+
+**R5: Development Complexity** (Risk: Medium)
+
+- **Risk**: Increased complexity in maintenance
+- **Mitigation**:
+  - Comprehensive test coverage (>90%)
+  - Clear component architecture
+  - Documentation and examples
+  - Developer training and onboarding
+
+### Success Metrics
+
+#### Functional Requirements
+
+- [ ] **Feature Parity**: 100% of existing readline functionality preserved
+- [ ] **Performance**: <100ms response time for all UI interactions
+- [ ] **Compatibility**: Works on 95%+ of target terminal environments
+- [ ] **Accessibility**: Full keyboard navigation and screen reader support
+- [ ] **Stability**: <0.1% crash rate in production use
+
+#### Quality Requirements
+
+- [ ] **Test Coverage**: >90% unit test coverage, >85% integration test coverage
+- [ ] **Documentation**: Complete API documentation and user guides
+- [ ] **User Experience**: <5 minute learning curve for existing users
+- [ ] **Performance**: 50% faster command execution through visual feedback
+- [ ] **Maintainability**: Clear component architecture with separation of concerns
+
+#### User Experience Goals
+
+- [ ] **Visual Appeal**: Modern, professional terminal interface
+- [ ] **Efficiency**: 30% faster common task completion
+- [ ] **Discoverability**: Self-documenting interface with contextual help
+- [ ] **Error Handling**: Clear error messages with suggested actions
+- [ ] **Customization**: User-configurable themes and layouts
+
+### Testing Strategy
+
+#### Unit Testing (40% of effort)
+
+- React Testing Library for component testing
+- Jest mocks for external dependencies
+- Keyboard event simulation and testing
+- Theme and styling validation
+
+#### Integration Testing (30% of effort)
+
+- End-to-end command flow testing
+- Screen transition and navigation testing
+- Session state management testing
+- Error boundary and recovery testing
+
+#### Manual Testing (20% of effort)
+
+- Cross-terminal compatibility testing
+- Accessibility testing with screen readers
+- User experience testing with real workflows
+- Performance testing under load
+
+#### Automated Testing (10% of effort)
+
+- Visual regression testing
+- Performance regression monitoring
+- Memory leak detection
+- CI/CD pipeline integration
+
+### Epic Issues Breakdown
+
+Epic #84 should contain these individual GitHub issues:
+
+**Setup & Infrastructure Issues:**
+
+- **Issue #85**: TUI Framework Setup and Dependencies (4 hours)
+- **Issue #86**: Core TUI Architecture and Context Providers (6 hours)
+- **Issue #87**: Basic Component Library Development (8 hours)
+- **Issue #88**: Integration Bridge with Existing Code (4 hours)
+
+**Interface Migration Issues:**
+
+- **Issue #89**: Main Layout Implementation (6 hours)
+- **Issue #90**: Command System Migration to TUI (8 hours)
+- **Issue #91**: Resource Management Interface (8 hours)
+- **Issue #92**: Navigation System Implementation (4 hours)
+
+**Advanced Features Issues:**
+
+- **Issue #93**: Interactive Components Development (8 hours)
+- **Issue #94**: Real-time Updates Implementation (6 hours)
+- **Issue #95**: Advanced Workflow Components (8 hours)
+- **Issue #96**: Performance Optimization (4 hours)
+
+**Testing & Production Issues:**
+
+- **Issue #97**: Comprehensive Testing Suite (8 hours)
+- **Issue #98**: User Experience Polish (6 hours)
+- **Issue #99**: Documentation and Migration Guide (4 hours)
+- **Issue #100**: Production Deployment and Rollout (6 hours)
+
+**Total Estimated Time**: 96 hours (~3-4 weeks with parallel development)
+
 ## Issue #19: Data Anonymization System 🔒 **CRITICAL PRIORITY** (1-2 weeks)
 
 **Strategic Context**: Critical prerequisite for AI integration (Issues #20-22). Enables safe AI collaboration by removing sensitive infrastructure data while preserving operational context.
